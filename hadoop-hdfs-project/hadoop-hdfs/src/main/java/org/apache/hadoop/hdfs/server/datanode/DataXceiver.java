@@ -21,7 +21,7 @@ import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTest
 import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 import javax.crypto.SecretKey;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.fs.FsTracer;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.hdfs.DFSUtil;

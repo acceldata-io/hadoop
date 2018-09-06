@@ -21,7 +21,7 @@ package org.apache.hadoop.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.slf4j.Logger;

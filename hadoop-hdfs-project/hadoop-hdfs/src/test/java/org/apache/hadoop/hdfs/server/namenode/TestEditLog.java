@@ -261,7 +261,7 @@ public class TestEditLog {
     // Make sure the edits dirs are set in the provided configuration object.
     conf.set(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_KEY,
         StringUtils.join(",", storage.getEditsDirectories()));
-    FSEditLog log = FSEditLog.newInstance(
+    FSEditLogger LOG = FSEditLog.newInstance(
         conf, storage, FSNamesystem.getNamespaceEditsDirs(conf));
     return log;
   }
@@ -1064,7 +1064,7 @@ public class TestEditLog {
     File logDir = new File(TEST_DIR, "testFailedOpen");
     logDir.mkdirs();
     ExitUtil.disableSystemExit();
-    FSEditLog log = FSImageTestUtil.createStandaloneEditLog(logDir);
+    FSEditLogger LOG = FSImageTestUtil.createStandaloneEditLog(logDir);
     try {
       FileUtil.setWritable(logDir, false);
       log.openForWrite(NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
@@ -1087,7 +1087,7 @@ public class TestEditLog {
   public void testAutoSync() throws Exception {
     File logDir = new File(TEST_DIR, "testAutoSync");
     logDir.mkdirs();
-    FSEditLog log = FSImageTestUtil.createStandaloneEditLog(logDir);
+    FSEditLogger LOG = FSImageTestUtil.createStandaloneEditLog(logDir);
     
     String oneKB = StringUtils.byteToHexString(
         new byte[500]);

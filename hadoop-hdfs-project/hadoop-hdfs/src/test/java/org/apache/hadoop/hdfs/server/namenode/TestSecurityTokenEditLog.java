@@ -184,7 +184,7 @@ public class TestSecurityTokenEditLog {
 
     Text renewer = new Text(UserGroupInformation.getCurrentUser().getUserName());
     FSImage fsImage = mock(FSImage.class);
-    FSEditLog log = mock(FSEditLog.class);
+    FSEditLogger LOG = mock(FSEditLog.class);
     doReturn(log).when(fsImage).getEditLog();
     // verify that the namesystem read lock is held while logging token
     // expirations.  the namesystem is not updated, so write lock is not

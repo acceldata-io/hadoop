@@ -28,8 +28,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,7 +73,7 @@ import org.junit.runners.Parameterized;
 @Ignore
 @RunWith(Parameterized.class)
 public class TestSpeculativeExecOnCluster {
-  private static final Log LOG = LogFactory
+  private static final Logger LOG = LogFactory
       .getLog(TestSpeculativeExecOnCluster.class);
 
   private static final int NODE_MANAGERS_COUNT = 2;

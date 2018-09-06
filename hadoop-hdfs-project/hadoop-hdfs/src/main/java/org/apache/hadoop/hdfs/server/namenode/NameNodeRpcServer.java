@@ -2404,7 +2404,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     int maxEventsPerRPC = nn.getConf().getInt(
         DFSConfigKeys.DFS_NAMENODE_INOTIFY_MAX_EVENTS_PER_RPC_KEY,
         DFSConfigKeys.DFS_NAMENODE_INOTIFY_MAX_EVENTS_PER_RPC_DEFAULT);
-    FSEditLog log = namesystem.getFSImage().getEditLog();
+    FSEditLogger LOG = namesystem.getFSImage().getEditLog();
     long syncTxid = log.getSyncTxId();
     // If we haven't synced anything yet, we can only read finalized
     // segments since we can't reliably determine which txns in in-progress

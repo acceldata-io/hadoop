@@ -21,7 +21,7 @@ package org.apache.hadoop.util;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 

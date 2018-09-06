@@ -1980,7 +1980,7 @@ public class TestCheckpoint {
       // Make a finalized log on the server side. 
       nn.rollEditLog();
       RemoteEditLogManifest manifest = nn.getEditLogManifest(1);
-      RemoteEditLog log = manifest.getLogs().get(0);
+      RemoteEditLogger LOG = manifest.getLogs().get(0);
       
       NNStorage dstImage = Mockito.mock(NNStorage.class);
       Mockito.doReturn(Lists.newArrayList(new File("/wont-be-written")))

@@ -32,7 +32,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FsTracer;
 import org.apache.hadoop.hdfs.DFSUtilClient;

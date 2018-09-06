@@ -24,8 +24,8 @@ import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Sets;
 
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -419,7 +419,7 @@ public class NameNode extends ReconfigurableBase implements
   private static final String NAMENODE_HTRACE_PREFIX = "namenode.htrace.";
 
   public static final Log MetricsLog =
-      LogFactory.getLog("NameNodeMetricsLog");
+      LoggerFactory.getLogger("NameNodeMetricsLog");
 
   protected FSNamesystem namesystem;
   protected final NamenodeRole role;

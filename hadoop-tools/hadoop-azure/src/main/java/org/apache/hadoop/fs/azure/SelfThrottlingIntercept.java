@@ -21,8 +21,8 @@ package org.apache.hadoop.fs.azure;
 import java.net.HttpURLConnection;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 
 import com.microsoft.azure.storage.OperationContext;
@@ -63,7 +63,7 @@ import com.microsoft.azure.storage.StorageEvent;
  */
 @InterfaceAudience.Private
 public class SelfThrottlingIntercept {
-  public static final Log LOG = LogFactory
+  public static final Logger LOG = LogFactory
       .getLog(SelfThrottlingIntercept.class);
 
   private final float readFactor;

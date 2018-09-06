@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.util;
 
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Assert;
 import org.junit.Test;

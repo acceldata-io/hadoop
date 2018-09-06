@@ -20,8 +20,8 @@
 package org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.runtime.runc;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -77,7 +77,7 @@ public class ImageTagToManifestPlugin extends AbstractService
   private String manifestDir;
   private String localImageTagToHashFile;
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       ImageTagToManifestPlugin.class);
 
   private static final int SHA256_HASH_LENGTH = 64;

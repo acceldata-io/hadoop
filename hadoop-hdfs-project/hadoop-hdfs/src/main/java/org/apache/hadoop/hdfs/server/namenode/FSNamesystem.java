@@ -176,8 +176,8 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -477,7 +477,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
    * perm=&lt;permissions (optional)&gt;
    * </code>
    */
-  public static final Log auditLog = LogFactory.getLog(
+  public static final Log auditLog = LoggerFactory.getLogger(
       FSNamesystem.class.getName() + ".audit");
 
   private final int maxCorruptFileBlocksReturn;
@@ -6683,7 +6683,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
   @Override  // NameNodeMXBean
   public String getNameJournalStatus() {
     List<Map<String, String>> jasList = new ArrayList<Map<String, String>>();
-    FSEditLog log = getFSImage().getEditLog();
+    FSEditLogger LOG = getFSImage().getEditLog();
     if (log != null) {
       // This flag can be false because we cannot hold a lock of FSEditLog
       // for metrics.

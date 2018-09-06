@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;

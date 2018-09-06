@@ -19,7 +19,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import java.util.function.Supplier;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

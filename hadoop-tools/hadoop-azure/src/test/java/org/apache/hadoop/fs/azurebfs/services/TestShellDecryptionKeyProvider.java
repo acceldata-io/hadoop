@@ -25,8 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.KeyProviderException;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestShellDecryptionKeyProvider {
-  public static final Log LOG = LogFactory
+  public static final Logger LOG = LogFactory
       .getLog(TestShellDecryptionKeyProvider.class);
   private static final File TEST_ROOT_DIR = new File(System.getProperty(
       "test.build.data", "/tmp"), "TestShellDecryptionKeyProvider");

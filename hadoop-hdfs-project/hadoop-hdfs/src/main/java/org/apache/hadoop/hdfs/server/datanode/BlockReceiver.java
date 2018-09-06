@@ -35,7 +35,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Checksum;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FSOutputSummer;
 import org.apache.hadoop.fs.StorageType;

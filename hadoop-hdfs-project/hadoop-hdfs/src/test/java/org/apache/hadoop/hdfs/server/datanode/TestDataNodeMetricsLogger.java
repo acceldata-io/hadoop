@@ -32,7 +32,7 @@ import java.util.Random;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

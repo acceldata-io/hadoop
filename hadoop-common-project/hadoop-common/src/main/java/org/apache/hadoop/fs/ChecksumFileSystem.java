@@ -41,7 +41,7 @@ import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapa
  * Abstract Checksumed FileSystem.
  * It provide a basic implementation of a Checksumed FileSystem,
  * which creates a checksum file for each raw file.
- * It generates & verifies checksums at the client side.
+ * It generates &amp; verifies checksums at the client side.
  *
  *****************************************************************/
 @InterfaceAudience.Public

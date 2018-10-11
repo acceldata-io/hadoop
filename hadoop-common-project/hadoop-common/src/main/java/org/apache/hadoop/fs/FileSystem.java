@@ -639,7 +639,7 @@ public abstract class FileSystem extends Configured
    * Create a file with the provided permission.
    *
    * The permission of the file is set to be the provided permission as in
-   * setPermission, not permission&~umask
+   * setPermission, not permission{@literal &~}umask
    *
    * The HDFS implementation is implemented using two RPCs.
    * It is understood that it is inefficient,
@@ -664,7 +664,7 @@ public abstract class FileSystem extends Configured
   /**
    * Create a directory with the provided permission.
    * The permission of the directory is set to be the provided permission as in
-   * setPermission, not permission&~umask
+   * setPermission, not permission{@literal &~}umask
    *
    * @see #create(FileSystem, Path, FsPermission)
    *
@@ -745,7 +745,7 @@ public abstract class FileSystem extends Configured
    * <pre>
    *   if f == null :
    *     result = null
-   *   elif f.getLen() <= start:
+   *   elif f.getLen() {@literal <=} start:
    *     result = []
    *   else result = [ locations(FS, b) for b in blocks(FS, p, s, s+l)]
    * </pre>
@@ -2000,7 +2000,6 @@ public abstract class FileSystem extends Configured
    * <dl>
    *  <dd>
    *   <dl>
-   *    <p>
    *    <dt> <tt> ? </tt>
    *    <dd> Matches any single character.
    *
@@ -2908,7 +2907,7 @@ public abstract class FileSystem extends Configured
    * changes.  (Modifications are merged into the current ACL.)
    *
    * @param path Path to modify
-   * @param aclSpec List<AclEntry> describing modifications
+   * @param aclSpec List&lt;AclEntry&gt; describing modifications
    * @throws IOException if an ACL could not be modified
    * @throws UnsupportedOperationException if the operation is unsupported
    *         (default outcome).
@@ -3101,7 +3100,7 @@ public abstract class FileSystem extends Configured
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to get extended attributes
-   * @return List<String> of the XAttr names of the file or directory
+   * @return List{@literal <String>} of the XAttr names of the file or directory
    * @throws IOException IO failure
    * @throws UnsupportedOperationException if the operation is unsupported
    *         (default outcome).

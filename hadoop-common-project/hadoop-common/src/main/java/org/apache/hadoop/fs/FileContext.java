@@ -767,7 +767,7 @@ public class FileContext implements PathCapabilities {
    * Make(create) a directory and all the non-existent parents.
    * 
    * @param dir - the dir to make
-   * @param permission - permissions is set permission&~umask
+   * @param permission - permissions is set permission{@literal &~}umask
    * @param createParent - if true then missing parent dirs are created if false
    *          then parent must exist
    * 
@@ -981,7 +981,6 @@ public class FileContext implements PathCapabilities {
   /**
    * Renames Path src to Path dst
    * <ul>
-   * <li
    * <li>Fails if src is a file and dst is a directory.
    * <li>Fails if src is a directory and dst is a file.
    * <li>Fails if the parent of dst does not exist or is a file.
@@ -1003,7 +1002,7 @@ public class FileContext implements PathCapabilities {
    * 
    * @throws AccessControlException If access is denied
    * @throws FileAlreadyExistsException If <code>dst</code> already exists and
-   *           <code>options</options> has {@link Options.Rename#OVERWRITE} 
+   *           <code>options</code> has {@link Options.Rename#OVERWRITE}
    *           option false.
    * @throws FileNotFoundException If <code>src</code> does not exist
    * @throws ParentNotDirectoryException If parent of <code>dst</code> is not a
@@ -1262,7 +1261,7 @@ public class FileContext implements PathCapabilities {
    * checks to perform.  If the requested permissions are granted, then the
    * method returns normally.  If access is denied, then the method throws an
    * {@link AccessControlException}.
-   * <p/>
+   * <p>
    * The default implementation of this method calls {@link #getFileStatus(Path)}
    * and checks the returned permissions against the requested permissions.
    * Note that the getFileStatus call will be subject to authorization checks.
@@ -1509,9 +1508,9 @@ public class FileContext implements PathCapabilities {
    * <pre>
    * Given a path referring to a symlink of form:
    * 
-   *   <---X---> 
+   *   {@literal <---}X{@literal --->}
    *   fs://host/A/B/link 
-   *   <-----Y----->
+   *   {@literal <-----}Y{@literal ----->}
    * 
    * In this path X is the scheme and authority that identify the file system,
    * and Y is the path leading up to the final path component "link". If Y is
@@ -1548,7 +1547,7 @@ public class FileContext implements PathCapabilities {
    *
    *
    * @throws AccessControlException If access is denied
-   * @throws FileAlreadyExistsException If file <code>linkcode> already exists
+   * @throws FileAlreadyExistsException If file <code>link</code> already exists
    * @throws FileNotFoundException If <code>target</code> does not exist
    * @throws ParentNotDirectoryException If parent of <code>link</code> is not a
    *           directory.
@@ -2050,7 +2049,6 @@ public class FileContext implements PathCapabilities {
      * <dl>
      *  <dd>
      *   <dl>
-     *    <p>
      *    <dt> <tt> ? </tt>
      *    <dd> Matches any single character.
      *
@@ -2412,7 +2410,8 @@ public class FileContext implements PathCapabilities {
    * changes.  (Modifications are merged into the current ACL.)
    *
    * @param path Path to modify
-   * @param aclSpec List<AclEntry> describing modifications
+   * @param aclSpec List{@literal <}AclEntry{@literal >} describing
+   * modifications
    * @throws IOException if an ACL could not be modified
    */
   public void modifyAclEntries(final Path path, final List<AclEntry> aclSpec)
@@ -2433,7 +2432,8 @@ public class FileContext implements PathCapabilities {
    * retained.
    *
    * @param path Path to modify
-   * @param aclSpec List<AclEntry> describing entries to remove
+   * @param aclSpec List{@literal <}AclEntry{@literal >} describing entries
+   * to remove
    * @throws IOException if an ACL could not be modified
    */
   public void removeAclEntries(final Path path, final List<AclEntry> aclSpec)
@@ -2493,8 +2493,9 @@ public class FileContext implements PathCapabilities {
    * entries.
    *
    * @param path Path to modify
-   * @param aclSpec List<AclEntry> describing modifications, must include entries
-   *   for user, group, and others for compatibility with permission bits.
+   * @param aclSpec List{@literal <}AclEntry{@literal >} describing
+   * modifications, must include entries for user, group, and others for
+   * compatibility with permission bits.
    * @throws IOException if an ACL could not be modified
    */
   public void setAcl(Path path, final List<AclEntry> aclSpec)
@@ -2514,7 +2515,8 @@ public class FileContext implements PathCapabilities {
    * Gets the ACLs of files and directories.
    *
    * @param path Path to get
-   * @return RemoteIterator<AclStatus> which returns each AclStatus
+   * @return RemoteIterator{@literal <}AclStatus{@literal >} which returns
+   *         each AclStatus
    * @throws IOException if an ACL could not be read
    */
   public AclStatus getAclStatus(Path path) throws IOException {
@@ -2532,7 +2534,7 @@ public class FileContext implements PathCapabilities {
    * Set an xattr of a file or directory.
    * The name must be prefixed with the namespace followed by ".". For example,
    * "user.attr".
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to modify
@@ -2550,7 +2552,7 @@ public class FileContext implements PathCapabilities {
    * Set an xattr of a file or directory.
    * The name must be prefixed with the namespace followed by ".". For example,
    * "user.attr".
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to modify
@@ -2576,7 +2578,7 @@ public class FileContext implements PathCapabilities {
    * Get an xattr for a file or directory.
    * The name must be prefixed with the namespace followed by ".". For example,
    * "user.attr".
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to get extended attribute
@@ -2599,11 +2601,12 @@ public class FileContext implements PathCapabilities {
    * Get all of the xattrs for a file or directory.
    * Only those xattrs for which the logged-in user has permissions to view
    * are returned.
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to get extended attributes
-   * @return Map<String, byte[]> describing the XAttrs of the file or directory
+   * @return Map{@literal <}String, byte[]{@literal >} describing the XAttrs
+   * of the file or directory
    * @throws IOException
    */
   public Map<String, byte[]> getXAttrs(Path path) throws IOException {
@@ -2621,12 +2624,13 @@ public class FileContext implements PathCapabilities {
    * Get all of the xattrs for a file or directory.
    * Only those xattrs for which the logged-in user has permissions to view
    * are returned.
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to get extended attributes
    * @param names XAttr names.
-   * @return Map<String, byte[]> describing the XAttrs of the file or directory
+   * @return Map{@literal <}String, byte[]{@literal >} describing the XAttrs
+   * of the file or directory
    * @throws IOException
    */
   public Map<String, byte[]> getXAttrs(Path path, final List<String> names)
@@ -2645,7 +2649,7 @@ public class FileContext implements PathCapabilities {
    * Remove an xattr of a file or directory.
    * The name must be prefixed with the namespace followed by ".". For example,
    * "user.attr".
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to remove extended attribute
@@ -2668,11 +2672,12 @@ public class FileContext implements PathCapabilities {
    * Get all of the xattr names for a file or directory.
    * Only those xattr names which the logged-in user has permissions to view
    * are returned.
-   * <p/>
+   * <p>
    * Refer to the HDFS extended attributes user documentation for details.
    *
    * @param path Path to get extended attributes
-   * @return List<String> of the XAttr names of the file or directory
+   * @return List{@literal <}String{@literal >} of the XAttr names of the
+   * file or directory
    * @throws IOException
    */
   public List<String> listXAttrs(Path path) throws IOException {

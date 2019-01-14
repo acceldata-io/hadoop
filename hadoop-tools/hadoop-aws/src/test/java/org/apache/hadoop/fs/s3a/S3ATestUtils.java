@@ -47,6 +47,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import org.hamcrest.core.Is;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.internal.AssumptionViolatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_CREDENTIAL_PROVIDER_PATH;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 import static org.apache.hadoop.fs.s3a.FailureInjectionPolicy.*;
 import static org.apache.hadoop.fs.s3a.S3ATestConstants.*;
@@ -144,6 +144,7 @@ public final class S3ATestUtils {
    * @param purge flag to enable Multipart purging
    * @return the FS
    * @throws IOException IO Problems
+   * @throws AssumptionViolatedException if the FS is not named
    */
   public static S3AFileSystem createTestFileSystem(Configuration conf,
       boolean purge)
@@ -157,10 +158,12 @@ public final class S3ATestUtils {
       testURI = URI.create(fsname);
       liveTest = testURI.getScheme().equals(Constants.FS_S3A);
     }
-    // This doesn't work with our JUnit 3 style test cases, so instead we'll
-    // make this whole class not run by default
-    Assume.assumeTrue("No test filesystem in " + TEST_FS_S3A_NAME,
-        liveTest);
+    if (!liveTest) {
+      // This doesn't work with our JUnit 3 style test cases, so instead we'll
+      // make this whole class not run by default
+      throw new AssumptionViolatedException(
+          "No test filesystem in " + TEST_FS_S3A_NAME);
+    }
     // patch in S3Guard options
     maybeEnableS3Guard(conf);
     S3AFileSystem fs1 = new S3AFileSystem();
@@ -189,6 +192,7 @@ public final class S3ATestUtils {
    * @param conf configuration
    * @return the FS
    * @throws IOException IO Problems
+   * @throws AssumptionViolatedException if the FS is not named
    */
   public static FileContext createTestFileContext(Configuration conf)
       throws IOException {
@@ -200,10 +204,12 @@ public final class S3ATestUtils {
       testURI = URI.create(fsname);
       liveTest = testURI.getScheme().equals(Constants.FS_S3A);
     }
-    // This doesn't work with our JUnit 3 style test cases, so instead we'll
-    // make this whole class not run by default
-    Assume.assumeTrue("No test filesystem in " + TEST_FS_S3A_NAME,
-        liveTest);
+    if (!liveTest) {
+      // This doesn't work with our JUnit 3 style test cases, so instead we'll
+      // make this whole class not run by default
+      throw new AssumptionViolatedException("No test filesystem in "
+          + TEST_FS_S3A_NAME);
+    }
     // patch in S3Guard options
     maybeEnableS3Guard(conf);
     FileContext fc = FileContext.getFileContext(testURI, conf);
@@ -321,54 +327,8 @@ public final class S3ATestUtils {
       String defVal) {
     String confVal = conf != null ? conf.getTrimmed(key, defVal) : defVal;
     String propval = System.getProperty(key);
-    return isNotEmpty(propval) && !UNSET_PROPERTY.equals(propval)
+    return StringUtils.isNotEmpty(propval) && !UNSET_PROPERTY.equals(propval)
         ? propval : confVal;
-  }
-
-  /**
-   * Get the test CSV file; assume() that it is not empty.
-   * @param conf test configuration
-   * @return test file.
-   */
-  public static String getCSVTestFile(Configuration conf) {
-    String csvFile = conf
-        .getTrimmed(KEY_CSVTEST_FILE, DEFAULT_CSVTEST_FILE);
-    Assume.assumeTrue("CSV test file is not the default",
-        isNotEmpty(csvFile));
-    return csvFile;
-  }
-
-  /**
-   * Get the test CSV path; assume() that it is not empty.
-   * @param conf test configuration
-   * @return test file as a path.
-   */
-  public static Path getCSVTestPath(Configuration conf) {
-    return new Path(getCSVTestFile(conf));
-  }
-
-  /**
-   * Get the test CSV file; assume() that it is not modified (i.e. we haven't
-   * switched to a new storage infrastructure where the bucket is no longer
-   * read only).
-   * @return test file.
-   * @param conf test configuration
-   */
-  public static String getLandsatCSVFile(Configuration conf) {
-    String csvFile = getCSVTestFile(conf);
-    Assume.assumeTrue("CSV test file is not the default",
-        DEFAULT_CSVTEST_FILE.equals(csvFile));
-    return csvFile;
-  }
-  /**
-   * Get the test CSV file; assume() that it is not modified (i.e. we haven't
-   * switched to a new storage infrastructure where the bucket is no longer
-   * read only).
-   * @param conf test configuration
-   * @return test file as a path.
-   */
-  public static Path getLandsatCSVPath(Configuration conf) {
-    return new Path(getLandsatCSVFile(conf));
   }
 
   /**
@@ -1168,12 +1128,9 @@ public final class S3ATestUtils {
    * Skip a test if the FS isn't marked as supporting magic commits.
    * @param fs filesystem
    */
-  public static void assumeMagicCommitEnabled(S3AFileSystem fs)
-      throws IOException {
+  public static void assumeMagicCommitEnabled(S3AFileSystem fs) {
     assume("Magic commit option disabled on " + fs,
-        fs.hasPathCapability(
-            fs.getWorkingDirectory(),
-            CommitConstants.STORE_CAPABILITY_MAGIC_COMMITTER));
+        fs.hasCapability(CommitConstants.STORE_CAPABILITY_MAGIC_COMMITTER));
   }
 
   /**

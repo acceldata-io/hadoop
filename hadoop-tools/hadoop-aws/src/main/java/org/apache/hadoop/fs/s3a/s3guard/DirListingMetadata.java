@@ -273,10 +273,10 @@ public class DirListingMetadata extends ExpirableMetadata {
 
     // If this dir's path has host (and thus scheme), so must its children
     URI parentUri = path.toUri();
+    URI childUri = childPath.toUri();
     if (parentUri.getHost() != null) {
-      URI childUri = childPath.toUri();
-      Preconditions.checkNotNull(childUri.getHost(),
-          String.format("Expected non-null URI host: %s", childUri));
+      Preconditions.checkNotNull(childUri.getHost(), "Expected non-null URI " +
+          "host: %s", childUri);
       Preconditions.checkArgument(
           childUri.getHost().equals(parentUri.getHost()),
           String.format("childUri %s and parentUri %s must have the same host",
@@ -285,9 +285,10 @@ public class DirListingMetadata extends ExpirableMetadata {
           String.format("No scheme in path %s", childUri));
     }
     Preconditions.checkArgument(!childPath.isRoot(),
-        String.format("childPath cannot be the root path: %s", childPath));
-    Preconditions.checkArgument(childPath.getParent().equals(path),
-        String.format("childPath %s must be a child of %s", childPath, path));
+        "childPath cannot be the root path: %s", childPath);
+    Preconditions.checkArgument(parentUri.getPath().equals(
+        childPath.getParent().toUri().getPath()),
+        "childPath %s must be a child of %s", childPath, path);
   }
 
   /**

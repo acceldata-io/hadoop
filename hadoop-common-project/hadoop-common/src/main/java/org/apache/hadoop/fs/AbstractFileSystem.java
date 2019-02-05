@@ -25,12 +25,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.HadoopIllegalArgumentException;
@@ -41,6 +44,7 @@ import org.apache.hadoop.fs.FileSystem.Statistics;
 import org.apache.hadoop.fs.Options.ChecksumOpt;
 import org.apache.hadoop.fs.Options.CreateOpts;
 import org.apache.hadoop.fs.Options.Rename;
+import org.apache.hadoop.fs.impl.AbstractFSBuilderImpl;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -48,13 +52,12 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.LambdaUtils;
 import org.apache.hadoop.util.Progressable;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapabilityArgs;
 
 /**
  * This class provides an interface for implementors of a Hadoop file system
@@ -68,7 +71,7 @@ import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapa
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public abstract class AbstractFileSystem implements PathCapabilities {
+public abstract class AbstractFileSystem {
   static final Logger LOG = LoggerFactory.getLogger(AbstractFileSystem.class);
 
   /** Recording statistics per a file system class. */
@@ -398,8 +401,11 @@ public abstract class AbstractFileSystem implements PathCapabilities {
       thatPort = this.getUriDefaultPort();
     }
     if (thisPort != thatPort) {
-      throw new InvalidPathException("Wrong FS: " + path + ", expected: "
-          + this.getUri());
+      throw new InvalidPathException("Wrong FS: " + path
+          + " and port=" + thatPort
+          + ", expected: "
+          + this.getUri()
+          + " with port=" + thisPort);
     }
   }
   
@@ -847,20 +853,6 @@ public abstract class AbstractFileSystem implements PathCapabilities {
   public abstract FileStatus getFileStatus(final Path f)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException;
-
-  /**
-   * Synchronize client metadata state.
-   * <p>
-   * In some FileSystem implementations such as HDFS metadata
-   * synchronization is essential to guarantee consistency of read requests
-   * particularly in HA setting.
-   * @throws IOException
-   * @throws UnsupportedOperationException
-   */
-  public void msync() throws IOException, UnsupportedOperationException {
-    throw new UnsupportedOperationException(getClass().getCanonicalName() +
-        " does not support method msync");
-  }
 
   /**
    * The specification of this method matches that of
@@ -1343,16 +1335,31 @@ public abstract class AbstractFileSystem implements PathCapabilities {
     return myUri.equals(((AbstractFileSystem) other).myUri);
   }
 
-  public boolean hasPathCapability(final Path path,
-      final String capability)
-      throws IOException {
-    switch (validatePathCapabilityArgs(makeQualified(path), capability)) {
-    case CommonPathCapabilities.FS_SYMLINKS:
-      // delegate to the existing supportsSymlinks() call.
-      return supportsSymlinks();
-    default:
-      // the feature is not implemented.
-      return false;
-    }
+  /**
+   * Open a file with the given set of options.
+   * The base implementation performs a blocking
+   * call to {@link #open(Path, int)}in this call;
+   * the actual outcome is in the returned {@code CompletableFuture}.
+   * This avoids having to create some thread pool, while still
+   * setting up the expectation that the {@code get()} call
+   * is needed to evaluate the result.
+   * @param path path to the file
+   * @param mandatoryKeys set of options declared as mandatory.
+   * @param options options set during the build sequence.
+   * @param bufferSize buffer size
+   * @return a future which will evaluate to the opened file.
+   * @throws IOException failure to resolve the link.
+   * @throws IllegalArgumentException unknown mandatory key
+   */
+  public CompletableFuture<FSDataInputStream> openFileWithOptions(Path path,
+      Set<String> mandatoryKeys,
+      Configuration options,
+      int bufferSize) throws IOException {
+    AbstractFSBuilderImpl.rejectUnknownMandatoryKeys(mandatoryKeys,
+        Collections.emptySet(),
+        "for " + path);
+    return LambdaUtils.eval(
+        new CompletableFuture<>(), () -> open(path, bufferSize));
   }
+
 }

@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathCapabilities;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.io.IOUtils;
@@ -1467,58 +1466,19 @@ public class ContractTestUtils extends Assert {
     assertTrue("Stream should be instanceof StreamCapabilities",
         stream instanceof StreamCapabilities);
 
-    StreamCapabilities source = (StreamCapabilities) stream;
-    if (shouldHaveCapabilities != null) {
+    if (shouldHaveCapabilities!=null) {
       for (String shouldHaveCapability : shouldHaveCapabilities) {
         assertTrue("Should have capability: " + shouldHaveCapability,
-            source.hasCapability(shouldHaveCapability));
+            ((StreamCapabilities) stream).hasCapability(shouldHaveCapability));
       }
     }
 
-    if (shouldNotHaveCapabilities != null) {
+    if (shouldNotHaveCapabilities!=null) {
       for (String shouldNotHaveCapability : shouldNotHaveCapabilities) {
         assertFalse("Should not have capability: " + shouldNotHaveCapability,
-            source.hasCapability(shouldNotHaveCapability));
+            ((StreamCapabilities) stream)
+                .hasCapability(shouldNotHaveCapability));
       }
-    }
-  }
-
-  /**
-   * Custom assert to test {@link PathCapabilities}.
-   *
-   * @param source source (FS, FC, etc)
-   * @param path path to check
-   * @param capabilities The array of unexpected capabilities
-   */
-  public static void assertHasPathCapabilities(
-      final PathCapabilities source,
-      final Path path,
-      final String...capabilities) throws IOException {
-
-    for (String shouldHaveCapability: capabilities) {
-      assertTrue("Should have capability: " + shouldHaveCapability
-              + " under " + path,
-          source.hasPathCapability(path, shouldHaveCapability));
-    }
-  }
-
-  /**
-   * Custom assert to test that the named {@link PathCapabilities}
-   * are not supported.
-   *
-   * @param source source (FS, FC, etc)
-   * @param path path to check
-   * @param capabilities The array of unexpected capabilities
-   */
-  public static void assertLacksPathCapabilities(
-      final PathCapabilities source,
-      final Path path,
-      final String...capabilities) throws IOException {
-
-    for (String shouldHaveCapability: capabilities) {
-      assertFalse("Path  must not support capability: " + shouldHaveCapability
-              + " under " + path,
-          source.hasPathCapability(path, shouldHaveCapability));
     }
   }
 

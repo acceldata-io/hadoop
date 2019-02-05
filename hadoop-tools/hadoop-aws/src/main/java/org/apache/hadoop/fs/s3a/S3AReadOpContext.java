@@ -21,7 +21,6 @@ package org.apache.hadoop.fs.s3a;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.impl.ChangeDetectionPolicy;
 
 import javax.annotation.Nullable;
 
@@ -45,11 +44,6 @@ public class S3AReadOpContext extends S3AOpContext {
   private final S3AInputPolicy inputPolicy;
 
   /**
-   * How to detect and deal with the object being updated during read.
-   */
-  private final ChangeDetectionPolicy changeDetectionPolicy;
-
-  /**
    * Readahead for GET operations/skip, etc.
    */
   private final long readahead;
@@ -65,7 +59,6 @@ public class S3AReadOpContext extends S3AOpContext {
    * @param dstFileStatus target file status
    * @param inputPolicy the input policy
    * @param readahead readahead for GET operations/skip, etc.
-   * @param changeDetectionPolicy change detection policy.
    */
   public S3AReadOpContext(
       final Path path,
@@ -76,21 +69,20 @@ public class S3AReadOpContext extends S3AOpContext {
       S3AInstrumentation instrumentation,
       FileStatus dstFileStatus,
       S3AInputPolicy inputPolicy,
-      ChangeDetectionPolicy changeDetectionPolicy,
       final long readahead) {
     super(isS3GuardEnabled, invoker, s3guardInvoker, stats, instrumentation,
         dstFileStatus);
     this.path = checkNotNull(path);
     Preconditions.checkArgument(readahead >= 0,
-        String.format("invalid readahead %d", readahead));
+        "invalid readahead %d", readahead);
     this.inputPolicy = checkNotNull(inputPolicy);
-    this.changeDetectionPolicy = checkNotNull(changeDetectionPolicy);
     this.readahead = readahead;
   }
 
   /**
-   * Get invoker to use for read operations.  When S3Guard is enabled we use
-   * the S3Guard invoker, which deals with things like FileNotFoundException
+   * Get invoker to use for read operations.
+   * When S3Guard is enabled we use the S3Guard invoker,
+   * which deals with things like FileNotFoundException
    * differently.
    * @return invoker to use for read codepaths
    */
@@ -118,13 +110,9 @@ public class S3AReadOpContext extends S3AOpContext {
     return inputPolicy;
   }
 
-  public ChangeDetectionPolicy getChangeDetectionPolicy() {
-    return changeDetectionPolicy;
-  }
-
   /**
    * Get the readahead for this operation.
-   * @return a value {@literal >=} 0
+   * @return a value >= 0
    */
   public long getReadahead() {
     return readahead;
@@ -137,7 +125,6 @@ public class S3AReadOpContext extends S3AOpContext {
     sb.append("path=").append(path);
     sb.append(", inputPolicy=").append(inputPolicy);
     sb.append(", readahead=").append(readahead);
-    sb.append(", changeDetectionPolicy=").append(changeDetectionPolicy);
     sb.append('}');
     return sb.toString();
   }

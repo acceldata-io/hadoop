@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -332,10 +334,6 @@ public class FilterFileSystem extends FileSystem {
     return fs.mkdirs(f, permission);
   }
 
-  @Override
-  public boolean mkdirs(Path f) throws IOException {
-    return fs.mkdirs(f);
-  }
 
   /**
    * The src file is on the local disk.  Add it to FS at
@@ -456,11 +454,6 @@ public class FilterFileSystem extends FileSystem {
   @Override
   public FileStatus getFileStatus(Path f) throws IOException {
     return fs.getFileStatus(f);
-  }
-
-  @Override
-  public void msync() throws IOException, UnsupportedOperationException {
-    fs.msync();
   }
 
   @Override
@@ -703,9 +696,33 @@ public class FilterFileSystem extends FileSystem {
   }
 
   @Override
-  public boolean hasPathCapability(final Path path, final String capability)
-      throws IOException {
-    return fs.hasPathCapability(path, capability);
+  public FutureDataInputStreamBuilder openFile(final Path path)
+      throws IOException, UnsupportedOperationException {
+    return fs.openFile(path);
   }
 
+  @Override
+  public FutureDataInputStreamBuilder openFile(final PathHandle pathHandle)
+      throws IOException, UnsupportedOperationException {
+    return fs.openFile(pathHandle);
+  }
+
+  @Override
+  protected CompletableFuture<FSDataInputStream> openFileWithOptions(
+      final Path path,
+      final Set<String> mandatoryKeys,
+      final Configuration options,
+      final int bufferSize) throws IOException {
+    return fs.openFileWithOptions(path, mandatoryKeys, options, bufferSize);
+  }
+
+  @Override
+  protected CompletableFuture<FSDataInputStream> openFileWithOptions(
+      final PathHandle pathHandle,
+      final Set<String> mandatoryKeys,
+      final Configuration options,
+      final int bufferSize) throws IOException {
+    return fs.openFileWithOptions(pathHandle, mandatoryKeys, options,
+        bufferSize);
+  }
 }

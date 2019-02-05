@@ -93,8 +93,7 @@ public class TestS3AAWSCredentialsProvider {
         TemporaryAWSCredentialsProvider.NAME
             + ", \t" + SimpleAWSCredentialsProvider.NAME
             + " ,\n " + AnonymousAWSCredentialsProvider.NAME);
-    Path testFile = new Path(
-        conf.getTrimmed(KEY_CSVTEST_FILE, DEFAULT_CSVTEST_FILE));
+    Path testFile = getCSVTestPath(conf);
 
     URI uri = testFile.toUri();
     AWSCredentialProviderList list = S3AUtils.createAWSCredentialProviderSet(

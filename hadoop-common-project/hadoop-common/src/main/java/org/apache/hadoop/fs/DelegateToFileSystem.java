@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -262,10 +264,21 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
     return Arrays.asList(fsImpl.addDelegationTokens(renewer, null));
   }
 
-  @Override
-  public boolean hasPathCapability(final Path path,
-      final String capability)
-      throws IOException {
-    return fsImpl.hasPathCapability(path, capability);
+  /**
+   * Open a file by delegating to
+   * {@link FileSystem#openFileWithOptions(Path, Set, Configuration, int)}.
+   * @param path path to the file
+   * @param mandatoryKeys set of options declared as mandatory.
+   * @param options options set during the build sequence.
+   * @param bufferSize buffer size
+   * @return a future which will evaluate to the opened file.
+   * @throws IOException failure to resolve the link.
+   * @throws IllegalArgumentException unknown mandatory key
+   */
+  public CompletableFuture<FSDataInputStream> openFileWithOptions(Path path,
+      Set<String> mandatoryKeys,
+      Configuration options,
+      int bufferSize) throws IOException {
+    return fsImpl.openFileWithOptions(path, mandatoryKeys, options, bufferSize);
   }
 }

@@ -35,6 +35,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class S3AReadOpContext extends S3AOpContext {
 
   /**
+   * How to detect and deal with the object being updated during read.
+   */
+  private final ChangeDetectionPolicy changeDetectionPolicy;
+
+  /**
    * Path of read.
    */
   private final Path path;
@@ -43,11 +48,6 @@ public class S3AReadOpContext extends S3AOpContext {
    * Initial input policy of the stream.
    */
   private final S3AInputPolicy inputPolicy;
-
-  /**
-   * How to detect and deal with the object being updated during read.
-   */
-  private final ChangeDetectionPolicy changeDetectionPolicy;
 
   /**
    * Readahead for GET operations/skip, etc.
@@ -82,15 +82,16 @@ public class S3AReadOpContext extends S3AOpContext {
         dstFileStatus);
     this.path = checkNotNull(path);
     Preconditions.checkArgument(readahead >= 0,
-        String.format("invalid readahead %d", readahead));
+        "invalid readahead %d", readahead);
     this.inputPolicy = checkNotNull(inputPolicy);
     this.changeDetectionPolicy = checkNotNull(changeDetectionPolicy);
     this.readahead = readahead;
   }
 
   /**
-   * Get invoker to use for read operations.  When S3Guard is enabled we use
-   * the S3Guard invoker, which deals with things like FileNotFoundException
+   * Get invoker to use for read operations.
+   * When S3Guard is enabled we use the S3Guard invoker,
+   * which deals with things like FileNotFoundException
    * differently.
    * @return invoker to use for read codepaths
    */
@@ -124,7 +125,7 @@ public class S3AReadOpContext extends S3AOpContext {
 
   /**
    * Get the readahead for this operation.
-   * @return a value {@literal >=} 0
+   * @return a value >= 0
    */
   public long getReadahead() {
     return readahead;

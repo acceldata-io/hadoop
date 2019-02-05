@@ -161,7 +161,7 @@ public class S3AInstrumentation implements Closeable, MetricsSource {
       OBJECT_PUT_BYTES,
       OBJECT_PUT_REQUESTS,
       OBJECT_PUT_REQUESTS_COMPLETED,
-      STREAM_READ_VERSION_MISMATCHES,
+      OBJECT_SELECT_REQUESTS,
       STREAM_WRITE_FAILURES,
       STREAM_WRITE_BLOCK_UPLOADS,
       STREAM_WRITE_BLOCK_UPLOADS_COMMITTED,
@@ -552,7 +552,7 @@ public class S3AInstrumentation implements Closeable, MetricsSource {
    * Create a stream input statistics instance.
    * @return the new instance
    */
-  InputStreamStatistics newInputStreamStatistics() {
+  public InputStreamStatistics newInputStreamStatistics() {
     return new InputStreamStatistics();
   }
 

@@ -351,7 +351,7 @@ typedef struct
 
 /**
  * Helper function to create a org.apache.hadoop.fs.Path object.
- * @param env: The JNIEnv pointer. 
+ * @param env: The JNIEnv pointer.
  * @param path: The file-path for which to construct org.apache.hadoop.fs.Path
  * object.
  * @return Returns a jobject on success and NULL on error.
@@ -520,7 +520,7 @@ int hdfsBuilderConfSetStr(struct hdfsBuilder *bld, const char *key,
                           const char *val)
 {
     struct hdfsBuilderConfOpt *opt, *next;
-    
+
     opt = calloc(1, sizeof(struct hdfsBuilderConfOpt));
     if (!opt)
         return -ENOMEM;
@@ -721,7 +721,7 @@ hdfsFS hdfsBuilderConnect(struct hdfsBuilder *bld)
             goto done;
         }
     }
- 
+
     //Check what type of FileSystem the caller wants...
     if (bld->nn == NULL) {
         // Get a local filesystem.
@@ -1109,13 +1109,15 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
       errno = ENOTSUP;
       return NULL;
     } else {
-      fprintf(stderr, "ERROR: cannot open an hdfs file in mode 0x%x\n", accmode);
+      fprintf(stderr, "ERROR: cannot open an hdfs file in mode 0x%x\n",
+              accmode);
       errno = EINVAL;
       return NULL;
     }
 
     if ((flags & O_CREAT) && (flags & O_EXCL)) {
-      fprintf(stderr, "WARN: hdfs does not truly support O_CREATE && O_EXCL\n");
+      fprintf(stderr,
+              "WARN: hdfs does not truly support O_CREATE && O_EXCL\n");
     }
 
     if (accmode == O_RDONLY) {
@@ -1147,7 +1149,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
     }
     jConfiguration = jVal.l;
 
-    jStrBufferSize = (*env)->NewStringUTF(env, "io.file.buffer.size"); 
+    jStrBufferSize = (*env)->NewStringUTF(env, "io.file.buffer.size");
     if (!jStrBufferSize) {
         ret = printPendingExceptionAndFree(env, PRINT_EXC_ALL, "OOM");
         goto done;
@@ -1186,7 +1188,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
             jReplication = (jshort)jVal.i;
         }
     }
- 
+
     /* Create and return either the FSDataInputStream or
        FSDataOutputStream references jobject jStream */
 
@@ -1230,7 +1232,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
     file->file = (*env)->NewGlobalRef(env, jFile);
     if (!file->file) {
         ret = printPendingExceptionAndFree(env, PRINT_EXC_ALL,
-            "hdfsOpenFile(%s): NewGlobalRef", path); 
+            "hdfsOpenFile(%s): NewGlobalRef", path);
         goto done;
     }
     file->type = (((flags & O_WRONLY) == 0) ? HDFS_STREAM_INPUT :
@@ -1350,7 +1352,7 @@ int hdfsCloseFile(hdfsFS fs, hdfsFile file)
 {
     int ret;
     // JAVA EQUIVALENT:
-    //  file.close 
+    //  file.close
 
     //The interface whose 'close' method to be called
     CachedJavaClass cachedJavaClass;
@@ -1377,11 +1379,11 @@ int hdfsCloseFile(hdfsFS fs, hdfsFile file)
     } else {
         cachedJavaClass = JC_FS_DATA_OUTPUT_STREAM;
     }
-  
+
     jthr = invokeMethod(env, NULL, INSTANCE, file->file,
             cachedJavaClass, "close", "()V");
     if (jthr) {
-        interfaceShortName = (file->type == HDFS_STREAM_INPUT) ? 
+        interfaceShortName = (file->type == HDFS_STREAM_INPUT) ?
             "FSDataInputStream" : "FSDataOutputStream";
         ret = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
                 "%s#close", interfaceShortName);
@@ -1412,7 +1414,7 @@ int hdfsExists(hdfsFS fs, const char *path)
         errno = EINTERNAL;
         return -1;
     }
-    
+
     if (path == NULL) {
         errno = EINVAL;
         return -1;
@@ -1866,7 +1868,7 @@ tSize hdfsWrite(hdfsFS fs, hdfsFile f, const void* buffer, tSize length)
     }
 
     jOutputStream = f->file;
-    
+
     if (length < 0) {
     	errno = EINVAL;
     	return -1;
@@ -1914,7 +1916,7 @@ tSize hdfsWrite(hdfsFS fs, hdfsFile f, const void* buffer, tSize length)
     return length;
 }
 
-int hdfsSeek(hdfsFS fs, hdfsFile f, tOffset desiredPos) 
+int hdfsSeek(hdfsFS fs, hdfsFile f, tOffset desiredPos)
 {
     // JAVA EQUIVALENT
     //  fis.seek(pos);
@@ -1989,7 +1991,7 @@ tOffset hdfsTell(hdfsFS fs, hdfsFile f)
     return jVal.j;
 }
 
-int hdfsFlush(hdfsFS fs, hdfsFile f) 
+int hdfsFlush(hdfsFS fs, hdfsFile f)
 {
     // JAVA EQUIVALENT
     //  fos.flush();
@@ -2160,7 +2162,7 @@ static int hdfsCopyImpl(hdfsFS srcFS, const char *src, hdfsFS dstFS,
             "(Lorg/apache/hadoop/fs/FileSystem;Lorg/apache/hadoop/fs/Path;"
             "Lorg/apache/hadoop/fs/FileSystem;Lorg/apache/hadoop/fs/Path;"
             "ZLorg/apache/hadoop/conf/Configuration;)Z",
-            jSrcFS, jSrcPath, jDstFS, jDstPath, deleteSource, 
+            jSrcFS, jSrcPath, jDstFS, jDstPath, deleteSource,
             jConfiguration);
     if (jthr) {
         ret = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
@@ -2178,7 +2180,7 @@ done:
     destroyLocalReference(env, jConfiguration);
     destroyLocalReference(env, jSrcPath);
     destroyLocalReference(env, jDstPath);
-  
+
     if (ret) {
         errno = ret;
         return -1;
@@ -2302,7 +2304,7 @@ done:
 char* hdfsGetWorkingDirectory(hdfsFS fs, char* buffer, size_t bufferSize)
 {
     // JAVA EQUIVALENT:
-    //  Path p = fs.getWorkingDirectory(); 
+    //  Path p = fs.getWorkingDirectory();
     //  return p.toString()
 
     jobject jPath = NULL;
@@ -2379,7 +2381,7 @@ done:
 int hdfsSetWorkingDirectory(hdfsFS fs, const char *path)
 {
     // JAVA EQUIVALENT:
-    //  fs.setWorkingDirectory(Path(path)); 
+    //  fs.setWorkingDirectory(Path(path));
 
     jobject jFS = (jobject)fs;
     jthrowable jthr;
@@ -2542,7 +2544,7 @@ int hdfsChown(hdfsFS fs, const char *path, const char *owner, const char *group)
         goto done;
     }
 
-    jthr = newJavaStr(env, owner, &jOwner); 
+    jthr = newJavaStr(env, owner, &jOwner);
     if (jthr) {
         ret = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
             "hdfsChown(path=%s): newJavaStr(%s)", path, owner);
@@ -3077,7 +3079,7 @@ void hadoopRzBufferFree(hdfsFile file, struct hadoopRzBuffer *buffer)
     jvalue jVal;
     jthrowable jthr;
     JNIEnv* env;
-    
+
     env = getJNIEnv();
     if (env == NULL) {
         errno = EINTERNAL;
@@ -3186,7 +3188,7 @@ hdfsGetHosts(hdfsFS fs, const char *path, tOffset start, tOffset length)
                 "GetObjectArrayElement(%d)", path, start, length, i);
             goto done;
         }
-        
+
         jthr = invokeMethod(env, &jVal, INSTANCE, jFileBlock,
                 JC_BLOCK_LOCATION, "getHosts",
                 "()[Ljava/lang/String;");
@@ -3378,7 +3380,7 @@ tOffset hdfsGetCapacity(hdfsFS fs)
 }
 
 
-  
+
 tOffset hdfsGetUsed(hdfsFS fs)
 {
     // JAVA EQUIVALENT:
@@ -3416,7 +3418,7 @@ tOffset hdfsGetUsed(hdfsFS fs)
     }
     return jVal.j;
 }
- 
+
 /**
  * We cannot add new fields to the hdfsFileInfo structure because it would break
  * binary compatibility.  The reason is because we return an array
@@ -3595,6 +3597,7 @@ done:
     destroyLocalReference(env, jUserName);
     destroyLocalReference(env, jGroupName);
     destroyLocalReference(env, jPermission);
+    destroyLocalReference(env, jPath);
     return jthr;
 }
 
@@ -3633,7 +3636,7 @@ getFileInfo(JNIEnv *env, jobject jFS, jobject jPath, hdfsFileInfo **fileInfo)
         destroyLocalReference(env, jStat);
         return newRuntimeError(env, "getFileInfo: OOM allocating hdfsFileInfo");
     }
-    jthr = getFileInfoFromStat(env, jStat, *fileInfo); 
+    jthr = getFileInfoFromStat(env, jStat, *fileInfo);
     destroyLocalReference(env, jStat);
     return jthr;
 }
@@ -3645,13 +3648,13 @@ hdfsFileInfo* hdfsListDirectory(hdfsFS fs, const char *path, int *numEntries)
     // JAVA EQUIVALENT:
     //  Path p(path);
     //  Path []pathList = fs.listPaths(p)
-    //  foreach path in pathList 
+    //  foreach path in pathList
     //    getFileInfo(path)
 
     jobject jFS = (jobject)fs;
     jthrowable jthr;
     jobject jPath = NULL;
-    hdfsFileInfo *pathList = NULL; 
+    hdfsFileInfo *pathList = NULL;
     jobjectArray jPathList = NULL;
     jvalue jVal;
     jsize jPathListSize = 0;

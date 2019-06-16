@@ -21,6 +21,8 @@ package org.apache.hadoop.fs.s3a;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * All the constants used with the {@link S3AFileSystem}.
  *
@@ -348,6 +350,18 @@ public final class Constants {
       "fs.s3a.metadatastore.authoritative";
   public static final boolean DEFAULT_METADATASTORE_AUTHORITATIVE = false;
 
+  /**
+   * How long a directory listing in the MS is considered as authoritative.
+   */
+  public static final String METADATASTORE_METADATA_TTL =
+      "fs.s3a.metadatastore.metadata.ttl";
+
+  /**
+   * Default TTL in milliseconds: 15 minutes.
+   */
+  public static final long DEFAULT_METADATASTORE_METADATA_TTL =
+      TimeUnit.MINUTES.toMillis(15);
+
   /** read ahead buffer size to prevent connection re-establishments. */
   public static final String READAHEAD_RANGE = "fs.s3a.readahead.range";
   public static final long DEFAULT_READAHEAD_RANGE = 64 * 1024;
@@ -405,6 +419,17 @@ public final class Constants {
   public static final String S3_METADATA_STORE_IMPL =
       "fs.s3a.metadatastore.impl";
 
+  /**
+   * Whether to fail when there is an error writing to the metadata store.
+   */
+  public static final String FAIL_ON_METADATA_WRITE_ERROR =
+      "fs.s3a.metadatastore.fail.on.write.error";
+
+  /**
+   * Default value ({@value}) for FAIL_ON_METADATA_WRITE_ERROR.
+   */
+  public static final boolean FAIL_ON_METADATA_WRITE_ERROR_DEFAULT = true;
+
   /** Minimum period of time (in milliseconds) to keep metadata (may only be
    * applied when a prune command is manually run).
    */
@@ -418,7 +443,6 @@ public final class Constants {
    * This config has no default value. If the user does not set this, the
    * S3Guard will operate table in the associated S3 bucket region.
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_REGION_KEY =
       "fs.s3a.s3guard.ddb.region";
 
@@ -428,7 +452,6 @@ public final class Constants {
    * This config has no default value. If the user does not set this, the
    * S3Guard implementation will use the respective S3 bucket name.
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_TABLE_NAME_KEY =
       "fs.s3a.s3guard.ddb.table";
 
@@ -438,36 +461,45 @@ public final class Constants {
    * For example:
    * fs.s3a.s3guard.ddb.table.tag.mytag
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_TABLE_TAG =
       "fs.s3a.s3guard.ddb.table.tag.";
 
   /**
-   * Test table name to use during DynamoDB integration test.
-   *
-   * The table will be modified, and deleted in the end of the tests.
-   * If this value is not set, the integration tests that would be destructive
-   * won't run.
-   */
-  @InterfaceStability.Unstable
-  public static final String S3GUARD_DDB_TEST_TABLE_NAME_KEY =
-      "fs.s3a.s3guard.ddb.test.table";
-
-  /**
    * Whether to create the DynamoDB table if the table does not exist.
+   * Value: {@value}.
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_TABLE_CREATE_KEY =
       "fs.s3a.s3guard.ddb.table.create";
 
-  @InterfaceStability.Unstable
+  /**
+   * Read capacity when creating a table.
+   * When it and the write capacity are both "0", a per-request table is
+   * created.
+   * Value: {@value}.
+   */
   public static final String S3GUARD_DDB_TABLE_CAPACITY_READ_KEY =
       "fs.s3a.s3guard.ddb.table.capacity.read";
-  public static final long S3GUARD_DDB_TABLE_CAPACITY_READ_DEFAULT = 500;
-  @InterfaceStability.Unstable
+
+  /**
+   * Default read capacity when creating a table.
+   * Value: {@value}.
+   */
+  public static final long S3GUARD_DDB_TABLE_CAPACITY_READ_DEFAULT = 0;
+
+  /**
+   * Write capacity when creating a table.
+   * When it and the read capacity are both "0", a per-request table is
+   * created.
+   * Value: {@value}.
+   */
   public static final String S3GUARD_DDB_TABLE_CAPACITY_WRITE_KEY =
       "fs.s3a.s3guard.ddb.table.capacity.write";
-  public static final long S3GUARD_DDB_TABLE_CAPACITY_WRITE_DEFAULT = 100;
+
+  /**
+   * Default write capacity when creating a table.
+   * Value: {@value}.
+   */
+  public static final long S3GUARD_DDB_TABLE_CAPACITY_WRITE_DEFAULT = 0;
 
   /**
    * The maximum put or delete requests per BatchWriteItem request.
@@ -476,7 +508,6 @@ public final class Constants {
    */
   public static final int S3GUARD_DDB_BATCH_WRITE_REQUEST_LIMIT = 25;
 
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_MAX_RETRIES =
       "fs.s3a.s3guard.ddb.max.retries";
 
@@ -488,7 +519,6 @@ public final class Constants {
   public static final int S3GUARD_DDB_MAX_RETRIES_DEFAULT =
       DEFAULT_MAX_ERROR_RETRIES;
 
-  @InterfaceStability.Unstable
   public static final String S3GUARD_DDB_THROTTLE_RETRY_INTERVAL =
       "fs.s3a.s3guard.ddb.throttle.retry.interval";
   public static final String S3GUARD_DDB_THROTTLE_RETRY_INTERVAL_DEFAULT =
@@ -507,7 +537,6 @@ public final class Constants {
   /**
    * The default "Null" metadata store: {@value}.
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_METASTORE_NULL
       = "org.apache.hadoop.fs.s3a.s3guard.NullMetadataStore";
 
@@ -535,12 +564,11 @@ public final class Constants {
   public static final String S3GUARD_METASTORE_LOCAL_ENTRY_TTL =
       "fs.s3a.s3guard.local.ttl";
   public static final int DEFAULT_S3GUARD_METASTORE_LOCAL_ENTRY_TTL
-      = 10 * 1000;
+      = 60 * 1000;
 
   /**
    * Use DynamoDB for the metadata: {@value}.
    */
-  @InterfaceStability.Unstable
   public static final String S3GUARD_METASTORE_DYNAMO
       = "org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore";
 
@@ -711,96 +739,4 @@ public final class Constants {
    * Default change detection require version: true.
    */
   public static final boolean CHANGE_DETECT_REQUIRE_VERSION_DEFAULT = true;
-
-  /**
-   * Policy for directory markers.
-   * This is a new feature of HADOOP-13230 which addresses
-   * some scale, performance and permissions issues -but
-   * at the risk of backwards compatibility.
-   * <p></p>
-   * This Hadoop release only supports the original "delete"
-   * policy.
-   */
-  public static final String DIRECTORY_MARKER_POLICY =
-      "fs.s3a.directory.marker.retention";
-
-  /**
-   * Delete directory markers. This is the backwards compatible option.
-   * Value: {@value}.
-   */
-  public static final String DIRECTORY_MARKER_POLICY_DELETE =
-      "delete";
-
-  /**
-   * Retain directory markers (unsupported in this release).
-   * Value: {@value}.
-   */
-  public static final String DIRECTORY_MARKER_POLICY_KEEP =
-      "keep";
-
-  /**
-   * Retain directory markers in authoritative directory trees only
-   *  (unsupported in this release).
-   * Value: {@value}.
-   */
-  public static final String DIRECTORY_MARKER_POLICY_AUTHORITATIVE =
-      "authoritative";
-
-  /**
-   * Default retention policy: {@value}.
-   */
-  public static final String DEFAULT_DIRECTORY_MARKER_POLICY =
-      DIRECTORY_MARKER_POLICY_DELETE;
-
-
-  /**
-   * {@code PathCapabilities} probe to verify that an S3A Filesystem
-   * has the changes needed to safely work with buckets where
-   * directoy markers have not been deleted.
-   * Value: {@value}.
-   */
-  public static final String STORE_CAPABILITY_DIRECTORY_MARKER_AWARE
-      = "fs.s3a.capability.directory.marker.aware";
-
-  /**
-   * {@code PathCapabilities} probe to indicate that the filesystem
-   * keeps directory markers.
-   * Value: {@value}.
-   */
-  public static final String STORE_CAPABILITY_DIRECTORY_MARKER_POLICY_KEEP
-      = "fs.s3a.capability.directory.marker.policy.keep";
-
-  /**
-   * {@code PathCapabilities} probe to indicate that the filesystem
-   * deletes directory markers.
-   * Value: {@value}.
-   */
-  public static final String STORE_CAPABILITY_DIRECTORY_MARKER_POLICY_DELETE
-      = "fs.s3a.capability.directory.marker.policy.delete";
-
-  /**
-   * {@code PathCapabilities} probe to indicate that the filesystem
-   * keeps directory markers in authoritative paths only.
-   * Value: {@value}.
-   */
-  public static final String
-      STORE_CAPABILITY_DIRECTORY_MARKER_POLICY_AUTHORITATIVE =
-      "fs.s3a.capability.directory.marker.policy.authoritative";
-
-  /**
-   * {@code PathCapabilities} probe to indicate that a path/S3GuardTool
-   * keeps directory markers.
-   * Value: {@value}.
-   */
-  public static final String STORE_CAPABILITY_DIRECTORY_MARKER_ACTION_KEEP
-      = "fs.s3a.capability.directory.marker.action.keep";
-
-  /**
-   * {@code PathCapabilities} probe to indicate that a path
-   * deletes directory markers.
-   * Value: {@value}.
-   */
-  public static final String STORE_CAPABILITY_DIRECTORY_MARKER_ACTION_DELETE
-      = "fs.s3a.capability.directory.marker.action.delete";
-
 }

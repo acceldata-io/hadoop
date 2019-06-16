@@ -705,7 +705,8 @@ public abstract class S3GuardTool extends Configured implements Tool {
         }
         FileStatus dir = DynamoDBMetadataStore.makeDirStatus(parent,
             f.getOwner());
-        getStore().put(new PathMetadata(dir));
+        S3Guard.putWithTtl(getStore(), new PathMetadata(dir),
+            getFilesystem().getTtlTimeProvider());
         dirCache.add(parent);
         parent = parent.getParent();
       }
@@ -737,7 +738,8 @@ public abstract class S3GuardTool extends Configured implements Tool {
               located.getOwner());
         }
         putParentsIfNotPresent(child);
-        getStore().put(new PathMetadata(child));
+        S3Guard.putWithTtl(getStore(), new PathMetadata(child),
+            getFilesystem().getTtlTimeProvider());
         items++;
       }
       return items;
@@ -1068,7 +1070,8 @@ public abstract class S3GuardTool extends Configured implements Tool {
       }
 
       try {
-        getStore().prune(divide, keyPrefix);
+        getStore().prune(MetadataStore.PruneMode.ALL_BY_MODTIME, divide,
+            keyPrefix);
       } catch (UnsupportedOperationException e){
         errorln("Prune operation not supported in metadata store.");
       }

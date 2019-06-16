@@ -240,7 +240,8 @@ public class ITestDynamoDBMetadataStoreScale
 
               if (pruneItems == BATCH_SIZE) {
                 describe("pruning files");
-                ddbms.prune(Long.MAX_VALUE /* all files */);
+                ddbms.prune(MetadataStore.PruneMode.ALL_BY_MODTIME,
+                    Long.MAX_VALUE /* all files */);
                 pruneItems = 0;
               }
               if (tracker.probe()) {
@@ -302,7 +303,7 @@ public class ITestDynamoDBMetadataStoreScale
   private void retryingDelete(final Path path) {
     try {
       ddbms.getInvoker().retry("Delete ", path.toString(), true,
-          () -> ddbms.delete(path));
+          () -> ddbms.delete(path, new S3Guard.TtlTimeProvider(getConf())));
     } catch (IOException e) {
       LOG.warn("Failed to delete {}: ", path, e);
     }

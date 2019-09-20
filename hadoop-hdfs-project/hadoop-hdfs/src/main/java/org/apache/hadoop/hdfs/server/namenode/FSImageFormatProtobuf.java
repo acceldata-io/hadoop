@@ -765,8 +765,9 @@ public final class FSImageFormatProtobuf {
     }
   }
 
-  private static int getOndiskTrunkSize(com.google.protobuf.GeneratedMessage s) {
-    return CodedOutputStream.computeRawVarint32Size(s.getSerializedSize())
+  private static int getOndiskTrunkSize(
+      com.google.protobuf.GeneratedMessageV3 s) {
+    return CodedOutputStream.computeUInt32SizeNoTag(s.getSerializedSize())
         + s.getSerializedSize();
   }
 

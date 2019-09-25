@@ -39,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapabilityArgs;
 
+import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapabilityArgs;
+
 /**
  * This is an implementation of the Hadoop Archive 
  * Filesystem. This archive Filesystem has index files

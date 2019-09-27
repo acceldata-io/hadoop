@@ -38,7 +38,8 @@ import org.apache.hadoop.util.IdentityHashStore;
 public class FSDataInputStream extends DataInputStream
     implements Seekable, PositionedReadable, 
       ByteBufferReadable, HasFileDescriptor, CanSetDropBehind, CanSetReadahead,
-      HasEnhancedByteBufferAccess, CanUnbuffer, StreamCapabilities {
+      HasEnhancedByteBufferAccess, CanUnbuffer, StreamCapabilities,
+      ByteBufferPositionedReadable {
   /**
    * Map ByteBuffers that we have handed out to readers to ByteBufferPool 
    * objects
@@ -50,8 +51,8 @@ public class FSDataInputStream extends DataInputStream
   public FSDataInputStream(InputStream in) {
     super(in);
     if( !(in instanceof Seekable) || !(in instanceof PositionedReadable) ) {
-      throw new IllegalArgumentException(
-          "In is not an instance of Seekable or PositionedReadable");
+      throw new IllegalArgumentException(in.getClass().getCanonicalName() +
+          " is not an instance of Seekable or PositionedReadable");
     }
   }
   
@@ -147,7 +148,8 @@ public class FSDataInputStream extends DataInputStream
       return ((ByteBufferReadable)in).read(buf);
     }
 
-    throw new UnsupportedOperationException("Byte-buffer read unsupported by input stream");
+    throw new UnsupportedOperationException("Byte-buffer read unsupported " +
+            "by " + in.getClass().getCanonicalName());
   }
 
   @Override
@@ -167,9 +169,8 @@ public class FSDataInputStream extends DataInputStream
     try {
       ((CanSetReadahead)in).setReadahead(readahead);
     } catch (ClassCastException e) {
-      throw new UnsupportedOperationException(
-          "this stream does not support setting the readahead " +
-          "caching strategy.");
+      throw new UnsupportedOperationException(in.getClass().getCanonicalName() +
+          " does not support setting the readahead caching strategy.");
     }
   }
 
@@ -245,5 +246,34 @@ public class FSDataInputStream extends DataInputStream
   @Override
   public String toString() {
     return super.toString() + ": " + in;
+  }
+
+  @Override
+  public int read(long position, ByteBuffer buf) throws IOException {
+    if (in instanceof ByteBufferPositionedReadable) {
+      return ((ByteBufferPositionedReadable) in).read(position, buf);
+    }
+    throw new UnsupportedOperationException("Byte-buffer pread unsupported " +
+        "by " + in.getClass().getCanonicalName());
+  }
+
+  @Override
+  public void readFully(long position, ByteBuffer buf) throws IOException {
+    if (in instanceof ByteBufferPositionedReadable) {
+      ((ByteBufferPositionedReadable) in).readFully(position, buf);
+    } else {
+      throw new UnsupportedOperationException("Byte-buffer pread " +
+              "unsupported by " + in.getClass().getCanonicalName());
+    }
+  }
+
+  @Override
+  public void readFully(long position, ByteBuffer buf) throws IOException {
+    if (in instanceof ByteBufferPositionedReadable) {
+      ((ByteBufferPositionedReadable) in).readFully(position, buf);
+    } else {
+      throw new UnsupportedOperationException("Byte-buffer pread " +
+              "unsupported by " + in.getClass().getCanonicalName());
+    }
   }
 }

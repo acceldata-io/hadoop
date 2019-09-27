@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.ByteBufferPositionedReadable;
 import org.apache.hadoop.fs.ByteBufferReadable;
 import org.apache.hadoop.fs.CanSetDropBehind;
 import org.apache.hadoop.fs.CanSetReadahead;
@@ -328,20 +329,40 @@ public class CryptoInputStream extends FilterInputStream implements
       throws IOException {
     checkStream();
     try {
-      final int n = ((PositionedReadable) in).read(position, buffer, offset, 
+      final int n = ((PositionedReadable) in).read(position, buffer, offset,
           length);
       if (n > 0) {
         // This operation does not change the current offset of the file
         decrypt(position, buffer, offset, n);
       }
-      
+
       return n;
     } catch (ClassCastException e) {
       throw new UnsupportedOperationException("This stream does not support " +
           "positioned read.");
     }
   }
-  
+
+  /**
+   * Positioned readFully using {@link ByteBuffer}s. This method is thread-safe.
+   */
+  @Override
+  public void readFully(long position, final ByteBuffer buf)
+      throws IOException {
+    checkStream();
+    if (!(in instanceof ByteBufferPositionedReadable)) {
+      throw new UnsupportedOperationException(in.getClass().getCanonicalName()
+          + " does not support positioned reads with byte buffers.");
+    }
+    int bufPos = buf.position();
+    ((ByteBufferPositionedReadable) in).readFully(position, buf);
+    final int n = buf.position() - bufPos;
+    if (n > 0) {
+      // This operation does not change the current offset of the file
+      decrypt(position, buf, n, bufPos);
+    }
+  }
+
   /**
    * Decrypt length bytes in buffer starting at offset. Output is also put 
    * into buffer starting at offset. It is thread-safe.
@@ -375,7 +396,7 @@ public class CryptoInputStream extends FilterInputStream implements
       returnDecryptor(decryptor);
     }
   }
-  
+
   /** Positioned read fully. It is thread-safe */
   @Override
   public void readFully(long position, byte[] buffer, int offset, int length)
@@ -407,7 +428,7 @@ public class CryptoInputStream extends FilterInputStream implements
     checkStream();
     try {
       /*
-       * If data of target pos in the underlying stream has already been read 
+       * If data of target pos in the underlying stream has already been read
        * and decrypted in outBuffer, we just need to re-position outBuffer.
        */
       if (pos <= streamOffset && pos >= (streamOffset - outBuffer.remaining())) {
@@ -523,7 +544,7 @@ public class CryptoInputStream extends FilterInputStream implements
    * Output is also buf and same start position.
    * buf.position() and buf.limit() should be unchanged after decryption.
    */
-  private void decrypt(ByteBuffer buf, int n, int start) 
+  private void decrypt(ByteBuffer buf, int n, int start)
       throws IOException {
     final int pos = buf.position();
     final int limit = buf.limit();
@@ -605,7 +626,7 @@ public class CryptoInputStream extends FilterInputStream implements
       }
       return buffer;
     } catch (ClassCastException e) {
-      throw new UnsupportedOperationException("This stream does not support " + 
+      throw new UnsupportedOperationException("This stream does not support " +
           "enhanced byte buffer access.");
     }
   }

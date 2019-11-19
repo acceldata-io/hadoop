@@ -82,9 +82,9 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.apache.hadoop.yarn.util.StringHelper;
 
 /**
- * This class manages the list of applications for the resource manager. 
+ * This class manages the list of applications for the resource manager.
  */
-public class RMAppManager implements EventHandler<RMAppManagerEvent>, 
+public class RMAppManager implements EventHandler<RMAppManagerEvent>,
                                         Recoverable {
 
   private static final Logger LOG =
@@ -139,7 +139,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
     static final Logger LOG = LoggerFactory.
         getLogger(ApplicationSummary.class);
 
-    // Escape sequences 
+    // Escape sequences
     static final char EQUALS = '=';
     static final char[] charsToEscape =
       {StringUtils.COMMA, EQUALS, StringUtils.ESCAPE_CHAR};
@@ -178,7 +178,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
 
     /**
      * create a summary of the application's runtime.
-     * 
+     *
      * @param app {@link RMApp} whose summary is to be created, cannot
      *            be <code>null</code>.
      */
@@ -243,7 +243,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
 
     /**
      * Log a summary of the application's runtime.
-     * 
+     *
      * @param app {@link RMApp} whose summary is to be logged
      */
     public static void logAppSummary(RMApp app) {
@@ -270,7 +270,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   }
 
   protected synchronized int getCompletedAppsListSize() {
-    return this.completedApps.size(); 
+    return this.completedApps.size();
   }
 
   protected synchronized void finishApplication(ApplicationId applicationId) {
@@ -281,7 +281,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
       if (UserGroupInformation.isSecurityEnabled()) {
         rmContext.getDelegationTokenRenewer().applicationFinished(applicationId);
       }
-      
+
       completedApps.add(applicationId);
       completedAppsInStateStore++;
       writeAuditLog(applicationId);
@@ -293,26 +293,26 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
     String operation = "UNKONWN";
     boolean success = false;
     switch (app.getState()) {
-      case FAILED: 
+      case FAILED:
         operation = AuditConstants.FINISH_FAILED_APP;
         break;
       case FINISHED:
         operation = AuditConstants.FINISH_SUCCESS_APP;
         success = true;
         break;
-      case KILLED: 
+      case KILLED:
         operation = AuditConstants.FINISH_KILLED_APP;
         success = true;
         break;
       default:
         break;
     }
-    
+
     if (success) {
       RMAuditLogger.logSuccess(app.getUser(), operation,
           "RMAppManager", app.getApplicationId());
     } else {
-      StringBuilder diag = app.getDiagnostics(); 
+      StringBuilder diag = app.getDiagnostics();
       String msg = diag == null ? null : diag.toString();
       RMAuditLogger.logFailure(app.getUser(), operation, msg, "RMAppManager",
           "App failed with state: " + app.getState(), appId);
@@ -616,7 +616,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   @Override
   public void handle(RMAppManagerEvent event) {
     ApplicationId applicationId = event.getApplicationId();
-    LOG.debug("RMAppManager processing event for " 
+    LOG.debug("RMAppManager processing event for "
         + applicationId + " of type " + event.getType());
     switch (event.getType()) {
     case APP_COMPLETED :
@@ -836,7 +836,10 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
     ApplicationPlacementContext placementContext = null;
     if (placementManager != null) {
       try {
-        placementContext = placementManager.placeApplication(context, user);
+        String usernameUsedForPlacement =
+            getUserNameForPlacement(user, context, placementManager);
+        placementContext = placementManager
+            .placeApplication(context, usernameUsedForPlacement);
       } catch (YarnException e) {
         // Placement could also fail if the user doesn't exist in system
         // skip if the user is not found during recovery.
@@ -856,6 +859,80 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
       throw new YarnException(msg);
     }
     return placementContext;
+  }
+
+  @VisibleForTesting
+  protected String getUserNameForPlacement(final String user,
+      final ApplicationSubmissionContext context,
+      final PlacementManager placementManager) throws YarnException {
+
+    boolean applicationTagBasedPlacementEnabled = conf
+        .getBoolean(YarnConfiguration.APPLICATION_TAG_BASED_PLACEMENT_ENABLED,
+            YarnConfiguration.DEFAULT_APPLICATION_TAG_BASED_PLACEMENT_ENABLED);
+
+    String usernameUsedForPlacement = user;
+    if (!applicationTagBasedPlacementEnabled) {
+      return usernameUsedForPlacement;
+    }
+    if (!isWhitelistedUser(user, conf)) {
+      LOG.warn("User '{}' is not allowed to do placement based " +
+          "on application tag", user);
+      return usernameUsedForPlacement;
+    }
+    LOG.debug("Application tag based placement is enabled, checking for " +
+        "userId in the application tag");
+    Set<String> applicationTags = context.getApplicationTags();
+    String userNameFromAppTag = getUserNameFromApplicationTag(applicationTags);
+    if (userNameFromAppTag != null) {
+      LOG.debug("Found userId '{}' in application tag", userNameFromAppTag);
+      UserGroupInformation callerUGI = UserGroupInformation
+          .createRemoteUser(userNameFromAppTag);
+      // check if the actual user has rights to submit application to the
+      // user's queue from the application tag
+      String queue = placementManager
+          .placeApplication(context, usernameUsedForPlacement).getQueue();
+      if (callerUGI != null && scheduler
+          .checkAccess(callerUGI, QueueACL.SUBMIT_APPLICATIONS, queue)) {
+        usernameUsedForPlacement = userNameFromAppTag;
+      } else {
+        LOG.warn("User '{}' from application tag does not have access to " +
+                " queue '{}'. " + "The placement is done for user '{}'",
+            userNameFromAppTag, queue, user);
+      }
+    } else {
+      LOG.warn("userId was not found in application tags");
+    }
+    return usernameUsedForPlacement;
+  }
+
+  private boolean isWhitelistedUser(final String user,
+      final Configuration config) {
+    String[] userWhitelist = config.getStrings(YarnConfiguration
+        .APPLICATION_TAG_BASED_PLACEMENT_USER_WHITELIST);
+    if (userWhitelist == null || userWhitelist.length == 0) {
+      return false;
+    }
+    for (String s: userWhitelist) {
+      if (s.equals(user)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String getUserNameFromApplicationTag(Set<String> applicationTags) {
+    String userIdPrefix = "u=";
+    for (String tag: applicationTags) {
+      if (tag.startsWith(userIdPrefix)) {
+        String[] userIdTag = tag.split("=");
+        if (userIdTag.length == 2) {
+          return userIdTag[1];
+        } else {
+          LOG.warn("Found wrongly qualified username in tag");
+        }
+      }
+    }
+    return null;
   }
 
   void replaceQueueFromPlacementContext(

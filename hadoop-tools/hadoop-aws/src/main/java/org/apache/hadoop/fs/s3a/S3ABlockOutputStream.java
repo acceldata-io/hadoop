@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,13 +47,25 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.Abortable;
+import org.apache.hadoop.fs.PathIOException;
 import org.apache.hadoop.fs.StreamCapabilities;
+import org.apache.hadoop.fs.Syncable;
 import org.apache.hadoop.fs.s3a.commit.CommitConstants;
 import org.apache.hadoop.fs.s3a.commit.PutTracker;
+import org.apache.hadoop.fs.s3a.statistics.BlockOutputStreamStatistics;
+import org.apache.hadoop.fs.statistics.DurationTracker;
+import org.apache.hadoop.fs.statistics.IOStatistics;
+import org.apache.hadoop.fs.statistics.IOStatisticsLogging;
+import org.apache.hadoop.fs.statistics.IOStatisticsSource;
 import org.apache.hadoop.util.Progressable;
 
 import static org.apache.hadoop.fs.s3a.S3AUtils.*;
 import static org.apache.hadoop.fs.s3a.Statistic.*;
+import static org.apache.hadoop.fs.s3a.statistics.impl.EmptyS3AStatisticsContext.EMPTY_BLOCK_OUTPUT_STREAM_STATISTICS;
+import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.emptyStatistics;
+import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.trackDurationOfInvocation;
+import static org.apache.hadoop.io.IOUtils.cleanupWithLogger;
 
 /**
  * Upload files/parts directly via different buffering mechanisms:
@@ -66,7 +79,7 @@ import static org.apache.hadoop.fs.s3a.Statistic.*;
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 class S3ABlockOutputStream extends OutputStream implements
-    StreamCapabilities {
+    StreamCapabilities, IOStatisticsSource, Syncable, Abortable {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(S3ABlockOutputStream.class);
@@ -153,7 +166,13 @@ class S3ABlockOutputStream extends OutputStream implements
     this.key = key;
     this.blockFactory = blockFactory;
     this.blockSize = (int) blockSize;
-    this.statistics = statistics;
+    this.statistics = statistics != null
+        ? statistics
+        : EMPTY_BLOCK_OUTPUT_STREAM_STATISTICS;
+    // test instantiations may not provide statistics;
+    this.iostatistics = statistics != null
+        ? statistics.getIOStatistics()
+        : emptyStatistics();
     this.writeOperationHelper = writeOperationHelper;
     this.putTracker = putTracker;
     Preconditions.checkArgument(blockSize >= Constants.MULTIPART_MIN_SIZE,
@@ -281,6 +300,7 @@ class S3ABlockOutputStream extends OutputStream implements
     if (len == 0) {
       return;
     }
+    statistics.writeBytes(len);
     S3ADataBlocks.DataBlock block = createBlockIfNeeded();
     int written = block.write(source, offset, len);
     int remainingCapacity = block.remainingCapacity();
@@ -303,8 +323,8 @@ class S3ABlockOutputStream extends OutputStream implements
 
   /**
    * Start an asynchronous upload of the current block.
-   * @throws IOException Problems opening the destination for upload
-   * or initializing the upload.
+   * @throws IOException Problems opening the destination for upload,
+   * initializing the upload, or if a previous operation has failed.
    */
   private synchronized void uploadCurrentBlock() throws IOException {
     Preconditions.checkState(hasActiveBlock(), "No active block");
@@ -393,16 +413,111 @@ class S3ABlockOutputStream extends OutputStream implements
       }
       LOG.debug("Upload complete to {} by {}", key, writeOperationHelper);
     } catch (IOException ioe) {
+      // the operation failed.
+      // if this happened during a multipart upload, abort the
+      // operation, so as to not leave (billable) data
+      // pending on the bucket
+      maybeAbortMultipart();
       writeOperationHelper.writeFailed(ioe);
       throw ioe;
     } finally {
-      closeAll(LOG, block, blockFactory);
-      LOG.debug("Statistics: {}", statistics);
-      closeAll(LOG, statistics);
-      clearActiveBlock();
+      cleanupOnClose();
     }
     // Note end of write. This does not change the state of the remote FS.
     writeOperationHelper.writeSuccessful(bytes);
+  }
+
+  /**
+   * Final operations in close/abort of stream.
+   * Shuts down block factory, closes any active block,
+   * and pushes out statistics.
+   */
+  private synchronized void cleanupOnClose() {
+    cleanupWithLogger(LOG, getActiveBlock(), blockFactory);
+    LOG.debug("Statistics: {}", statistics);
+    cleanupWithLogger(LOG, statistics);
+    clearActiveBlock();
+  }
+
+  /**
+   * Best effort abort of the multipart upload; sets
+   * the field to null afterwards.
+   * @return any exception caught during the operation.
+   */
+  private synchronized IOException maybeAbortMultipart() {
+    if (multiPartUpload != null) {
+      final IOException ioe = multiPartUpload.abort();
+      multiPartUpload = null;
+      return ioe;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Abort any active uploads, enter closed state.
+   * @return the outcome
+   */
+  @Override
+  public AbortableResult abort() {
+    if (closed.getAndSet(true)) {
+      // already closed
+      LOG.debug("Ignoring abort() as stream is already closed");
+      return new AbortableResultImpl(true, null);
+    }
+    try (DurationTracker d =
+             statistics.trackDuration(INVOCATION_ABORT.getSymbol())) {
+      return new AbortableResultImpl(false, maybeAbortMultipart());
+    } finally {
+      cleanupOnClose();
+    }
+  }
+
+  /**
+   * Abortable result.
+   */
+  private static final class AbortableResultImpl implements AbortableResult {
+
+    /**
+     * Had the stream already been closed/aborted?
+     */
+    private final boolean alreadyClosed;
+
+    /**
+     * Was any exception raised during non-essential
+     * cleanup actions (i.e. MPU abort)?
+     */
+    private final IOException anyCleanupException;
+
+    /**
+     * Constructor.
+     * @param alreadyClosed Had the stream already been closed/aborted?
+     * @param anyCleanupException Was any exception raised during cleanup?
+     */
+    private AbortableResultImpl(final boolean alreadyClosed,
+        final IOException anyCleanupException) {
+      this.alreadyClosed = alreadyClosed;
+      this.anyCleanupException = anyCleanupException;
+    }
+
+    @Override
+    public boolean alreadyClosed() {
+      return alreadyClosed;
+    }
+
+    @Override
+    public IOException anyCleanupException() {
+      return anyCleanupException;
+    }
+
+    @Override
+    public String toString() {
+      return new StringJoiner(", ",
+          AbortableResultImpl.class.getSimpleName() + "[", "]")
+          .add("alreadyClosed=" + alreadyClosed)
+          .add("anyCleanupException=" + anyCleanupException)
+          .toString();
+    }
   }
 
   /**
@@ -511,6 +626,14 @@ class S3ABlockOutputStream extends OutputStream implements
     case StreamCapabilities.HFLUSH:
     case StreamCapabilities.HSYNC:
       return false;
+
+      // yes, we do statistics.
+    case StreamCapabilities.IOSTATISTICS:
+      return true;
+
+      // S3A supports abort.
+    case StreamCapabilities.ABORTABLE_STREAM:
+      return true;
 
     default:
       return false;
@@ -644,7 +767,7 @@ class S3ABlockOutputStream extends OutputStream implements
         //abort multipartupload
         this.abort();
         throw extractException("Multi-part upload with id '" + uploadId
-                + "' to " + key, key, ee);
+            + "' to " + key, key, ee);
       }
     }
 
@@ -659,35 +782,43 @@ class S3ABlockOutputStream extends OutputStream implements
         throws IOException {
       AtomicInteger errorCount = new AtomicInteger(0);
       try {
-        writeOperationHelper.completeMPUwithRetries(key,
-            uploadId,
-            partETags,
-            bytesSubmitted,
-            errorCount);
+        trackDurationOfInvocation(statistics,
+            MULTIPART_UPLOAD_COMPLETED.getSymbol(), () -> {
+              writeOperationHelper.completeMPUwithRetries(key,
+                  uploadId,
+                  partETags,
+                  bytesSubmitted,
+                  errorCount);
+            });
       } finally {
         statistics.exceptionInMultipartComplete(errorCount.get());
       }
     }
 
     /**
-     * Abort a multi-part upload. Retries are attempted on failures.
+     * Abort a multi-part upload. Retries are not attempted on failures.
      * IOExceptions are caught; this is expected to be run as a cleanup process.
+     * @return any caught exception.
      */
-    public void abort() {
-      int retryCount = 0;
-      AmazonClientException lastException;
-      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);
+    private IOException abort() {
+      LOG.debug("Aborting upload");
       try {
-        writeOperationHelper.abortMultipartUpload(key, uploadId,
-            (text, e, r, i) -> statistics.exceptionInMultipartAbort());
+        trackDurationOfInvocation(statistics,
+            OBJECT_MULTIPART_UPLOAD_ABORTED.getSymbol(), () -> {
+              cancelAllActiveFutures();
+              writeOperationHelper.abortMultipartUpload(key, uploadId,
+                  false, null);
+            });
+        return null;
       } catch (IOException e) {
         // this point is only reached if the operation failed more than
         // the allowed retry count
         LOG.warn("Unable to abort multipart upload,"
             + " you may need to purge uploaded parts", e);
+        statistics.exceptionInMultipartAbort();
+        return e;
       }
     }
-
   }
 
   /**

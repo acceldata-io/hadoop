@@ -1345,7 +1345,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
         if (mode == Mode.ABORT) {
           getFilesystem().getWriteOperationHelper()
               .abortMultipartUpload(upload.getKey(), upload.getUploadId(),
-                  LOG_EVENT);
+                  true, LOG_EVENT);
         }
       }
       if (mode != Mode.EXPECT || verbose) {

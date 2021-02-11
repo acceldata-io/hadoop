@@ -860,8 +860,37 @@ public class S3AInstrumentation implements Closeable, MetricsSource {
 
     private Statistics statistics;
 
-    public OutputStreamStatistics(Statistics statistics){
-      this.statistics = statistics;
+    /**
+     * Instantiate.
+     * @param filesystemStatistics FS Statistics to update in close().
+     */
+    private OutputStreamStatistics(
+        @Nullable FileSystem.Statistics filesystemStatistics) {
+      this.filesystemStatistics = filesystemStatistics;
+      IOStatisticsStore st = iostatisticsStore()
+          .withCounters(
+              STREAM_WRITE_BLOCK_UPLOADS.getSymbol(),
+              STREAM_WRITE_BYTES.getSymbol(),
+              STREAM_WRITE_EXCEPTIONS.getSymbol(),
+              STREAM_WRITE_EXCEPTIONS_COMPLETING_UPLOADS.getSymbol(),
+              STREAM_WRITE_QUEUE_DURATION.getSymbol(),
+              STREAM_WRITE_TOTAL_DATA.getSymbol(),
+              STREAM_WRITE_TOTAL_TIME.getSymbol())
+          .withGauges(
+              STREAM_WRITE_BLOCK_UPLOADS_PENDING.getSymbol(),
+              STREAM_WRITE_BLOCK_UPLOADS_BYTES_PENDING.getSymbol())
+          .withDurationTracking(
+              ACTION_EXECUTOR_ACQUIRED,
+              INVOCATION_ABORT.getSymbol(),
+              OBJECT_MULTIPART_UPLOAD_ABORTED.getSymbol(),
+              MULTIPART_UPLOAD_COMPLETED.getSymbol())
+          .build();
+      setIOStatistics(st);
+      // these are extracted to avoid lookups on heavily used counters.
+      bytesUploaded = st.getCounterReference(
+          STREAM_WRITE_TOTAL_DATA.getSymbol());
+      bytesWritten = st.getCounterReference(
+          StreamStatisticNames.STREAM_WRITE_BYTES);
     }
 
     /**

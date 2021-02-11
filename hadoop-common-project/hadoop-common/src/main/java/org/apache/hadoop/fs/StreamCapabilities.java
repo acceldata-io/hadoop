@@ -60,6 +60,30 @@ public interface StreamCapabilities {
   String UNBUFFER = "in:unbuffer";
 
   /**
+   * Stream read(ByteBuffer) capability implemented by
+   * {@link ByteBufferReadable#read(java.nio.ByteBuffer)}.
+   */
+  String READBYTEBUFFER = "in:readbytebuffer";
+
+  /**
+   * Stream read(long, ByteBuffer) capability implemented by
+   * {@link ByteBufferPositionedReadable#read(long, java.nio.ByteBuffer)}.
+   */
+  String PREADBYTEBUFFER = "in:preadbytebuffer";
+
+  /**
+   * IOStatisticsSource API.
+   */
+  String IOSTATISTICS = "iostatistics";
+
+  /**
+   * Stream abort() capability implemented by {@link Abortable#abort()}.
+   * This matches the Path Capability
+   * {@link CommonPathCapabilities#ABORTABLE_STREAM}.
+   */
+  String ABORTABLE_STREAM =  CommonPathCapabilities.ABORTABLE_STREAM;
+
+  /**
    * Capabilities that a stream can support and be queried for.
    */
   @Deprecated

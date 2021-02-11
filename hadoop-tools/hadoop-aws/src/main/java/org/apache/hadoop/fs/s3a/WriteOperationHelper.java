@@ -279,19 +279,32 @@ public class WriteOperationHelper {
    * Abort a multipart upload operation.
    * @param destKey destination key of the upload
    * @param uploadId multipart operation Id
+   * @param shouldRetry should failures trigger a retry?
    * @param retrying callback invoked on every retry
    * @throws IOException failure to abort
    * @throws FileNotFoundException if the abort ID is unknown
    */
   @Retries.RetryTranslated
   public void abortMultipartUpload(String destKey, String uploadId,
-      Retried retrying)
+      boolean shouldRetry, Retried retrying)
       throws IOException {
-    invoker.retry("Aborting multipart upload", destKey, true,
-        retrying,
-        () -> owner.abortMultipartUpload(
-            destKey,
-            uploadId));
+    if (shouldRetry) {
+      // retrying option
+      invoker.retry("Aborting multipart upload ID " + uploadId,
+          destKey,
+          true,
+          retrying,
+          () -> owner.abortMultipartUpload(
+              destKey,
+              uploadId));
+    } else {
+      // single pass attempt.
+      once("Aborting multipart upload ID " + uploadId,
+          destKey,
+          () -> owner.abortMultipartUpload(
+              destKey,
+              uploadId));
+    }
   }
 
   /**
@@ -342,7 +355,7 @@ public class WriteOperationHelper {
   @Retries.RetryTranslated
   public void abortMultipartCommit(String destKey, String uploadId)
       throws IOException {
-    abortMultipartUpload(destKey, uploadId, invoker.getRetryCallback());
+    abortMultipartUpload(destKey, uploadId, true, invoker.getRetryCallback());
   }
 
   /**

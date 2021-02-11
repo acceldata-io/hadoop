@@ -123,4 +123,11 @@ public final class CommonPathCapabilities {
    */
   public static final String FS_XATTRS = "fs.capability.paths.xattrs";
 
+  /**
+   * Stream abort() capability implemented by {@link Abortable#abort()}.
+   * Value: {@value}.
+   */
+  public static final String ABORTABLE_STREAM =
+      "fs.capability.outputstream.abortable";
+
 }

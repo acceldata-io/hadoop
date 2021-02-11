@@ -30,7 +30,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class FSDataOutputStream extends DataOutputStream
-    implements Syncable, CanSetDropBehind, StreamCapabilities {
+    implements Syncable, CanSetDropBehind, StreamCapabilities,
+      IOStatisticsSource, Abortable {
   private final OutputStream wrappedStream;
 
   private static class PositionCache extends FilterOutputStream {
@@ -155,4 +156,21 @@ public class FSDataOutputStream extends DataOutputStream
           "not support setting the drop-behind caching setting.");
     }
   }
+
+    /**
+     * Invoke {@code abort()} on the wrapped stream if it
+     * is Abortable, otherwise raise an
+     * {@code UnsupportedOperationException}.
+     * @throws UnsupportedOperationException if not available.
+     * @return the result.
+     */
+    @Override
+    public AbortableResult abort() {
+        if (wrappedStream instanceof Abortable) {
+            return ((Abortable) wrappedStream).abort();
+        } else {
+            throw new UnsupportedOperationException(
+                    FSExceptionMessages.ABORTABLE_UNSUPPORTED);
+        }
+    }
 }

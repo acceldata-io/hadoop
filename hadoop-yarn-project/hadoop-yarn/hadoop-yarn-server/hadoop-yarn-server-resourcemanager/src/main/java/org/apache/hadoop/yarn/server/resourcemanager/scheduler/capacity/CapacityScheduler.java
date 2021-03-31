@@ -386,9 +386,9 @@ public class CapacityScheduler extends
       }
 
       LOG.info("Initialized CapacityScheduler with " + "calculator="
-          + getResourceCalculator().getClass() + ", " + "minimumAllocation=<"
-          + getMinimumResourceCapability() + ">, " + "maximumAllocation=<"
-          + getMaximumResourceCapability() + ">, " + "asynchronousScheduling="
+          + getResourceCalculator().getClass() + ", " + "minimumAllocation="
+          + getMinimumResourceCapability() + ", " + "maximumAllocation="
+          + getMaximumResourceCapability() + ", " + "asynchronousScheduling="
           + scheduleAsynchronously + ", " + "asyncScheduleInterval="
           + asyncScheduleInterval + "ms" + ",multiNodePlacementEnabled="
           + multiNodePlacementEnabled + ", " + "assignMultipleEnabled="

@@ -13,7 +13,6 @@
  */
 package org.apache.hadoop.maven.plugin.resourcegz;
 
-import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;

@@ -335,6 +335,10 @@
         <exclusion>
           <groupId>org.apache.hadoop.thirdparty</groupId>
           <artifactId>hadoop-shaded-guava</artifactId>
+	</exclusion>
+	<exclusion>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-annotations</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

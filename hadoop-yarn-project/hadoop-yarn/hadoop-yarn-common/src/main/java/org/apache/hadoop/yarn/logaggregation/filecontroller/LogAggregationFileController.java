@@ -336,7 +336,7 @@ public abstract class LogAggregationFileController {
           remoteFS.setPermission(qualified, new FsPermission(TLDIR_PERMISSIONS));
         } catch ( UnsupportedOperationException use) {
           LOG.info("Unable to set permissions for configured filesystem since"
-              + " it does not support this", remoteFS.getScheme());
+              + " it does not support this {}", remoteFS.getScheme());
           fsSupportsChmod = false;
         }
 
@@ -383,7 +383,7 @@ public abstract class LogAggregationFileController {
         remoteFS.setPermission(permissionCheckFile, new FsPermission(TLDIR_PERMISSIONS));
       } catch (UnsupportedOperationException use) {
         LOG.info("Unable to set permissions for configured filesystem since"
-            + " it does not support this", remoteFS.getScheme());
+            + " it does not support this {}", remoteFS.getScheme());
         fsSupportsChmod = false;
       } catch (IOException e) {
         LOG.warn("Failed to check if FileSystem supports permissions on "

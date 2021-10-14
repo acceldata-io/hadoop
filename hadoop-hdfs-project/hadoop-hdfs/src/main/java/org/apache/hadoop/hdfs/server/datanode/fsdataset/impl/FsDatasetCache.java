@@ -393,7 +393,7 @@ public class FsDatasetCache {
    * Background worker that mmaps, mlocks, and checksums a block
    */
   private class CachingTask implements Runnable {
-    private final ExtendedBlockId key; 
+    private final ExtendedBlockId key;
     private final String blockFileName;
     private final long length;
     private final long genstamp;
@@ -493,7 +493,7 @@ public class FsDatasetCache {
   }
 
   private class UncachingTask implements Runnable {
-    private final ExtendedBlockId key; 
+    private final ExtendedBlockId key;
     private final long revocationTimeMs;
 
     UncachingTask(ExtendedBlockId key, long revocationDelayMs) {

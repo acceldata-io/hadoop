@@ -26,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 
-import org.apache.hadoop.util.Preconditions;
-
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class ServletUtil {
@@ -67,7 +65,7 @@ public class ServletUtil {
     s = s.trim();
     return s.length() == 0? null: s;
   }
-  
+
   /**
    * parseLongParam.
    *
@@ -83,7 +81,7 @@ public class ServletUtil {
     if (paramStr == null) {
       throw new IOException("Invalid request has no " + param + " parameter");
     }
-    
+
     return Long.parseLong(paramStr);
   }
 

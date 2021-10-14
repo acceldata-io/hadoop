@@ -21,8 +21,6 @@ package org.apache.hadoop.util;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 
-import org.apache.hadoop.util.Preconditions;
-
 /**
  * The IdentityHashStore stores (key, value) mappings in an array.
  * It is similar to java.util.HashTable, but much more lightweight.
@@ -77,8 +75,8 @@ public final class IdentityHashStore<K, V> {
     Preconditions.checkArgument(newCapacity > 0);
     Object prevBuffer[] = buffer;
     this.capacity = newCapacity;
-    // Each element takes two array slots -- one for the key, 
-    // and another for the value.  We also want a load factor 
+    // Each element takes two array slots -- one for the key,
+    // and another for the value.  We also want a load factor
     // of 0.50.  Combine those together and you get 4 * newCapacity.
     this.buffer = new Object[4 * newCapacity];
     this.numInserted = 0;

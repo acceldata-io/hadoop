@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience;
 
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Iterables;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 
@@ -34,7 +33,7 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
  * using an ArrayList in that creating a large list will never require
  * a large amount of contiguous heap space -- thus reducing the likelihood
  * of triggering a CMS compaction pause due to heap fragmentation.
- * 
+ *
  * The first chunks allocated are small, but each additional chunk is
  * 50% larger than the previous, ramping up to a configurable maximum
  * chunk size. Reasonable defaults are provided which should be a good
@@ -51,7 +50,7 @@ public class ChunkedArrayList<T> extends AbstractList<T> {
    * The chunks which make up the full list.
    */
   private final List<List<T>> chunks = Lists.newArrayList();
-  
+
   /**
    * Cache of the last element in the 'chunks' array above.
    * This speeds up the add operation measurably.
@@ -62,12 +61,12 @@ public class ChunkedArrayList<T> extends AbstractList<T> {
    * The capacity with which the last chunk was allocated.
    */
   private int lastChunkCapacity;
-  
+
   /**
    * The capacity of the first chunk to allocate in a cleared list.
    */
   private final int initialChunkCapacity;
-  
+
   /**
    * The maximum number of elements for any chunk.
    */
@@ -77,21 +76,21 @@ public class ChunkedArrayList<T> extends AbstractList<T> {
    * Total number of elements in the list.
    */
   private int size;
-  
+
   /**
    * Default initial size is 6 elements, since typical minimum object
    * size is 64 bytes, and this leaves enough space for the object
    * header.
    */
   private static final int DEFAULT_INITIAL_CHUNK_CAPACITY = 6;
-  
+
   /**
    * Default max size is 8K elements - which, at 8 bytes per element
    * should be about 64KB -- small enough to easily fit in contiguous
    * free heap space even with a fair amount of fragmentation.
    */
   private static final int DEFAULT_MAX_CHUNK_SIZE = 8*1024;
-  
+
 
   public ChunkedArrayList() {
     this(DEFAULT_INITIAL_CHUNK_CAPACITY, DEFAULT_MAX_CHUNK_SIZE);
@@ -154,7 +153,7 @@ public class ChunkedArrayList<T> extends AbstractList<T> {
     lastChunkCapacity = 0;
     size = 0;
   }
-  
+
   private void addChunk(int capacity) {
     lastChunk = Lists.newArrayListWithCapacity(capacity);
     chunks.add(lastChunk);
@@ -170,12 +169,12 @@ public class ChunkedArrayList<T> extends AbstractList<T> {
   public int size() {
     return size;
   }
-  
+
   @VisibleForTesting
   int getNumChunks() {
     return chunks.size();
   }
-  
+
   @VisibleForTesting
   int getMaxChunkSize() {
     int size = 0;

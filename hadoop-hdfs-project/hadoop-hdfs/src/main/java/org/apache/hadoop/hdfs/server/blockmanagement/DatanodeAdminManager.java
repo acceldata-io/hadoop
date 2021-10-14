@@ -29,7 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.hdfs.server.namenode.Namesystem;
-import org.apache.hadoop.util.Preconditions;
+import static org.apache.hadoop.util.Preconditions.checkArgument;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +105,7 @@ public class DatanodeAdminManager {
         DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_INTERVAL_KEY,
         DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_INTERVAL_DEFAULT,
         TimeUnit.SECONDS);
-    Preconditions.checkArgument(intervalSecs >= 0, "Cannot set a negative " +
+    checkArgument(intervalSecs >= 0, "Cannot set a negative " +
         "value for " + DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_INTERVAL_KEY);
 
     int blocksPerInterval = conf.getInt(
@@ -122,7 +122,7 @@ public class DatanodeAdminManager {
           DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_BLOCKS_PER_INTERVAL_KEY);
     }
 
-    Preconditions.checkArgument(blocksPerInterval > 0,
+    checkArgument(blocksPerInterval > 0,
         "Must set a positive value for "
         + DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_BLOCKS_PER_INTERVAL_KEY);
 
@@ -130,7 +130,7 @@ public class DatanodeAdminManager {
         DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_MAX_CONCURRENT_TRACKED_NODES,
         DFSConfigKeys
             .DFS_NAMENODE_DECOMMISSION_MAX_CONCURRENT_TRACKED_NODES_DEFAULT);
-    Preconditions.checkArgument(maxConcurrentTrackedNodes >= 0,
+    checkArgument(maxConcurrentTrackedNodes >= 0,
         "Cannot set a negative value for "
         + DFSConfigKeys.DFS_NAMENODE_DECOMMISSION_MAX_CONCURRENT_TRACKED_NODES);
 

@@ -29,7 +29,7 @@ import org.apache.hadoop.fs.store.audit.AuditSpan;
 
 import javax.annotation.Nullable;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 
 import static java.util.Objects.requireNonNull;
 

@@ -49,6 +49,7 @@ import org.apache.hadoop.util.Time;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.Lists;
 
 /**
  * A directory with this feature is a snapshottable directory, where snapshots

@@ -121,6 +121,7 @@ import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.Timer;
 
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

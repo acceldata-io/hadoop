@@ -59,6 +59,7 @@ import org.eclipse.jetty.util.ajax.JSON;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.Lists;
 
 /**
  * NNStorage is responsible for management of the StorageDirectories used by

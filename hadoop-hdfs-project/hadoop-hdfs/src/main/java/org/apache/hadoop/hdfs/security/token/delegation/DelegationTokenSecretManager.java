@@ -50,6 +50,7 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
 /**

@@ -461,7 +461,7 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
             </goals>
             <configuration>
               <rules>
-                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
+                <restrictImports>
                   <includeTestCode>true</includeTestCode>
                   <reason>Use hadoop-common provided VisibleForTesting rather than the one provided by Guava</reason>
                   <bannedImports>

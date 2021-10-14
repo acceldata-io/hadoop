@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hdfs.server.federation.router;
 
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;

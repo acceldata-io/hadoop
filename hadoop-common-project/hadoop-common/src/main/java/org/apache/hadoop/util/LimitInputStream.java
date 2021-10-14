@@ -19,8 +19,8 @@
 
 package org.apache.hadoop.util;
 
-import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkArgument;
-import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.hadoop.util.Preconditions.checkArgument;
+import static org.apache.hadoop.util.Preconditions.checkNotNull;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -32,7 +32,7 @@ import org.apache.hadoop.classification.InterfaceStability.Unstable;
  * Copied from guava source code v15 (LimitedInputStream)
  * Guava deprecated LimitInputStream in v14 and removed it in v15. Copying this class here
  * allows to be compatible with guava 11 to 15+.
- * 
+ *
  * Originally: org.apache.hadoop.hbase.io.LimitInputStream
  */
 @Unstable

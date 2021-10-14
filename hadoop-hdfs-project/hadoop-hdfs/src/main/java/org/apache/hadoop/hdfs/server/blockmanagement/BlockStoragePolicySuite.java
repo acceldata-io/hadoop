@@ -19,7 +19,7 @@ package org.apache.hadoop.hdfs.server.blockmanagement;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.util.Preconditions;
-
+import org.apache.hadoop.util.Lists;
 
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.fs.XAttr;

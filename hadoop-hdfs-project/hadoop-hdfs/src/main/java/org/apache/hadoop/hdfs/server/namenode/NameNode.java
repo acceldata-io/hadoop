@@ -20,6 +20,8 @@ package org.apache.hadoop.hdfs.server.namenode;
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Sets;
 
 import java.util.Set;
 import org.apache.commons.logging.Log;

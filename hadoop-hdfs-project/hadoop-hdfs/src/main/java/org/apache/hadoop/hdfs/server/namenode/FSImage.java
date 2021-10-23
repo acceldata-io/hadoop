@@ -76,8 +76,7 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.Time;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Preconditions;
 
 /**
  * FSImage handles checkpointing and logging of the namespace edits.

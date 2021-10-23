@@ -34,6 +34,9 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.erasurecode.CodecRegistry;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.util.Lists;
+
+import org.apache.hadoop.util.Preconditions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

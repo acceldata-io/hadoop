@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hdfs.server.balancer;
 
-import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkArgument;
 import static org.apache.hadoop.hdfs.protocol.BlockType.CONTIGUOUS;
 
 import java.io.IOException;
@@ -70,7 +69,7 @@ import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 
 /** <p>The balancer is a tool that balances disk space usage on an HDFS cluster
  * when some datanodes become full or when new empty nodes join the cluster.
@@ -927,7 +926,7 @@ public class Balancer {
         try {
           for(int i = 0; i < args.length; i++) {
             if ("-threshold".equalsIgnoreCase(args[i])) {
-              checkArgument(++i < args.length,
+              Preconditions.checkArgument(++i < args.length,
                 "Threshold value is missing: args = " + Arrays.toString(args));
               try {
                 double threshold = Double.parseDouble(args[i]);
@@ -944,7 +943,7 @@ public class Balancer {
                 throw e;
               }
             } else if ("-policy".equalsIgnoreCase(args[i])) {
-              checkArgument(++i < args.length,
+              Preconditions.checkArgument(++i < args.length,
                 "Policy value is missing: args = " + Arrays.toString(args));
               try {
                 b.setBalancingPolicy(BalancingPolicy.parse(args[i]));
@@ -965,7 +964,7 @@ public class Balancer {
               i = processHostList(args, i, "source", sourceNodes);
               b.setSourceNodes(sourceNodes);
             } else if ("-blockpools".equalsIgnoreCase(args[i])) {
-              checkArgument(
+              Preconditions.checkArgument(
                   ++i < args.length,
                   "blockpools value is missing: args = "
                       + Arrays.toString(args));
@@ -974,7 +973,7 @@ public class Balancer {
                   + blockpools.toString());
               b.setBlockpools(blockpools);
             } else if ("-idleiterations".equalsIgnoreCase(args[i])) {
-              checkArgument(++i < args.length,
+              Preconditions.checkArgument(++i < args.length,
                   "idleiterations value is missing: args = " + Arrays
                       .toString(args));
               int maxIdleIteration = Integer.parseInt(args[i]);
@@ -989,12 +988,24 @@ public class Balancer {
             } else if ("-asService".equalsIgnoreCase(args[i])) {
               b.setRunAsService(true);
               LOG.info("Balancer will run as a long running service");
+            } else if ("-hotBlockTimeInterval".equalsIgnoreCase(args[i])) {
+              Preconditions.checkArgument(++i < args.length,
+                  "hotBlockTimeInterval value is missing: args = "
+                  + Arrays.toString(args));
+              long hotBlockTimeInterval = Long.parseLong(args[i]);
+              LOG.info("Using a hotBlockTimeInterval of "
+                  + hotBlockTimeInterval);
+              b.setHotBlockTimeInterval(hotBlockTimeInterval);
+            } else if ("-sortTopNodes".equalsIgnoreCase(args[i])) {
+              b.setSortTopNodes(true);
+              LOG.info("Balancer will sort nodes by" +
+                  " capacity usage percentage to prioritize top used nodes");
             } else {
               throw new IllegalArgumentException("args = "
                   + Arrays.toString(args));
             }
           }
-          checkArgument(excludedNodes == null || includedNodes == null,
+          Preconditions.checkArgument(excludedNodes == null || includedNodes == null,
               "-exclude and -include options cannot be specified together.");
         } catch(RuntimeException e) {
           printUsage(System.err);

@@ -1881,6 +1881,8 @@ public class RouterClientProtocol implements ClientProtocol {
     long quota = 0;
     long spaceConsumed = 0;
     long spaceQuota = 0;
+    long snapshotDirectoryCount = 0;
+    long snapshotFileCount = 0;
     String ecPolicy = "";
 
     for (ContentSummary summary : summaries) {
@@ -1890,6 +1892,8 @@ public class RouterClientProtocol implements ClientProtocol {
       quota = summary.getQuota();
       spaceConsumed += summary.getSpaceConsumed();
       spaceQuota = summary.getSpaceQuota();
+      snapshotDirectoryCount += summary.getSnapshotDirectoryCount();
+      snapshotFileCount += summary.getSnapshotFileCount();
       // We return from the first response as we assume that the EC policy
       // of each sub-cluster is same.
       if (ecPolicy.isEmpty()) {
@@ -1905,6 +1909,8 @@ public class RouterClientProtocol implements ClientProtocol {
         .spaceConsumed(spaceConsumed)
         .spaceQuota(spaceQuota)
         .erasureCodingPolicy(ecPolicy)
+        .snapshotDirectoryCount(snapshotDirectoryCount)
+        .snapshotFileCount(snapshotFileCount)
         .build();
     return ret;
   }

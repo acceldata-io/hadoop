@@ -39,6 +39,7 @@ allowed_expr="(^org/$|^org/apache/$"
 #   * classes in packages that start with org.apache.hadoop, which by
 #     convention should be in a path that looks like org/apache/hadoop
 allowed_expr+="|^org/apache/hadoop/"
+allowed_expr+="|^org/apache/log4j/"
 #   * whatever in the "META-INF" directory
 allowed_expr+="|^META-INF/"
 #   * whatever under the "webapps" directory; for things shipped by yarn

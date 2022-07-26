@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
 import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslException;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -1563,7 +1564,8 @@ public class Client implements AutoCloseable {
       }
 
       if (call.error != null) {
-        if (call.error instanceof RemoteException) {
+        if (call.error instanceof RemoteException ||
+            call.error instanceof SaslException) {
           call.error.fillInStackTrace();
           throw call.error;
         } else { // local exception

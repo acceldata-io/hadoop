@@ -439,6 +439,7 @@ hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/resources/webapps/st
 hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/resources/TERMINAL
 
 uriparser2 (hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp/third_party/uriparser2)
+datatables v1.11.5
 
 com.microsoft.azure:azure-cosmosdb:2.4.5
 com.microsoft.azure:azure-cosmosdb-commons:2.4.5

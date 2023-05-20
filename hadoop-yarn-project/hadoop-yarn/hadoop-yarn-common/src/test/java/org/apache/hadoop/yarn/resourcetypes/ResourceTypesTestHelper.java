@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public final class ResourceTypesTestHelper {
 
   private static final Pattern RESOURCE_VALUE_AND_UNIT_PATTERN =
-      Pattern.compile("(\\d+)([A-za-z]*)");
+      Pattern.compile("(\\d+)([A-Za-z]*)");
 
   private ResourceTypesTestHelper() {}
 

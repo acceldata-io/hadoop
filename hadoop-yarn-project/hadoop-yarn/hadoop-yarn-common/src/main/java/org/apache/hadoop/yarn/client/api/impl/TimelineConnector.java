@@ -37,6 +37,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -112,8 +116,12 @@ public class TimelineConnector extends AbstractService {
     } else {
       connConfigurator = DEFAULT_TIMEOUT_CONN_CONFIGURATOR;
     }
-
-    if (UserGroupInformation.isSecurityEnabled()) {
+    String defaultAuth = UserGroupInformation.isSecurityEnabled() ?
+            KerberosAuthenticationHandler.TYPE :
+            PseudoAuthenticationHandler.TYPE;
+    String authType = conf.get(YarnConfiguration.TIMELINE_HTTP_AUTH_TYPE,
+            defaultAuth);
+    if (authType.equals(KerberosAuthenticationHandler.TYPE)) {
       authenticator = new KerberosDelegationTokenAuthenticator();
     } else {
       authenticator = new PseudoDelegationTokenAuthenticator();

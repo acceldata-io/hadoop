@@ -169,7 +169,7 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
     taskAttempt0 = TaskAttemptID.forName(attempt0);
     attempt1 = "attempt_" + jobId + "_m_000001_0";
     taskAttempt1 = TaskAttemptID.forName(attempt1);
-    assumeMultipartUploads(getFileSystem().getConf());
+
     outDir = path(getMethodName());
     abortMultipartUploadsUnderPath(outDir);
     cleanupDestDir();
@@ -402,6 +402,30 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
       this.tContext = tContext;
       this.committer = committer;
       conf = job.getConfiguration();
+    }
+
+    public Job getJob() {
+      return job;
+    }
+
+    public JobContext getJContext() {
+      return jContext;
+    }
+
+    public TaskAttemptContext getTContext() {
+      return tContext;
+    }
+
+    public AbstractS3ACommitter getCommitter() {
+      return committer;
+    }
+
+    public Configuration getConf() {
+      return conf;
+    }
+
+    public Path getWrittenTextPath() {
+      return writtenTextPath;
     }
   }
 
@@ -717,8 +741,8 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
    */
   private void validateStorageClass(Path dir, String expectedStorageClass) throws Exception {
     Path expectedFile = getPart0000(dir);
-    S3AFileSystem fs = getFileSystem();
-    String actualStorageClass = fs.getObjectMetadata(expectedFile).getStorageClass();
+    String actualStorageClass = getS3AInternals().getObjectMetadata(expectedFile)
+        .storageClassAsString();
 
     Assertions.assertThat(actualStorageClass)
         .describedAs("Storage class of object %s", expectedFile)

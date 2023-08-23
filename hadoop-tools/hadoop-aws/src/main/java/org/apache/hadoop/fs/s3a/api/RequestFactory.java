@@ -47,13 +47,15 @@ import com.amazonaws.services.s3.model.SelectObjectContentRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.PathIOException;
 import org.apache.hadoop.fs.s3a.S3AEncryptionMethods;
 import org.apache.hadoop.fs.s3a.auth.delegation.EncryptionSecrets;
 import org.apache.hadoop.fs.s3a.impl.PutObjectOptions;
 
 /**
- * Factory for S3 objects.
+ * Factory for S3 request objects.
  *
  * This is where the owner FS's {@code prepareRequest()}
  * callback is invoked to mark up a request for this span.
@@ -67,6 +69,8 @@ import org.apache.hadoop.fs.s3a.impl.PutObjectOptions;
  * as there are no guarantees how they are processed.
  * That is: no guarantees of retry or translation.
  */
+@InterfaceStability.Unstable
+@InterfaceAudience.LimitedPrivate("testing/diagnostics")
 public interface RequestFactory {
 
   /**

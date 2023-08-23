@@ -31,7 +31,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 
 /**
  * This is an IAM credential provider which wraps
- * an {@code EC2ContainerCredentialsProviderWrapper}
+ * an {@code ContainerCredentialsProvider}
  * to provide credentials when the S3A connector is instantiated on AWS EC2
  * or the AWS container services.
  * <p>
@@ -81,5 +81,12 @@ public class IAMInstanceCredentialsProvider
   @Override
   public void close() throws IOException {
     // no-op.
+  }
+
+  @Override
+  public String toString() {
+    return "IAMInstanceCredentialsProvider{" +
+        "containerCredentialsProvider=" + containerCredentialsProvider +
+        '}';
   }
 }

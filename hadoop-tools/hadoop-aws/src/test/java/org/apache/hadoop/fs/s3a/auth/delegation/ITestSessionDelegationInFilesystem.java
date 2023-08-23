@@ -581,7 +581,7 @@ public class ITestSessionDelegationInFilesystem extends AbstractDelegationIT {
   protected ObjectMetadata readLandsatMetadata(final S3AFileSystem delegatedFS)
       throws Exception {
     AWSCredentialProviderList testingCreds
-        = delegatedFS.shareCredentials("testing");
+        = delegatedFS.getS3AInternals().shareCredentials("testing");
 
     URI landsat = new URI(DEFAULT_CSVTEST_FILE);
     DefaultS3ClientFactory factory

@@ -343,7 +343,7 @@ public class Quota {
    * @param predicate the function test the storage type.
    */
   public static boolean andByStorageType(Predicate<StorageType> predicate) {
-    boolean res = false;
+    boolean res = true;
     for (StorageType type : StorageType.values()) {
       res &= predicate.test(type);
     }

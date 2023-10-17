@@ -86,7 +86,8 @@
     <!-- com.google.re2j version -->
     <re2j.version>1.1</re2j.version>
 
-    <!--Protobuf version for backward compatibility-->
+    <!-- Protobuf version for backward compatibility -->
+    <!-- This is used in hadoop-common for compilation only -->
     <protobuf.version>2.5.0</protobuf.version>
     <!-- Protobuf scope in hadoop common -->
     <!-- set to "provided" so protobuf2 is no longer exported as a dependency  -->

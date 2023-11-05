@@ -157,6 +157,12 @@
       <artifactId>jline</artifactId>
       <classifier>jdk8</classifier>
     </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

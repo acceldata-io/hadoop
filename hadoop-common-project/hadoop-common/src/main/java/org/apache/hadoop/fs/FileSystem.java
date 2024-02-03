@@ -4080,6 +4080,7 @@ public abstract class FileSystem extends Configured
       STATS_DATA_CLEANER.
           setName(StatisticsDataReferenceCleaner.class.getName());
       STATS_DATA_CLEANER.setDaemon(true);
+      STATS_DATA_CLEANER.setContextClassLoader(null);
       STATS_DATA_CLEANER.start();
     }
 

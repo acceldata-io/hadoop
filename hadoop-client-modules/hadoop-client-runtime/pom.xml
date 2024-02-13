@@ -221,6 +221,12 @@
                         <exclude>ccache.txt</exclude>
                       </excludes>
                     </filter>
+                    <filter>
+                      <artifact>com.google.code.gson:gson</artifact>
+                      <excludes>
+                        <exclude>META-INF/versions/9/module-info.class</exclude>
+                      </excludes>
+                    </filter>
                     <!-- remove utility classes which are not required from
                          dnsjava -->
                     <filter>

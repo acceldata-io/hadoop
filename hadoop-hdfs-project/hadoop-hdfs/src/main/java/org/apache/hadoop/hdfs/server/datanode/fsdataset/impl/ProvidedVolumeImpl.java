@@ -58,10 +58,10 @@ import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.Timer;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
-import org.codehaus.jackson.map.ObjectWriter;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -373,14 +373,11 @@ class ProvidedVolumeImpl extends FsVolumeImpl {
 
   private static final ObjectWriter WRITER =
       new ObjectMapper().writerWithDefaultPrettyPrinter();
-  private static final ObjectReader READER =
-      new ObjectMapper().reader(ProvidedBlockIteratorState.class);
 
   private static class ProvidedBlockIteratorState {
     ProvidedBlockIteratorState() {
       iterStartMs = Time.now();
       lastSavedMs = iterStartMs;
-      atEnd = false;
       lastBlockId = -1;
     }
 
@@ -391,9 +388,6 @@ class ProvidedVolumeImpl extends FsVolumeImpl {
     // The wall-clock ms since the epoch at which this iterator was created.
     @JsonProperty
     private long iterStartMs;
-
-    @JsonProperty
-    private boolean atEnd;
 
     // The id of the last block read when the state of the iterator is saved.
     // This implementation assumes that provided blocks are returned

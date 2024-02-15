@@ -62,7 +62,7 @@
     <java.security.egd>file:///dev/urandom</java.security.egd>
 
     <!-- avro version -->
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.9.2</avro.version>
 
     <!-- jersey version -->
     <jersey.version>1.19</jersey.version>
@@ -117,6 +117,7 @@
     <commons-math3.version>3.1.1</commons-math3.version>
     <commons-net.version>3.6</commons-net.version>
     <commons-text.version>1.10.0</commons-text.version>
+    <snappy-java.version>1.1.10.4</snappy-java.version>
 
     <!-- Apache Ratis version -->
     <ratis.version>0.3.0-eca3531-SNAPSHOT</ratis.version>
@@ -133,6 +134,7 @@
     <metrics.version>3.2.4</metrics.version>
     <netty3.version>3.10.6.Final</netty3.version>
     <netty4.version>4.1.68.Final</netty4.version>
+    <snappy-java.version>1.1.10.4</snappy-java.version>
 
     <!-- Maven protoc compiler -->
     <protobuf-maven-plugin.version>0.5.1</protobuf-maven-plugin.version>

@@ -161,6 +161,13 @@
       <scope>test</scope>
     </dependency>
 
+
+     <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <version>1.1.10.4</version>
+    </dependency>
+
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-client</artifactId>
@@ -325,6 +332,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-testing-util</artifactId>
       <scope>test</scope>
@@ -466,6 +479,13 @@
           <version>${hbase-compatible-hadoop.version}</version>
           <scope>test</scope>
         </dependency>
+
+       <dependency>
+         <groupId>org.xerial.snappy</groupId>
+         <artifactId>snappy-java</artifactId>
+         <version>1.1.10.4</version>
+       </dependency>
+
         <!-- 'mvn dependency:analyze' fails to detect use of this direct
              dependency -->
         <!-- This is needed by HBaseTestingUtility -->

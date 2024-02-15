@@ -319,7 +319,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.jboss.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
         <exclusion>
           <!-- otherwise seems to drag in junit 3.8.1 via jline -->

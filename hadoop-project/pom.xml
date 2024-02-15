@@ -88,6 +88,12 @@
     <protobuf.version>2.5.0</protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
+    <hadoop-thirdparty.version>1.2.0</hadoop-thirdparty.version>
+    <hadoop-thirdparty-protobuf.version>${hadoop-thirdparty.version}</hadoop-thirdparty-protobuf.version>
+    <hadoop-thirdparty-guava.version>${hadoop-thirdparty.version}</hadoop-thirdparty-guava.version>
+    <hadoop-thirdparty-shaded-prefix>org.apache.hadoop.thirdparty</hadoop-thirdparty-shaded-prefix>
+    <hadoop-thirdparty-shaded-protobuf-prefix>${hadoop-thirdparty-shaded-prefix}.protobuf</hadoop-thirdparty-shaded-protobuf-prefix>
+    <hadoop-thirdparty-shaded-guava-prefix>${hadoop-thirdparty-shaded-prefix}.com.google.common</hadoop-thirdparty-shaded-guava-prefix>
     <zookeeper.version>3.5.10.3.2.3.0-2</zookeeper.version>
     <curator.version>4.2.0</curator.version>
     <findbugs.version>3.0.5</findbugs.version>
@@ -132,7 +138,6 @@
     <htrace3.version>3.1.0-incubating</htrace3.version>
     <htrace4.version>4.1.0-incubating</htrace4.version>
     <metrics.version>3.2.4</metrics.version>
-    <netty3.version>3.10.6.Final</netty3.version>
     <netty4.version>4.1.68.Final</netty4.version>
     <snappy-java.version>1.1.10.4</snappy-java.version>
 
@@ -210,6 +215,11 @@
         <groupId>jdiff</groupId>
         <artifactId>jdiff</artifactId>
         <version>${jdiff.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop.thirdparty</groupId>
+        <artifactId>hadoop-shaded-guava</artifactId>
+        <version>${hadoop-thirdparty-guava.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -888,12 +898,6 @@
 
       <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty</artifactId>
-        <version>${netty3.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>${netty4.version}</version>
       </dependency>
@@ -1110,7 +1114,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
-        <version>1.8.5</version>
+        <version>1.10.19</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -1212,7 +1216,7 @@
           </exclusion>
           <exclusion>
             <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>jline</groupId>
@@ -1240,7 +1244,7 @@
         <exclusions>
           <exclusion>
             <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>jline</groupId>

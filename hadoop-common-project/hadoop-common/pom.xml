@@ -162,7 +162,7 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <scope>compile</scope>
-    
+
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>

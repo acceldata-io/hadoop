@@ -34,22 +34,18 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     </dependencies>
   </dependencyManagement>
 
-  <distributionManagement>
+<distributionManagement>
     <repository>
-      <id>${distMgmtStagingId}</id>
-      <name>${distMgmtStagingName}</name>
-      <url>${distMgmtStagingUrl}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${distMgmtSnapshotsId}</id>
-      <name>${distMgmtSnapshotsName}</name>
-      <url>${distMgmtSnapshotsUrl}</url>
-    </snapshotRepository>
-    <site>
-      <id>apache.website</id>
-      <url>scpexe://people.apache.org/www/hadoop.apache.org/docs/r${project.version}</url>
-    </site>
-  </distributionManagement>
+      <id>nexus-releases</id>
+      <name>Releases</name>
+     <url>https://repo1.acceldata.dev/repository/odp-release/</url>
+   </repository>
+   <snapshotRepository>
+     <id>nexus-snapshots</id>
+     <name>Snapshot</name>
+     <url>https://repo1.acceldata.dev/repository/odp-snapshot/</url>
+   </snapshotRepository>
+ </distributionManagement>
 
   <repositories>
     <repository>

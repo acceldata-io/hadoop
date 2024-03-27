@@ -47,7 +47,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
    </snapshotRepository>
  </distributionManagement>
 
-
   <repositories>
     <repository>
       <id>${distMgmtSnapshotsId}</id>

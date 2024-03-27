@@ -1,0 +1,69 @@
+diff --git a/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase-tests/pom.xml b/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase-tests/pom.xml
+index 5b7253b..d37ea75 100644
+--- a/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase-tests/pom.xml
++++ b/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase-tests/pom.xml
+@@ -89,6 +89,10 @@
+       <scope>test</scope>
+       <exclusions>
+         <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-core-asl</artifactId>
++        </exclusion>
++        <exclusion>
+           <groupId>org.apache.hadoop</groupId>
+           <artifactId>hadoop-auth</artifactId>
+         </exclusion>
+diff --git a/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/pom.xml b/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/pom.xml
+index 42b12c2..5a9e428 100644
+--- a/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/pom.xml
++++ b/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/pom.xml
+@@ -37,6 +37,16 @@
+     <dependency>
+       <groupId>org.apache.hadoop</groupId>
+       <artifactId>hadoop-yarn-server-timelineservice-hbase-common</artifactId>
++       <exclusions>
++        <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-mapper-asl</artifactId>
++        </exclusion>
++        <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-core-asl</artifactId>
++        </exclusion>
++      </exclusions>
+     </dependency>
+ 
+     <dependency>
+@@ -120,6 +130,10 @@
+       <groupId>org.apache.hbase</groupId>
+       <artifactId>hbase-common</artifactId>
+       <exclusions>
++       <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-core-asl</artifactId>
++        </exclusion>
+         <exclusion>
+           <groupId>org.apache.hadoop</groupId>
+           <artifactId>hadoop-mapreduce-client-core</artifactId>
+@@ -136,6 +150,10 @@
+       <artifactId>hbase-client</artifactId>
+       <exclusions>
+         <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-core-asl</artifactId>
++        </exclusion>
++        <exclusion>
+           <groupId>org.apache.hadoop</groupId>
+           <artifactId>hadoop-mapreduce-client-core</artifactId>
+         </exclusion>
+@@ -148,6 +166,10 @@
+       <scope>provided</scope>
+       <exclusions>
+         <exclusion>
++          <groupId>org.codehaus.jackson</groupId>
++          <artifactId>jackson-core-asl</artifactId>
++        </exclusion>
++        <exclusion>
+           <groupId>org.apache.hadoop</groupId>
+           <artifactId>hadoop-hdfs</artifactId>
+         </exclusion>

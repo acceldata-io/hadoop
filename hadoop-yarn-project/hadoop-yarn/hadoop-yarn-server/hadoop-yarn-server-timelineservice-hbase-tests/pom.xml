@@ -89,6 +89,10 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
+  <groupId>org.codehaus.jackson</groupId>
+  <artifactId>jackson-core-asl</artifactId>
+</exclusion>
+        <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-auth</artifactId>
         </exclusion>

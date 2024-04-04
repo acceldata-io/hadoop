@@ -77,7 +77,7 @@
 
     <!-- SLF4J/LOG4J version -->
     <slf4j.version>1.7.35</slf4j.version>
-    <reload4j.version>1.2.18.3</reload4j.version>
+    <reload4j.version>1.2.18.3</reload4j.version>hadoop-project/pom.xml
 
     <!-- com.google.re2j version -->
     <re2j.version>1.1</re2j.version>
@@ -193,7 +193,7 @@
     <hbase.two.version>2.0.2</hbase.two.version>
     <junit.version>4.13.2</junit.version>
     <assertj.version>3.12.2</assertj.version>
-    <woodstox.version>5.3.0</woodstox.version>
+    <woodstox.version>5.4.0</woodstox.version>
     <json-smart.version>2.4.7</json-smart.version>
     <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
     <apache-ant.version>1.10.11</apache-ant.version>

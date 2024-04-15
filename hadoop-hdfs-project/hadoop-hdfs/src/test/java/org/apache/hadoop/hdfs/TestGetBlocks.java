@@ -455,7 +455,7 @@ public class TestGetBlocks {
     assertEquals(blockNum - count, blocks.length);
 
     // set all storage stale
-    bm0.getDatanodeManager().markAllDatanodesStale();
+    bm0.getDatanodeManager().markAllDatanodesStaleAndSetKeyUpdateIfNeed();
     blocks = namenode.getBlocks(
         dataNodes[0], fileLen*2, 0).getBlocks();
     assertEquals(0, blocks.length);

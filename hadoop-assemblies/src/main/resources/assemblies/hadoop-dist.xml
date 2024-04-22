@@ -141,6 +141,7 @@
       <excludes>
         <exclude>org.apache.ant:*:jar</exclude>
         <exclude>jdiff:jdiff:jar</exclude>
+	<exclude>org.slf4j:slf4j-reload4j</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

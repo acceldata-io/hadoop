@@ -72,7 +72,7 @@
       <type>test-jar</type>
     </dependency>
   </dependencies>
-  
+
   <build>
       <plugins>
 

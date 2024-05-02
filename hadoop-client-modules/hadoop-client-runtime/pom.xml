@@ -157,6 +157,7 @@
                       <!-- Leave javax APIs that are stable -->
                       <!-- the jdk ships part of the javax.annotation namespace, so if we want to relocate this we'll have to care it out by class :( -->
                       <exclude>com.google.code.findbugs:jsr305</exclude>
+                      <exclude>io.netty:*</exclude>
                       <exclude>io.dropwizard.metrics:metrics-core</exclude>
                       <!-- Leave bouncycastle unshaded because it's signed with a special Oracle certificate so it can be a custom JCE security provider -->
                       <exclude>org.bouncycastle:*</exclude>
@@ -219,6 +220,12 @@
                       <excludes>
                         <exclude>keytab.txt</exclude>
                         <exclude>ccache.txt</exclude>
+                      </excludes>
+                    </filter>
+                    <filter>
+                      <artifact>com.google.code.gson:gson</artifact>
+                      <excludes>
+                        <exclude>META-INF/versions/9/module-info.class</exclude>
                       </excludes>
                     </filter>
                     <!-- remove utility classes which are not required from

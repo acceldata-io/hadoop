@@ -35,7 +35,7 @@
 
     <failIfNoTests>false</failIfNoTests>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-    <jetty.version>9.4.40.v20210413</jetty.version>
+    <jetty.version>9.4.43.v20210629</jetty.version>
     <test.exclude>_</test.exclude>
     <test.exclude.pattern>_</test.exclude.pattern>
 
@@ -61,16 +61,15 @@
     <hadoop.common.build.dir>${basedir}/../../hadoop-common-project/hadoop-common/target</hadoop.common.build.dir>
     <java.security.egd>file:///dev/urandom</java.security.egd>
 
-    <!-- avro version -->
-    <avro.version>1.7.7</avro.version>
+    <!-- avro version: avro.version needs to match avro version used in hadoop-shaded-avro -->
+    <avro.version>1.11.3</avro.version>
 
     <!-- jersey version -->
-    <jersey.version>1.19</jersey.version>
+    <jersey.version>1.19.4</jersey.version>
 
     <!-- jackson versions -->
-    <jackson.version>1.9.13</jackson.version>
-    <jackson2.version>2.10.5</jackson2.version>
-    <jackson2.databind.version>2.10.5.1</jackson2.databind.version>
+    <jackson2.version>2.13.2</jackson2.version>
+    <jackson2.databind.version>2.13.2.2</jackson2.databind.version>
 
     <!-- httpcomponents versions -->
     <httpclient.version>4.5.13</httpclient.version>
@@ -88,12 +87,20 @@
     <protobuf.version>2.5.0</protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
+    <hadoop-thirdparty.version>1.2.0</hadoop-thirdparty.version>
+    <hadoop-thirdparty.avro.version>${hadoop-thirdparty.version}</hadoop-thirdparty.avro.version>
+    <hadoop-thirdparty-protobuf.version>${hadoop-thirdparty.version}</hadoop-thirdparty-protobuf.version>
+    <hadoop-thirdparty-guava.version>${hadoop-thirdparty.version}</hadoop-thirdparty-guava.version>
+    <hadoop-thirdparty-shaded-prefix>org.apache.hadoop.thirdparty</hadoop-thirdparty-shaded-prefix>
+    <hadoop-thirdparty-shaded-protobuf-prefix>${hadoop-thirdparty-shaded-prefix}.protobuf</hadoop-thirdparty-shaded-protobuf-prefix>
+    <hadoop-thirdparty-shaded-guava-prefix>${hadoop-thirdparty-shaded-prefix}.com.google.common</hadoop-thirdparty-shaded-guava-prefix>
+
     <zookeeper.version>3.5.10.3.3.0.0-SNAPSHOT</zookeeper.version>
     <curator.version>4.2.0</curator.version>
     <findbugs.version>3.0.5</findbugs.version>
     <dnsjava.version>2.1.7</dnsjava.version>
 
-    <guava.version>27.0-jre</guava.version>
+    <guava.version>32.0.1-jre</guava.version>
     <guice.version>4.0</guice.version>
     <joda-time.version>2.9.9</joda-time.version>
 
@@ -106,7 +113,7 @@
     <!-- Apache Commons dependencies -->
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <commons-cli.version>1.2</commons-cli.version>
-    <commons-codec.version>1.11</commons-codec.version>
+    <commons-codec.version>1.14</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.21</commons-compress.version>
     <commons-csv.version>1.0</commons-csv.version>
@@ -117,6 +124,7 @@
     <commons-math3.version>3.1.1</commons-math3.version>
     <commons-net.version>3.6</commons-net.version>
     <commons-text.version>1.10.0</commons-text.version>
+    <snappy-java.version>1.1.10.4</snappy-java.version>
 
     <!-- Apache Ratis version -->
     <ratis.version>0.3.0-eca3531-SNAPSHOT</ratis.version>
@@ -127,12 +135,12 @@
     <okhttp.version>2.7.5</okhttp.version>
     <jdom.version>1.1</jdom.version>
     <grizzly.version>2.2.21</grizzly.version>
-    <gson.version>2.2.4</gson.version>
+    <gson.version>2.9.0</gson.version>
     <htrace3.version>3.1.0-incubating</htrace3.version>
     <htrace4.version>4.1.0-incubating</htrace4.version>
     <metrics.version>3.2.4</metrics.version>
-    <netty3.version>3.10.6.Final</netty3.version>
-    <netty4.version>4.1.68.Final</netty4.version>
+    <netty4.version>4.1.94.Final</netty4.version>
+    <snappy-java.version>1.1.10.4</snappy-java.version>
 
     <!-- Maven protoc compiler -->
     <protobuf-maven-plugin.version>0.5.1</protobuf-maven-plugin.version>
@@ -180,12 +188,12 @@
     <declared.hadoop.version>${hadoop.version}</declared.hadoop.version>
 
     <swagger-annotations-version>1.5.4</swagger-annotations-version>
-    <snakeyaml.version>1.26</snakeyaml.version>
+    <snakeyaml.version>2.0</snakeyaml.version>
     <hbase.one.version>1.4.8</hbase.one.version>
     <hbase.two.version>2.0.2</hbase.two.version>
     <junit.version>4.13.2</junit.version>
     <assertj.version>3.12.2</assertj.version>
-    <woodstox.version>5.3.0</woodstox.version>
+    <woodstox.version>5.4.0</woodstox.version>
     <json-smart.version>2.4.7</json-smart.version>
     <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
     <apache-ant.version>1.10.11</apache-ant.version>
@@ -208,6 +216,11 @@
         <groupId>jdiff</groupId>
         <artifactId>jdiff</artifactId>
         <version>${jdiff.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop.thirdparty</groupId>
+        <artifactId>hadoop-shaded-guava</artifactId>
+        <version>${hadoop-thirdparty-guava.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -265,6 +278,18 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-xc</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -789,13 +814,33 @@
         <version>${jersey.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.sun.jersey</groupId>
+        <groupId>com.github.pjfanning</groupId>
         <artifactId>jersey-json</artifactId>
-        <version>${jersey.version}</version>
+        <version>1.20</version>
         <exclusions>
           <exclusion>
-            <groupId>stax</groupId>
-            <artifactId>stax-api</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+       <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -886,13 +931,67 @@
 
       <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty</artifactId>
-        <version>${netty3.version}</version>
+        <artifactId>netty-all</artifactId>
+        <version>${netty4.version}</version>
       </dependency>
 
       <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
+        <artifactId>netty-codec-socks</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler-proxy</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-resolver</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-common</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-unix-common</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>${netty4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec</artifactId>
         <version>${netty4.version}</version>
       </dependency>
 
@@ -1061,26 +1160,6 @@
         <version>${woodstox.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-mapper-asl</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-jaxrs</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-xc</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
         <version>${jackson2.version}</version>
@@ -1108,7 +1187,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
-        <version>1.8.5</version>
+        <version>1.10.19</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -1135,9 +1214,9 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-        <version>${avro.version}</version>
+        <groupId>org.apache.hadoop.thirdparty</groupId>
+        <artifactId>hadoop-shaded-avro_1_11</artifactId>
+        <version>${hadoop-thirdparty.avro.version}</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kosmosfs</groupId>
@@ -1210,7 +1289,7 @@
           </exclusion>
           <exclusion>
             <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>jline</groupId>
@@ -1238,7 +1317,7 @@
         <exclusions>
           <exclusion>
             <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>jline</groupId>
@@ -1331,7 +1410,7 @@
       <dependency>
         <groupId>org.codehaus.jettison</groupId>
         <artifactId>jettison</artifactId>
-        <version>1.1</version>
+        <version>1.5.4</version>
         <exclusions>
           <exclusion>
             <groupId>stax</groupId>
@@ -1993,16 +2072,16 @@
                     <!-- for JDK 8 support -->
                     <include>cglib:cglib:3.2.0</include>
                     <include>com.google.inject:guice:4.0</include>
-                    <include>com.sun.jersey:jersey-core:1.19</include>
-                    <include>com.sun.jersey:jersey-servlet:1.19</include>
-                    <include>com.sun.jersey:jersey-json:1.19</include>
-                    <include>com.sun.jersey:jersey-server:1.19</include>
-                    <include>com.sun.jersey:jersey-client:1.19</include>
-                    <include>com.sun.jersey:jersey-grizzly2:1.19</include>
-                    <include>com.sun.jersey:jersey-grizzly2-servlet:1.19</include>
-                    <include>com.sun.jersey.jersey-test-framework:jersey-test-framework-core:1.19</include>
-                    <include>com.sun.jersey.jersey-test-framework:jersey-test-framework-grizzly2:1.19</include>
-                    <include>com.sun.jersey.contribs:jersey-guice:1.19</include>
+                    <include>com.sun.jersey:jersey-core:1.19.4</include>
+                    <include>com.sun.jersey:jersey-servlet:1.19.4</include>
+                    <include>com.github.pjfanning:jersey-json:1.20</include>
+                    <include>com.sun.jersey:jersey-server:1.19.4</include>
+                    <include>com.sun.jersey:jersey-client:1.19.4</include>
+                    <include>com.sun.jersey:jersey-grizzly2:1.19.4</include>
+                    <include>com.sun.jersey:jersey-grizzly2-servlet:1.19.4</include>
+                    <include>com.sun.jersey.jersey-test-framework:jersey-test-framework-core:1.19.4</include>
+                    <include>com.sun.jersey.jersey-test-framework:jersey-test-framework-grizzly2:1.19.4</include>
+                    <include>com.sun.jersey.contribs:jersey-guice:1.19.4</include>
                     <include>org.ow2.asm:asm:5.0.0</include>
                   </includes>
                 </bannedDependencies>
@@ -2236,5 +2315,6 @@
   </profiles>
 
   <repositories>
+
   </repositories>
 </project>

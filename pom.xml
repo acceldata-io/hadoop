@@ -47,7 +47,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
    </snapshotRepository>
  </distributionManagement>
 
-
   <repositories>
     <repository>
       <id>${distMgmtSnapshotsId}</id>
@@ -247,7 +246,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                   <pluginExecutionFilter>
                     <groupId>org.apache.avro</groupId>
                     <artifactId>avro-maven-plugin</artifactId>
-                    <versionRange>[1.5.3,)</versionRange>
+                    <versionRange>[1.9.2,)</versionRange>
                     <goals>
                       <goal>schema</goal>
                       <goal>protocol</goal>

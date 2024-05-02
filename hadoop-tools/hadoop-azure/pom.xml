@@ -63,12 +63,12 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <configuration>
-            <!-- To run with the default Sun ruleset, 
+            <!-- To run with the default Sun ruleset,
                  comment out the configLocation line -->
             <configLocation>src/config/checkstyle.xml</configLocation>
             <suppressionsLocation>src/config/checkstyle-suppressions.xml</suppressionsLocation>
           </configuration>
-          
+
       </plugin>
 
       <plugin>
@@ -103,7 +103,7 @@
 
     </plugins>
 
-    
+
     <!--
        The following is to suppress a m2e warning in eclipse
        (m2e doesn't know how to handle maven-enforcer:enforce, so we have to tell m2e to ignore it)
@@ -148,13 +148,13 @@
       <scope>provided</scope>
     </dependency>
 
-    
+
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <scope>compile</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
@@ -175,18 +175,6 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util-ajax</artifactId>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-core-asl</artifactId>
       <scope>compile</scope>
     </dependency>
 
@@ -224,7 +212,7 @@
       <scope>test</scope>
       <type>test-jar</type>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
@@ -261,7 +249,7 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>

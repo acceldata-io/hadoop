@@ -36,6 +36,16 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <distributionManagement>
     <repository>
+        <id>nexus-releases</id>
+        <name>Releases</name>
+        <url>https://repo1.acceldata.dev/repository/odp-release/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <name>Snapshot</name>
+        <url>https://repo1.acceldata.dev/repository/odp-snapshot/</url>
+    </snapshotRepository>    
+    <repository>
       <id>${distMgmtStagingId}</id>
       <name>${distMgmtStagingName}</name>
       <url>${distMgmtStagingUrl}</url>
@@ -52,6 +62,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   </distributionManagement>
 
   <repositories>
+    <repository>
+        <id>acceldata repo</id>
+        <name>acceldata repo</name>
+        <url>https://repo1.acceldata.dev/repository/odp-central/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository> 
     <repository>
       <id>${distMgmtSnapshotsId}</id>
       <name>${distMgmtSnapshotsName}</name>

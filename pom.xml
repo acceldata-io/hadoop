@@ -45,16 +45,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
         <name>Snapshot</name>
         <url>https://repo1.acceldata.dev/repository/odp-snapshot/</url>
     </snapshotRepository>    
-    <repository>
-      <id>${distMgmtStagingId}</id>
-      <name>${distMgmtStagingName}</name>
-      <url>${distMgmtStagingUrl}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${distMgmtSnapshotsId}</id>
-      <name>${distMgmtSnapshotsName}</name>
-      <url>${distMgmtSnapshotsUrl}</url>
-    </snapshotRepository>
     <site>
       <id>apache.website</id>
       <url>scpexe://people.apache.org/www/hadoop.apache.org/docs/r${project.version}</url>

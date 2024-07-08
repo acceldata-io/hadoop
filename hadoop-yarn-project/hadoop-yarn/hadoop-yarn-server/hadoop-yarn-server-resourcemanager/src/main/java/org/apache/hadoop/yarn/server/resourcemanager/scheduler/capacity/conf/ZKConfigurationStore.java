@@ -19,7 +19,7 @@
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.conf;
 
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.slf4j.Logger;

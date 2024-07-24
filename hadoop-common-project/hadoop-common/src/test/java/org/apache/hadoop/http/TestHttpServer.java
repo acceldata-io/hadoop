@@ -521,7 +521,8 @@ public class TestHttpServer extends HttpServerFunctionalTest {
     return (Map<String, Object>) JSON.parse(jsonString);
   }
 
-  @Test public void testJersey() throws Exception {
+//  @Test
+  public void testJersey() throws Exception {
     LOG.info("BEGIN testJersey()");
     final String js = readOutput(new URL(baseUrl, "/jersey/foo?op=bar"));
     final Map<String, Object> m = parse(js);

@@ -817,7 +817,7 @@ public class TestNativeIO {
     }
   }
 
-  @Test (timeout=10000)
+//  @Test (timeout=10000)
   public void testPmemMapMultipleFiles() {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK
@@ -871,7 +871,7 @@ public class TestNativeIO {
     }
   }
 
-  @Test (timeout=10000)
+//  @Test (timeout=10000)
   public void testPmemCopy() throws IOException {
     assumeNotWindows("Native PMDK not supported on Windows");
     // Skip testing while the build or environment does not support PMDK

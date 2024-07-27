@@ -33,7 +33,7 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(description = "The scope of placement for the containers of a "
     + "component.")
 public enum PlacementScope {
-  NODE("NODE"), RACK("RACK");
+  NODE(PlacementConstraints.NODE), RACK(PlacementConstraints.RACK);
 
   private String value;
 

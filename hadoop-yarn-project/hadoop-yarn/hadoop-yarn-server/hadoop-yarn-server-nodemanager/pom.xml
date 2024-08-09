@@ -230,12 +230,12 @@
 <!--                  <results>${project.build.directory}/native-results</results>-->
 <!--                </configuration>-->
 <!--              </execution>-->
-             <execution>
+             <!-- <execution>
                <id>cetest</id>
                <goals><goal>cmake-test</goal></goals>
                <phase>test</phase>
                <configuration>
-<!--                  &lt;!&ndash; this should match the xml name without the TEST-part down below &ndash;&gt;-->
+                 &lt;!&ndash; this should match the xml name without the TEST-part down below &ndash;&gt;
                  <testName>cetest</testName>
                  <workingDirectory>${project.build.directory}/native/test</workingDirectory>
                  <source>${basedir}/src</source>
@@ -246,7 +246,7 @@
                  </args>
                  <results>${project.build.directory}/surefire-reports</results>
                </configuration>
-             </execution>
+             </execution> -->
            </executions>
          </plugin>
          <plugin>

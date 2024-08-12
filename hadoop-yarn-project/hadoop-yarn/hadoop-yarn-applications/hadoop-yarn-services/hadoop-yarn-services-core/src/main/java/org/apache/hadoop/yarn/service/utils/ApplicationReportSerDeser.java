@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.yarn.service.utils;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-
-import java.io.IOException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Persistence of {@link SerializedApplicationReport}
@@ -47,7 +43,7 @@ public class ApplicationReportSerDeser
    * @throws JsonMappingException O/J mapping problems
    */
   public static String toString(SerializedApplicationReport instance)
-      throws IOException, JsonGenerationException, JsonMappingException {
+      throws JsonProcessingException {
     synchronized (staticinstance) {
       return staticinstance.toJson(instance);
     }

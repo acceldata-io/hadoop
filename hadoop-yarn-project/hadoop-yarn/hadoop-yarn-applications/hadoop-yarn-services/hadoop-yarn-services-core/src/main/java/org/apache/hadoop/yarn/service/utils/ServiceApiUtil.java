@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.yarn.service.utils;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.ArrayListMultimap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Multimap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -75,20 +75,20 @@ public class ServiceApiUtil {
       LoggerFactory.getLogger(ServiceApiUtil.class);
   public static JsonSerDeser<Service> jsonSerDeser =
       new JsonSerDeser<>(Service.class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   public static final JsonSerDeser<Container[]> CONTAINER_JSON_SERDE =
       new JsonSerDeser<>(Container[].class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   public static final JsonSerDeser<ComponentContainers[]>
       COMP_CONTAINERS_JSON_SERDE = new JsonSerDeser<>(
           ComponentContainers[].class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   public static final JsonSerDeser<Component[]> COMP_JSON_SERDE =
       new JsonSerDeser<>(Component[].class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   private static final PatternValidator namePattern
       = new PatternValidator("[a-z][a-z0-9-]*");

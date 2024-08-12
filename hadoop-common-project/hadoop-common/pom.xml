@@ -159,26 +159,14 @@
       </exclusions>
     </dependency>
     <dependency>
-       <groupId>org.codehaus.jackson</groupId>
-       <artifactId>jackson-mapper-asl</artifactId>
-       <version>1.9.13</version>
-   </dependency>
-    <dependency>
+      <!-- Used, even though 'mvn dependency:analyze' doesn't find it -->
       <groupId>com.github.pjfanning</groupId>
       <artifactId>jersey-json</artifactId>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-          <artifactId>jackson-jaxrs-json-provider</artifactId>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -191,7 +179,6 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <scope>compile</scope>
-
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -253,6 +240,14 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <!--
+      adding jettison as direct dependency (as jersey-json's jettison dependency is vulnerable with verison 1.1),
+      so those who depends on hadoop-common externally will get the non-vulnerable jettison
+      -->
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -393,6 +388,10 @@
     <dependency>
       <groupId>org.apache.kerby</groupId>
       <artifactId>kerb-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -626,6 +625,7 @@
                 <copy toDir="${project.build.directory}/test-classes">
                   <fileset dir="${basedir}/src/main/conf"/>
                 </copy>
+                <replace dir="${project.build.directory}/generated-test-sources/java" token="org.apache.avro" value="org.apache.hadoop.thirdparty.avro"/>
               </target>
             </configuration>
           </execution>

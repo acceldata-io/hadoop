@@ -20,7 +20,7 @@ package org.apache.hadoop.mapreduce.jobhistory;
 
 import java.util.Set;
 
-import org.apache.avro.util.Utf8;
+import org.apache.hadoop.thirdparty.avro.util.Utf8;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.timelineservice.TimelineEvent;

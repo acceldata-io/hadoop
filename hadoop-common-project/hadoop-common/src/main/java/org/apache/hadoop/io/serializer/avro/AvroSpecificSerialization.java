@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.io.serializer.avro;
 
-import org.apache.avro.Schema;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DatumWriter;
-import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
-import org.apache.avro.specific.SpecificRecord;
+import org.apache.hadoop.thirdparty.avro.Schema;
+import org.apache.hadoop.thirdparty.avro.io.BinaryDecoder;
+import org.apache.hadoop.thirdparty.avro.io.BinaryEncoder;
+import org.apache.hadoop.thirdparty.avro.io.DatumReader;
+import org.apache.hadoop.thirdparty.avro.io.DatumWriter;
+import org.apache.hadoop.thirdparty.avro.io.DecoderFactory;
+import org.apache.hadoop.thirdparty.avro.io.EncoderFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 

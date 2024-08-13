@@ -505,7 +505,7 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
         return;
       }
       JsonFactory jf = new JsonFactory();
-      try (JsonParser jp = jf.createJsonParser(stream)) {
+      try (JsonParser jp = jf.createParser(stream)) {
         String fieldName, fieldValue;
         jp.nextToken();  // START_OBJECT - {
         jp.nextToken();  // FIELD_NAME - "error":

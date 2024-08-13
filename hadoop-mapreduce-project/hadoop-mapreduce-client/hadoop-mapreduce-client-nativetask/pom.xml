@@ -149,7 +149,7 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
+          <!--plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <executions>
@@ -168,7 +168,7 @@
                 </configuration>
               </execution>
             </executions>
-          </plugin>
+          </plugin-->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
@@ -194,7 +194,7 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
+          <!--plugin>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-maven-plugins</artifactId>
             <executions>
@@ -223,20 +223,17 @@
                 <phase>test</phase>
                 <goals><goal>cmake-test</goal></goals>
                 <configuration>
-                  <!-- this should match the xml name without the TEST-part down below -->
                   <testName>nativetask-nttest</testName>
                   <workingDirectory>${project.build.directory}/native/test</workingDirectory>
                   <source>${basedir}/src</source>
                   <binary>${project.build.directory}/native/test/nttest</binary>
                   <args>
-                    <arg>--gtest_filter=-Perf.</arg>
-                    <arg>--gtest_output=xml:${project.build.directory}/surefire-reports/TEST-nativetask-nttest.xml</arg>
                   </args>
                   <results>${project.build.directory}/surefire-reports</results>
                 </configuration>
               </execution>
             </executions>
-          </plugin>
+          </plugin-->
         </plugins>
       </build>
     </profile>

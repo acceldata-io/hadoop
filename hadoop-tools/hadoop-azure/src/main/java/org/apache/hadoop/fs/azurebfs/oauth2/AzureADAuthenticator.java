@@ -306,7 +306,7 @@ public final class AzureADAuthenticator {
       int expiryPeriod = 0;
 
       JsonFactory jf = new JsonFactory();
-      JsonParser jp = jf.createJsonParser(httpResponseStream);
+      JsonParser jp = jf.createParser(httpResponseStream);
       String fieldName, fieldValue;
       jp.nextToken();
       while (jp.hasCurrentToken()) {

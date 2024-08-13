@@ -231,7 +231,7 @@ public class TestSynthJobGeneration {
       mapper.readValue(invalidJson, SynthTraceJobProducer.Sample.class);
       Assert.fail();
     } catch (JsonMappingException e) {
-      Assert.assertTrue(e.getMessage().startsWith("Cannot construct instance"));
+      Assert.assertTrue(e.getMessage().startsWith("Cannot construct instance of"));
     }
 
     String invalidDistJson =

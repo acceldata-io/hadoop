@@ -200,7 +200,6 @@
           <artifactId>jackson-xc</artifactId>
         </exclusion>
       </exclusions>
-
     </dependency>
     <dependency>
       <groupId>ch.qos.reload4j</groupId>
@@ -683,7 +682,7 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
+          <!--plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <executions>
@@ -785,7 +784,7 @@
                 </configuration>
               </execution>
             </executions>
-          </plugin>
+          </plugin-->
         </plugins>
       </build>
     </profile>

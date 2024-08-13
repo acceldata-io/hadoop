@@ -92,6 +92,7 @@
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
     <hadoop-thirdparty.version>1.2.0</hadoop-thirdparty.version>
+    <hadoop-thirdparty.avro.version>${hadoop-thirdparty.version}</hadoop-thirdparty.avro.version>
     <hadoop-thirdparty-protobuf.version>${hadoop-thirdparty.version}</hadoop-thirdparty-protobuf.version>
     <hadoop-thirdparty-guava.version>${hadoop-thirdparty.version}</hadoop-thirdparty-guava.version>
     <hadoop-thirdparty-shaded-prefix>org.apache.hadoop.thirdparty</hadoop-thirdparty-shaded-prefix>

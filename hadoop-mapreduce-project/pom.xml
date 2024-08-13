@@ -28,6 +28,7 @@
   <url>https://hadoop.apache.org/</url>
 
   <properties>
+    <hadoop-thirdparty.avro.version>${hadoop-thirdparty.version}</hadoop-thirdparty.avro.version>
     <test.logs>true</test.logs>
     <test.timeout>600000</test.timeout>
     <fork.mode>once</fork.mode>

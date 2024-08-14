@@ -40,6 +40,9 @@ allowed_expr="(^org/$|^org/apache/$"
 #     convention should be in a path that looks like org/apache/hadoop
 allowed_expr+="|^org/apache/hadoop/"
 allowed_expr+="|^org/apache/log4j/"
+allowed_expr+="|^ch/$"
+allowed_expr+="|^ch/qos/"
+allowed_expr+="|^org/slf4j/"
 #   * whatever in the "META-INF" directory
 allowed_expr+="|^META-INF/"
 #   * whatever under the "webapps" directory; for things shipped by yarn

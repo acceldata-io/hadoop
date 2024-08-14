@@ -118,7 +118,7 @@
         <!-- exclude things that came in via transitive in shaded runtime and api -->
         <exclusion>
           <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -135,6 +135,10 @@
         <exclusion>
           <groupId>org.apache.avro</groupId>
           <artifactId>avro</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop.thirdparty</groupId>
+          <artifactId>hadoop-shaded-avro_1_11</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.curator</groupId>
@@ -447,6 +451,10 @@
           <groupId>javax.xml.bind</groupId>
           <artifactId>jaxb-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -459,19 +467,19 @@
       <artifactId>jersey-servlet</artifactId>
       <optional>true</optional>
       <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.enterprise</groupId>
-          <artifactId>cdi-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>ch.qos.cal10n</groupId>
-          <artifactId>cal10n-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <exclusion>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+      </exclusion>
+      <exclusion>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+      </exclusion>
+      <exclusion>
+        <groupId>ch.qos.cal10n</groupId>
+        <artifactId>cal10n-api</artifactId>
+      </exclusion>
+    </exclusions>
     </dependency>
     <!-- skip org.apache.avro:avro-ipc because it doesn't look like hadoop-common actually uses it -->
     <dependency>

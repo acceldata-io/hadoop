@@ -23,10 +23,12 @@ import org.apache.hadoop.yarn.api.records.timelineservice.TimelineEntity;
 import org.apache.hadoop.yarn.server.timelineservice.documentstore.collection.document.entity.TimelineEntityDocument;
 import org.apache.hadoop.yarn.server.timelineservice.documentstore.collection.document.flowactivity.FlowActivityDocument;
 import org.apache.hadoop.yarn.server.timelineservice.documentstore.collection.document.flowrun.FlowRunDocument;
-import org.codehaus.jackson.type.TypeReference;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * This is util class for baking sample TimelineEntities data for test.
@@ -40,7 +42,7 @@ public final class DocumentStoreTestUtils {
       throws IOException {
     String jsonStr = IOUtils.toString(
         DocumentStoreTestUtils.class.getClassLoader().getResourceAsStream(
-            "documents/timeline-entities.json"), "UTF-8");
+            "documents/timeline-entities.json"), StandardCharsets.UTF_8);
     return JsonUtils.fromJson(jsonStr,
         new TypeReference<List<TimelineEntity>>(){});
   }

@@ -220,17 +220,17 @@
                  </env>
                </configuration>
              </execution>
-<!--              <execution>-->
-<!--                <id>test-container-executor</id>-->
-<!--                <goals><goal>cmake-test</goal></goals>-->
-<!--                <phase>test</phase>-->
-<!--                <configuration>-->
-<!--                  <binary>${project.build.directory}/native/target/usr/local/bin/test-container-executor</binary>-->
-<!--                  <timeout>300</timeout>-->
-<!--                  <results>${project.build.directory}/native-results</results>-->
-<!--                </configuration>-->
-<!--              </execution>-->
-             <!-- <execution>
+             <execution>
+               <id>test-container-executor</id>
+               <goals><goal>cmake-test</goal></goals>
+               <phase>test</phase>
+               <configuration>
+                 <binary>${project.build.directory}/native/target/usr/local/bin/test-container-executor</binary>
+                 <timeout>300</timeout>
+                 <results>${project.build.directory}/native-results</results>
+               </configuration>
+             </execution>
+              <execution>
                <id>cetest</id>
                <goals><goal>cmake-test</goal></goals>
                <phase>test</phase>
@@ -246,7 +246,7 @@
                  </args>
                  <results>${project.build.directory}/surefire-reports</results>
                </configuration>
-             </execution> -->
+             </execution>
            </executions>
          </plugin>
          <plugin>

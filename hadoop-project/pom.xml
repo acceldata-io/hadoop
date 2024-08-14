@@ -157,7 +157,7 @@
     <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
 
     <!-- define the Java language version used by the compiler -->
-    <javac.version>11</javac.version>
+    <javac.version>1.8</javac.version>
 
     <!-- The java version enforced by the maven enforcer -->
     <!-- more complex patterns can be used here, such as
@@ -266,7 +266,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop.thirdparty</groupId>
-        <artifactId>hadoop-shaded-protobuf_3_7</artifactId>
+        <artifactId>hadoop-shaded-protobuf_3_21</artifactId>
         <version>${hadoop-thirdparty-protobuf.version}</version>
       </dependency>
       <dependency>
@@ -2646,7 +2646,7 @@
     <profile>
       <id>jdk11</id>
       <activation>
-        <jdk>[11,)</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <build>
         <plugins>

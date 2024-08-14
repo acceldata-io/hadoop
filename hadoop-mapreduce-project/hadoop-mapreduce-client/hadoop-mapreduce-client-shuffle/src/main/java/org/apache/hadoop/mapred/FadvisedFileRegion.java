@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.POSIX_FADV_DONTNEED;
 
-import org.jboss.netty.channel.DefaultFileRegion;
-
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
 
 public class FadvisedFileRegion extends DefaultFileRegion {
@@ -53,12 +51,12 @@ public class FadvisedFileRegion extends DefaultFileRegion {
   private final int shuffleBufferSize;
   private final boolean shuffleTransferToAllowed;
   private final FileChannel fileChannel;
-  
+
   private ReadaheadRequest readaheadRequest;
 
   public FadvisedFileRegion(RandomAccessFile file, long position, long count,
       boolean manageOsCache, int readaheadLength, ReadaheadPool readaheadPool,
-      String identifier, int shuffleBufferSize, 
+      String identifier, int shuffleBufferSize,
       boolean shuffleTransferToAllowed) throws IOException {
     super(file.getChannel(), position, count);
     this.manageOsCache = manageOsCache;
@@ -81,21 +79,21 @@ public class FadvisedFileRegion extends DefaultFileRegion {
           position() + position, readaheadLength,
           position() + count(), readaheadRequest);
     }
-    
+
     if(this.shuffleTransferToAllowed) {
       return super.transferTo(target, position);
     } else {
       return customShuffleTransfer(target, position);
-    } 
+    }
   }
 
   /**
-   * This method transfers data using local buffer. It transfers data from 
-   * a disk to a local buffer in memory, and then it transfers data from the 
+   * This method transfers data using local buffer. It transfers data from
+   * a disk to a local buffer in memory, and then it transfers data from the
    * buffer to the target. This is used only if transferTo is disallowed in
-   * the configuration file. super.TransferTo does not perform well on Windows 
-   * due to a small IO request generated. customShuffleTransfer can control 
-   * the size of the IO requests by changing the size of the intermediate 
+   * the configuration file. super.TransferTo does not perform well on Windows
+   * due to a small IO request generated. customShuffleTransfer can control
+   * the size of the IO requests by changing the size of the intermediate
    * buffer.
    */
   @VisibleForTesting
@@ -110,14 +108,14 @@ public class FadvisedFileRegion extends DefaultFileRegion {
     if (actualCount == 0) {
       return 0L;
     }
-    
+
     long trans = actualCount;
     int readSize;
     ByteBuffer byteBuffer = ByteBuffer.allocate(
         Math.min(
             this.shuffleBufferSize,
             trans > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) trans));
-    
+
     while(trans > 0L &&
         (readSize = fileChannel.read(byteBuffer, this.position+position)) > 0) {
       //adjust counters and buffer limit
@@ -126,27 +124,27 @@ public class FadvisedFileRegion extends DefaultFileRegion {
         position += readSize;
         byteBuffer.flip();
       } else {
-        //We can read more than we need if the actualCount is not multiple 
+        //We can read more than we need if the actualCount is not multiple
         //of the byteBuffer size and file is big enough. In that case we cannot
         //use flip method but we need to set buffer limit manually to trans.
         byteBuffer.limit((int)trans);
         byteBuffer.position(0);
-        position += trans; 
+        position += trans;
         trans = 0;
       }
-      
+
       //write data to the target
       while(byteBuffer.hasRemaining()) {
         target.write(byteBuffer);
       }
-      
+
       byteBuffer.clear();
     }
-    
+
     return actualCount - trans;
   }
 
-  
+
   @Override
   protected void deallocate() {
     if (readaheadRequest != null) {
@@ -154,7 +152,7 @@ public class FadvisedFileRegion extends DefaultFileRegion {
     }
     super.deallocate();
   }
-  
+
   /**
    * Call when the transfer completes successfully so we can advise the OS that
    * we don't need the region to be cached anymore.

@@ -135,14 +135,16 @@ import org.iq80.leveldb.Options;
 import org.eclipse.jetty.http.HttpHeader;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
-import org.apache.hadoop.thirdparty.com.google.common.cache.CacheBuilder;
-import org.apache.hadoop.thirdparty.com.google.common.cache.CacheLoader;
-import org.apache.hadoop.thirdparty.com.google.common.cache.LoadingCache;
-import org.apache.hadoop.thirdparty.com.google.common.cache.RemovalListener;
-import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.hadoop.thirdparty.protobuf.ByteString;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.ByteString;
 
 public class ShuffleHandler extends AuxiliaryService {
 
@@ -167,7 +169,7 @@ public class ShuffleHandler extends AuxiliaryService {
   public static final String CONCURRENCY_LEVEL =
       "mapreduce.shuffle.pathcache.concurrency-level";
   public static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-  
+
   // pattern to identify errors related to the client closing the socket early
   // idea borrowed from Netty SslHandler
   private static final Pattern IGNORABLE_ERROR_MESSAGE = Pattern.compile(
@@ -176,7 +178,7 @@ public class ShuffleHandler extends AuxiliaryService {
 
   private static final String STATE_DB_NAME = "mapreduce_shuffle_state";
   private static final String STATE_DB_SCHEMA_VERSION_KEY = "shuffle-schema-version";
-  protected static final Version CURRENT_VERSION_INFO = 
+  protected static final Version CURRENT_VERSION_INFO =
       Version.newInstance(1, 0);
 
   private static final String DATA_FILE_NAME = "file.out";
@@ -203,7 +205,7 @@ public class ShuffleHandler extends AuxiliaryService {
   //TODO snemeth add a config option for these later, this is temporarily disabled for now.
   private boolean useOutboundExceptionHandler = false;
   private boolean useOutboundLogger = false;
-  
+
   /**
    * Should the shuffle use posix_fadvise calls to manage the OS cache during
    * sendfile.
@@ -253,19 +255,19 @@ public class ShuffleHandler extends AuxiliaryService {
 
   public static final String MAX_SHUFFLE_CONNECTIONS = "mapreduce.shuffle.max.connections";
   public static final int DEFAULT_MAX_SHUFFLE_CONNECTIONS = 0; // 0 implies no limit
-  
+
   public static final String MAX_SHUFFLE_THREADS = "mapreduce.shuffle.max.threads";
   // 0 implies Netty default of 2 * number of available processors
   public static final int DEFAULT_MAX_SHUFFLE_THREADS = 0;
-  
-  public static final String SHUFFLE_BUFFER_SIZE = 
+
+  public static final String SHUFFLE_BUFFER_SIZE =
       "mapreduce.shuffle.transfer.buffer.size";
   public static final int DEFAULT_SHUFFLE_BUFFER_SIZE = 128 * 1024;
-  
-  public static final String  SHUFFLE_TRANSFERTO_ALLOWED = 
+
+  public static final String  SHUFFLE_TRANSFERTO_ALLOWED =
       "mapreduce.shuffle.transferTo.allowed";
   public static final boolean DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = true;
-  public static final boolean WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = 
+  public static final boolean WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED =
       false;
   static final String TIMEOUT_HANDLER = "timeout";
 
@@ -299,6 +301,49 @@ public class ShuffleHandler extends AuxiliaryService {
         shuffleOutputsFailed.incr();
       }
       shuffleConnections.decr();
+    }
+  }
+
+  static class NettyChannelHelper {
+    static ChannelFuture writeToChannel(Channel ch, Object obj) {
+      LOG.debug("Writing {} to channel: {}", obj.getClass().getSimpleName(), ch.id());
+      return ch.writeAndFlush(obj);
+    }
+
+    static ChannelFuture writeToChannelAndClose(Channel ch, Object obj) {
+      return writeToChannel(ch, obj).addListener(ChannelFutureListener.CLOSE);
+    }
+
+    static ChannelFuture writeToChannelAndAddLastHttpContent(Channel ch, HttpResponse obj) {
+      writeToChannel(ch, obj);
+      return writeLastHttpContentToChannel(ch);
+    }
+
+    static ChannelFuture writeLastHttpContentToChannel(Channel ch) {
+      LOG.debug("Writing LastHttpContent, channel id: {}", ch.id());
+      return ch.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+    }
+
+    static ChannelFuture closeChannel(Channel ch) {
+      LOG.debug("Closing channel, channel id: {}", ch.id());
+      return ch.close();
+    }
+
+    static void closeChannels(ChannelGroup channelGroup) {
+      channelGroup.close().awaitUninterruptibly(10, TimeUnit.SECONDS);
+    }
+
+    public static ChannelFuture closeAsIdle(Channel ch, int timeout) {
+      LOG.debug("Closing channel as writer was idle for {} seconds", timeout);
+      return closeChannel(ch);
+    }
+
+    public static void channelActive(Channel ch) {
+      LOG.debug("Executing channelActive, channel id: {}", ch.id());
+    }
+
+    public static void channelInactive(Channel ch) {
+      LOG.debug("Executing channelInactive, channel id: {}", ch.id());
     }
   }
 
@@ -518,8 +563,8 @@ public class ShuffleHandler extends AuxiliaryService {
 
     readaheadLength = conf.getInt(SHUFFLE_READAHEAD_BYTES,
         DEFAULT_SHUFFLE_READAHEAD_BYTES);
-    
-    maxShuffleConnections = conf.getInt(MAX_SHUFFLE_CONNECTIONS, 
+
+    maxShuffleConnections = conf.getInt(MAX_SHUFFLE_CONNECTIONS,
                                         DEFAULT_MAX_SHUFFLE_CONNECTIONS);
     int maxShuffleThreads = conf.getInt(MAX_SHUFFLE_THREADS,
                                         DEFAULT_MAX_SHUFFLE_THREADS);
@@ -531,10 +576,10 @@ public class ShuffleHandler extends AuxiliaryService {
     if (maxShuffleThreads == 0) {
       maxShuffleThreads = 2 * Runtime.getRuntime().availableProcessors();
     }
-    
-    shuffleBufferSize = conf.getInt(SHUFFLE_BUFFER_SIZE, 
+
+    shuffleBufferSize = conf.getInt(SHUFFLE_BUFFER_SIZE,
                                     DEFAULT_SHUFFLE_BUFFER_SIZE);
-        
+
     shuffleTransferToAllowed = conf.getBoolean(SHUFFLE_TRANSFERTO_ALLOWED,
          (Shell.WINDOWS)?WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED:
                          DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED);
@@ -548,7 +593,7 @@ public class ShuffleHandler extends AuxiliaryService {
     ThreadFactory workerFactory = new ThreadFactoryBuilder()
         .setNameFormat("ShuffleHandler Netty Worker #%d")
         .build();
-    
+
     bossGroup = new NioEventLoopGroup(maxShuffleThreads, bossFactory);
     workerGroup = new NioEventLoopGroup(maxShuffleThreads, workerFactory);
     super.serviceInit(new Configuration(conf));
@@ -615,7 +660,7 @@ public class ShuffleHandler extends AuxiliaryService {
   @Override
   public synchronized ByteBuffer getMetaData() {
     try {
-      return serializeMetaData(port); 
+      return serializeMetaData(port);
     } catch (IOException e) {
       LOG.error("Error during getMeta", e);
       // TODO add API to AuxiliaryServices to report failures
@@ -678,7 +723,7 @@ public class ShuffleHandler extends AuxiliaryService {
     }
     checkVersion();
   }
-  
+
   @VisibleForTesting
   Version loadVersion() throws IOException {
     byte[] data = stateDb.get(bytes(STATE_DB_SCHEMA_VERSION_KEY));
@@ -693,7 +738,7 @@ public class ShuffleHandler extends AuxiliaryService {
 
   private void storeSchemaVersion(Version version) throws IOException {
     String key = STATE_DB_SCHEMA_VERSION_KEY;
-    byte[] data = 
+    byte[] data =
         ((VersionPBImpl) version).getProto().toByteArray();
     try {
       stateDb.put(bytes(key), data);
@@ -701,11 +746,11 @@ public class ShuffleHandler extends AuxiliaryService {
       throw new IOException(e.getMessage(), e);
     }
   }
-  
+
   private void storeVersion() throws IOException {
     storeSchemaVersion(CURRENT_VERSION_INFO);
   }
-  
+
   // Only used for test
   @VisibleForTesting
   void storeVersion(Version version) throws IOException {
@@ -715,7 +760,7 @@ public class ShuffleHandler extends AuxiliaryService {
   protected Version getCurrentVersion() {
     return CURRENT_VERSION_INFO;
   }
-  
+
   /**
    * 1) Versioning scheme: major.minor. For e.g. 1.0, 1.1, 1.2...1.25, 2.0 etc.
    * 2) Any incompatible change of DB schema is a major upgrade, and any
@@ -737,7 +782,7 @@ public class ShuffleHandler extends AuxiliaryService {
       storeVersion();
     } else {
       throw new IOException(
-        "Incompatible version for state DB schema: expecting DB schema version " 
+        "Incompatible version for state DB schema: expecting DB schema version "
             + getCurrentVersion() + ", but loading version " + loadedVersion);
     }
   }
@@ -891,10 +936,10 @@ public class ShuffleHandler extends AuxiliaryService {
     }
   }
 
-  class Shuffle extends SimpleChannelUpstreamHandler {
+  @ChannelHandler.Sharable
+  class Shuffle extends ChannelInboundHandlerAdapter {
     private final IndexCache indexCache;
-    private final
-    LoadingCache<AttemptPathIdentifier, AttemptPathInfo> pathCache;
+    private final LoadingCache<AttemptPathIdentifier, AttemptPathInfo> pathCache;
 
     private int port;
 
@@ -952,7 +997,7 @@ public class ShuffleHandler extends AuxiliaryService {
       NettyChannelHelper.channelActive(ctx.channel());
       int numConnections = activeConnections.incrementAndGet();
       if ((maxShuffleConnections > 0) && (numConnections > maxShuffleConnections)) {
-        LOG.info(String.format("Current number of shuffle connections (%d) is " + 
+        LOG.info(String.format("Current number of shuffle connections (%d) is " +
             "greater than the max allowed shuffle connections (%d)",
             accepted.size(), maxShuffleConnections));
 
@@ -1345,7 +1390,7 @@ public class ShuffleHandler extends AuxiliaryService {
       if (ch.pipeline().get(SslHandler.class) == null) {
         final FadvisedFileRegion partition = new FadvisedFileRegion(spill,
             info.startOffset, info.partLength, manageOsCache, readaheadLength,
-            readaheadPool, spillfile.getAbsolutePath(), 
+            readaheadPool, spillfile.getAbsolutePath(),
             shuffleBufferSize, shuffleTransferToAllowed);
         writeFuture = writeToChannel(ch, partition);
         writeFuture.addListener(new ChannelFutureListener() {

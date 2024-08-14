@@ -388,6 +388,8 @@ class ProvidedVolumeImpl extends FsVolumeImpl {
     @JsonProperty
     private long iterStartMs;
 
+    @JsonProperty
+    private boolean atEnd;
 
     // The id of the last block read when the state of the iterator is saved.
     // This implementation assumes that provided blocks are returned

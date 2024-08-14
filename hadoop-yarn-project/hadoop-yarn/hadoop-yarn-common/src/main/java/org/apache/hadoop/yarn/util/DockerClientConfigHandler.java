@@ -97,13 +97,13 @@ public final class DockerClientConfigHandler {
 
     // Parse the JSON and create the Tokens/Credentials.
     ObjectMapper mapper = new ObjectMapper();
-    JsonFactory factory = mapper.getJsonFactory();
-    JsonParser parser = factory.createJsonParser(contents);
+    JsonFactory factory = mapper.getFactory();
+    JsonParser parser = factory.createParser(contents);
     JsonNode rootNode = mapper.readTree(parser);
 
     Credentials credentials = new Credentials();
     if (rootNode.has(CONFIG_AUTHS_KEY)) {
-      Iterator<String> iter = rootNode.get(CONFIG_AUTHS_KEY).getFieldNames();
+      Iterator<String> iter = rootNode.get(CONFIG_AUTHS_KEY).fieldNames();
       for (; iter.hasNext();) {
         String registryUrl = iter.next();
         String registryCred = rootNode.get(CONFIG_AUTHS_KEY)

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.yarn.service;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

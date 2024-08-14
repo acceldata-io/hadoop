@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.yarn.service;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.apache.hadoop.thirdparty.com.google.common.base.Throwables;
 import org.apache.hadoop.thirdparty.com.google.common.collect.HashMultimap;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Multimap;
@@ -51,6 +50,7 @@ import org.apache.hadoop.yarn.service.utils.ServiceApiUtil;
 import org.apache.hadoop.yarn.service.utils.SliderFileSystem;
 import org.apache.hadoop.yarn.util.LinuxResourceCalculatorPlugin;
 import org.apache.hadoop.yarn.util.ProcfsBasedProcessTree;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
@@ -98,7 +98,7 @@ public class ServiceTestUtils {
 
   public static final JsonSerDeser<Service> JSON_SER_DESER =
       new JsonSerDeser<>(Service.class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   // Example service definition
   // 2 components, each of which has 2 containers.

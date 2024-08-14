@@ -41,9 +41,13 @@
       <artifactId>protobuf-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
+      <groupId>org.apache.hadoop.thirdparty</groupId>
+      <artifactId>hadoop-shaded-avro_1_11</artifactId>
       <exclusions>
+        <exclusion>
+          <groupId>org.xerial.snappy</groupId>
+          <artifactId>snappy-java</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-server</artifactId>
@@ -54,7 +58,7 @@
         </exclusion>
         <exclusion>
           <groupId>org.jboss.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.velocity</groupId>
@@ -67,6 +71,10 @@
         <exclusion>
           <artifactId>paranamer-ant</artifactId>
           <groupId>com.thoughtworks.paranamer</groupId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xerial.snappy</groupId>
+          <artifactId>snappy-java</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

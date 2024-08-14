@@ -1,3 +1,4 @@
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,7 +26,7 @@ import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
-import org.apache.avro.reflect.Nullable;
+import org.apache.hadoop.thirdparty.avro.reflect.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.io.Writable;

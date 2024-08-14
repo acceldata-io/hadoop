@@ -89,12 +89,12 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-auth</artifactId>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>tomcat</groupId>
-          <artifactId>jasper-runtime</artifactId>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-auth</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -103,6 +103,10 @@
         <exclusion>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>tomcat</groupId>
+          <artifactId>jasper-runtime</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -174,7 +178,6 @@
       <version>${hbase-compatible-guava.version}</version>
       <scope>test</scope>
     </dependency>
-
 
      <dependency>
       <groupId>org.xerial.snappy</groupId>

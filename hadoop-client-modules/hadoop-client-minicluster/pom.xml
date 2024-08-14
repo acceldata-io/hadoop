@@ -137,6 +137,10 @@
           <artifactId>avro</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.apache.hadoop.thirdparty</groupId>
+          <artifactId>hadoop-shaded-avro_1_11</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.curator</groupId>
           <artifactId>curator-client</artifactId>
         </exclusion>
@@ -444,8 +448,8 @@
           <artifactId>jackson-jaxrs-json-provider</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

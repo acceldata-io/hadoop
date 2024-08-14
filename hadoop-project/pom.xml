@@ -67,9 +67,6 @@
 
     <!-- jersey version -->
     <jersey.version>1.19.4</jersey.version>
-
-    <!-- jackson versions -->
-    <jackson.version>1.9.13</jackson.version>
     <jackson2.version>2.12.7</jackson2.version>
     <jackson2.databind.version>2.12.7.1</jackson2.databind.version>
 
@@ -93,8 +90,9 @@
     <hadoop.protobuf.version>3.7.1</hadoop.protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
-    <hadoop-thirdparty.version>1.1.1</hadoop-thirdparty.version>
-    <hadoop-thirdparty-protobuf.version>${hadoop-thirdparty.version}</hadoop-thirdparty-protobuf.version>
+    <hadoop-thirdparty.version>1.2.0</hadoop-thirdparty.version>
+    <hadoop-thirdparty.avro.version>1.2.0</hadoop-thirdparty.avro.version>
+    <hadoop-thirdparty-protobuf.version>1.1.1</hadoop-thirdparty-protobuf.version>
     <hadoop-thirdparty-guava.version>${hadoop-thirdparty.version}</hadoop-thirdparty-guava.version>
     <hadoop-thirdparty-shaded-prefix>org.apache.hadoop.thirdparty</hadoop-thirdparty-shaded-prefix>
     <hadoop-thirdparty-shaded-protobuf-prefix>${hadoop-thirdparty-shaded-prefix}.protobuf</hadoop-thirdparty-shaded-protobuf-prefix>
@@ -157,7 +155,7 @@
     <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
 
     <!-- define the Java language version used by the compiler -->
-    <javac.version>11</javac.version>
+    <javac.version>1.8</javac.version>
 
     <!-- The java version enforced by the maven enforcer -->
     <!-- more complex patterns can be used here, such as
@@ -330,6 +328,18 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-xc</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -915,6 +925,18 @@
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1309,9 +1331,9 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-        <version>${avro.version}</version>
+        <groupId>org.apache.hadoop.thirdparty</groupId>
+        <artifactId>hadoop-shaded-avro_1_11</artifactId>
+        <version>${hadoop-thirdparty.avro.version}</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kosmosfs</groupId>

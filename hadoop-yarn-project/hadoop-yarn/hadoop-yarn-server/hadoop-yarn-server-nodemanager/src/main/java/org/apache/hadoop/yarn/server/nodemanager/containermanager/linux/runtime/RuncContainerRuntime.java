@@ -62,8 +62,15 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.Contai
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.ContainerRuntimeContext;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.volume.csi.ContainerVolumePublisher;
 import org.apache.hadoop.yarn.server.nodemanager.executor.ContainerExecContext;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.type.TypeReference;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -638,11 +645,11 @@ public class RuncContainerRuntime extends OCIContainerRuntime {
   @SuppressWarnings("unchecked")
   protected List<String> extractImageEnv(File config) throws IOException {
     JsonNode node = mapper.readTree(config);
-    JsonNode envNode = node.path("config").path("Env");
-    if (envNode.isMissingNode()) {
+    JsonNode entrypointNode = node.path("config").path("Entrypoint");
+    if (entrypointNode.isMissingNode()) {
       return null;
     }
-    return mapper.readValue(envNode, List.class);
+    return mapper.readValue(entrypointNode.toString(), new TypeReference<List<String>>() {});
   }
 
   @SuppressWarnings("unchecked")
@@ -653,7 +660,7 @@ public class RuncContainerRuntime extends OCIContainerRuntime {
     if (entrypointNode.isMissingNode()) {
       return null;
     }
-    return mapper.readValue(entrypointNode, List.class);
+	 return mapper.readValue(entrypointNode.toString(), new TypeReference<List<String>>() {});
   }
 
   private RuncContainerExecutorConfig createRuncContainerExecutorConfig(

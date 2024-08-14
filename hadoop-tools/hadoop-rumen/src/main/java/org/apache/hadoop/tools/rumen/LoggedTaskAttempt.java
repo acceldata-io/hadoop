@@ -637,7 +637,7 @@ public class LoggedTaskAttempt implements DeepCompare {
     counterName = canonicalizeCounterName(counterName);
 
     for (JhCounterGroup group : counters.getGroups()) {
-      for (JhCounter counter : group.getCounts(0)) {
+      for (JhCounter counter : group.getCounts()) {
         if (counterName
             .equals(canonicalizeCounterName(counter.getName().toString()))) {
           thunk.set(counter.getValue());

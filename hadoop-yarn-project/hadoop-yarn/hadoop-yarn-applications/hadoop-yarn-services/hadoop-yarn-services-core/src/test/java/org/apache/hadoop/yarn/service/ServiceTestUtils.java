@@ -98,7 +98,7 @@ public class ServiceTestUtils {
 
   public static final JsonSerDeser<Service> JSON_SER_DESER =
       new JsonSerDeser<>(Service.class,
-          PropertyNamingStrategies.SNAKE_CASE);
+          PropertyNamingStrategy.SNAKE_CASE);
 
   // Example service definition
   // 2 components, each of which has 2 containers.

@@ -21,13 +21,13 @@ package org.apache.hadoop.mapreduce.jobhistory;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.hadoop.thirdparty.avro.AvroRuntimeException;
+
 import org.apache.hadoop.thirdparty.avro.Schema;
-import org.apache.hadoop.thirdparty.avro.io.DatumReader;
-import org.apache.hadoop.thirdparty.avro.io.Decoder;
-import org.apache.hadoop.thirdparty.avro.io.DecoderFactory;
-import org.apache.hadoop.thirdparty.avro.specific.SpecificData;
-import org.apache.hadoop.thirdparty.avro.specific.SpecificDatumReader;
+import org.apache.hadoop.thirdparty.avro.io.DatumWriter;
+import org.apache.hadoop.thirdparty.avro.io.Encoder;
+import org.apache.hadoop.thirdparty.avro.io.EncoderFactory;
+import org.apache.hadoop.thirdparty.avro.specific.SpecificDatumWriter;
+import org.apache.hadoop.thirdparty.avro.util.Utf8;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FSDataOutputStream;

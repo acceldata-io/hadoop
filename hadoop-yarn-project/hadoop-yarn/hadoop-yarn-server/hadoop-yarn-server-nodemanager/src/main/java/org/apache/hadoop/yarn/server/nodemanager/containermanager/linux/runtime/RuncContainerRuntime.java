@@ -62,8 +62,10 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.Contai
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.ContainerRuntimeContext;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.volume.csi.ContainerVolumePublisher;
 import org.apache.hadoop.yarn.server.nodemanager.executor.ContainerExecContext;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -642,7 +644,9 @@ public class RuncContainerRuntime extends OCIContainerRuntime {
     if (envNode.isMissingNode()) {
       return null;
     }
-    return mapper.readValue(envNode, List.class);
+    //return mapper.readValue(envNode, List.class);
+    String jsonString = envNode.toString();
+    return mapper.readValue(jsonString, new TypeReference<List<String>>() {});
   }
 
   @SuppressWarnings("unchecked")
@@ -653,7 +657,9 @@ public class RuncContainerRuntime extends OCIContainerRuntime {
     if (entrypointNode.isMissingNode()) {
       return null;
     }
-    return mapper.readValue(entrypointNode, List.class);
+   // return mapper.readValue(entrypointNode, List.class);
+   String jsonString = envNode.toString();
+    return mapper.readValue(jsonString, new TypeReference<List<String>>() {});
   }
 
   private RuncContainerExecutorConfig createRuncContainerExecutorConfig(

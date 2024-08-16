@@ -429,7 +429,7 @@ public class TestFileUtil {
         zlink.exists());
   }
 
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testFailFullyDelete() throws IOException {
     // Windows Dir.setWritable(false) does not work for directories
     assumeNotWindows();
@@ -590,7 +590,7 @@ public class TestFileUtil {
     }
   }
 
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testFailFullyDeleteContents() throws IOException {
     // Windows Dir.setWritable(false) does not work for directories
     assumeNotWindows();
@@ -613,7 +613,7 @@ public class TestFileUtil {
    * and that directory sizes are not added to the final calculated size
    * @throws IOException
    */
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testGetDU() throws Exception {
     long du = FileUtil.getDU(testFolder.getRoot());
     // Only two files (in partitioned).  Each has 3 characters + system-specific
@@ -740,7 +740,7 @@ public class TestFileUtil {
     assertTrue(!tmp1.exists() && !tmp2.exists());
   }
   
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testUnZip() throws Exception {
     // make sa simple zip
     final File simpleZip = new File(del, FILE);

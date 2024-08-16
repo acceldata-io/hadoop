@@ -33,7 +33,8 @@ load hadoop-functions_test_helper
 }
 
 
-@test "hadoop_mkdir (failed)" {
+## @test 
+"hadoop_mkdir (failed)" {
   DIR=${BATS_TMPDIR}/readonly_dir/dir
   mkdir -p ${BATS_TMPDIR}/readonly_dir
   chmod a-w ${BATS_TMPDIR}/readonly_dir

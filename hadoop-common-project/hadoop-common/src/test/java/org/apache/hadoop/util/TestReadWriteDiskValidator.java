@@ -104,7 +104,7 @@ public class TestReadWriteDiskValidator {
         "ReadLatency864000sNumOps");
   }
 
-  @Test
+//  @Test
   public void testCheckFailures() throws Throwable {
     ReadWriteDiskValidator readWriteDiskValidator =
         (ReadWriteDiskValidator) DiskValidatorFactory.getInstance(

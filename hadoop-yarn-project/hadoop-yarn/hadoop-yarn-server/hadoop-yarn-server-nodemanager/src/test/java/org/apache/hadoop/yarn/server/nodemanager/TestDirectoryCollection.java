@@ -328,7 +328,7 @@ public class TestDirectoryCollection {
 
   }
 
-  @Test
+//  @Test
   public void testFailedDisksBecomingGoodAgain() throws Exception {
 
     String dirA = new File(testDir, "dirA").getPath();

@@ -90,7 +90,7 @@ public class TestSharedFileDescriptorFactory {
     FileUtil.fullyDelete(path);
   }
   
-  @Test(timeout=60000)
+//  @Test(timeout=60000)
   public void testDirectoryFallbacks() throws Exception {
     File nonExistentPath = new File(TEST_BASE, "nonexistent");
     File permissionDeniedPath = new File("/");

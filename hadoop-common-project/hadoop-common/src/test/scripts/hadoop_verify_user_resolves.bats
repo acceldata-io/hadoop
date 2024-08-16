@@ -36,8 +36,7 @@ load hadoop-functions_test_helper
   [ "${status}" = "0" ]
 }
 
-##@test 
-"hadoop_verify_user_resolves (skip: number)" {
+@test "hadoop_verify_user_resolves (skip: number)" {
   skip "id on uids is not platform consistent"
   myvar=1
   run hadoop_verify_user_resolves myvar

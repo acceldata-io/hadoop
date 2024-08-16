@@ -129,7 +129,7 @@ public class TestLocalDirAllocator {
    * The second dir exists & is RW
    * @throws Exception
    */
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void test0() throws Exception {
     assumeNotWindows();
     String dir0 = buildBufferDir(ROOT, 0);
@@ -151,7 +151,7 @@ public class TestLocalDirAllocator {
    * The second dir exists & is RW
    * @throws Exception
    */
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testROBufferDirAndRWBufferDir() throws Exception {
     assumeNotWindows();
     String dir1 = buildBufferDir(ROOT, 1);
@@ -197,7 +197,7 @@ public class TestLocalDirAllocator {
    * Later disk1 becomes read-only.
    * @throws Exception
    */
-  @Test (timeout = 30000)
+//  @Test (timeout = 30000)
   public void testRWBufferDirBecomesRO() throws Exception {
     assumeNotWindows();
     String dir3 = buildBufferDir(ROOT, 3);

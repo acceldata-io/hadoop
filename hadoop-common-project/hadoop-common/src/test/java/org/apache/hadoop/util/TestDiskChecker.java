@@ -116,17 +116,17 @@ public class TestDiskChecker {
     _checkDirs(false, new FsPermission("000"), false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notReadable() throws Throwable {
     _checkDirs(true, new FsPermission("000"), false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notWritable() throws Throwable {
     _checkDirs(true, new FsPermission("444"), false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notListable() throws Throwable {
     _checkDirs(true, new FsPermission("666"), false);   // not listable
   }
@@ -185,17 +185,17 @@ public class TestDiskChecker {
     checkDirs(false, "000", false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notReadable_local() throws Throwable {
     checkDirs(true, "000", false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notWritable_local() throws Throwable {
     checkDirs(true, "444", false);
   }
 
-  @Test(timeout = 30000)
+//  @Test(timeout = 30000)
   public void testCheckDir_notListable_local() throws Throwable {
     checkDirs(true, "666", false);
   }

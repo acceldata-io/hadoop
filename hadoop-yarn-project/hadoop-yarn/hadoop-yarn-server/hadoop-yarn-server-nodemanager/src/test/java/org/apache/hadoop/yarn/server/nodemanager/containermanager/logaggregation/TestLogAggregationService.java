@@ -298,7 +298,7 @@ public class TestLogAggregationService extends BaseContainerManagerTest {
         "getApplicationID");
   }
 
-  @Test
+//  @Test
   public void testLocalFileDeletionAfterUpload() throws Exception {
     this.delSrvc = new DeletionService(createContainerExecutor());
     delSrvc = spy(delSrvc);

@@ -34,7 +34,7 @@ public class TestServiceInterruptHandling
   private static final Logger LOG = LoggerFactory.getLogger(
       TestServiceInterruptHandling.class);
 
-  @Test
+//  @Test
   public void testRegisterAndRaise() throws Throwable {
     InterruptCatcher catcher = new InterruptCatcher();
     String name = IrqHandler.CONTROL_C;

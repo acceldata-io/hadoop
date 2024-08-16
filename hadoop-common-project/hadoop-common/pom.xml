@@ -30,6 +30,8 @@
   <packaging>jar</packaging>
 
   <properties>
+    <hadoop-thirdparty.avro.version>${hadoop-thirdparty.version}</hadoop-thirdparty.avro.version>
+    <kdc.resource.dir>src/test/resources/kdc</kdc.resource.dir>
     <hadoop.component>common</hadoop.component>
     <is.hadoop.component>true</is.hadoop.component>
     <is.hadoop.common.component>true</is.hadoop.common.component>
@@ -40,7 +42,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.hadoop.thirdparty</groupId>
-      <artifactId>hadoop-shaded-protobuf_3_7</artifactId>
+      <artifactId>hadoop-shaded-protobuf_3_21</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -157,13 +159,25 @@
       </exclusions>
     </dependency>
     <dependency>
-       <groupId>org.codehaus.jackson</groupId>
-       <artifactId>jackson-mapper-asl</artifactId>
-       <version>1.9.13</version>
-   </dependency>
-    <dependency>
+      <!-- Used, even though 'mvn dependency:analyze' doesn't find it -->
       <groupId>com.github.pjfanning</groupId>
       <artifactId>jersey-json</artifactId>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -178,17 +192,24 @@
           <groupId>com.fasterxml.jackson.jaxrs</groupId>
           <artifactId>jackson-jaxrs-json-provider</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-jaxrs</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-xc</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-server</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <scope>compile</scope>
+
     </dependency>
     <dependency>
       <groupId>ch.qos.reload4j</groupId>
@@ -221,6 +242,14 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <!--
+      adding jettison as direct dependency (as jersey-json's jettison dependency is vulnerable with verison 1.1),
+      so those who depends on hadoop-common externally will get the non-vulnerable jettison
+      -->
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
       <scope>compile</scope>
@@ -241,8 +270,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
+      <groupId>org.apache.hadoop.thirdparty</groupId>
+      <artifactId>hadoop-shaded-avro_1_11</artifactId>
+      <version>${hadoop-thirdparty.avro.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -319,7 +349,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.jboss.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
         <exclusion>
           <!-- otherwise seems to drag in junit 3.8.1 via jline -->
@@ -358,6 +388,10 @@
     <dependency>
       <groupId>org.apache.kerby</groupId>
       <artifactId>kerb-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -591,6 +625,7 @@
                 <copy toDir="${project.build.directory}/test-classes">
                   <fileset dir="${basedir}/src/main/conf"/>
                 </copy>
+                <replace dir="${project.build.directory}/generated-test-sources/java" token="org.apache.avro" value="org.apache.hadoop.thirdparty.avro"/>
               </target>
             </configuration>
           </execution>

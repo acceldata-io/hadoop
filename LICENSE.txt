@@ -282,11 +282,11 @@ http://sourceforge.net/projects/slicing-by-8/
  *
  * Copyright (c) 2004-2006 Intel Corporation - All Rights Reserved
  *
- * This software program is licensed subject to the BSD License, 
+ * This software program is licensed subject to the BSD License,
  * available at http://www.opensource.org/licenses/bsd-license.html
  *
  * Abstract: The main routine
- * 
+ *
  --*/
 
 For src/main/native/src/org/apache/hadoop/io/compress/lz4/{lz4.h,lz4.c,lz4hc.h,lz4hc.c},
@@ -566,6 +566,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For:
 hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/dust-full-2.0.0.min.js
 hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/dust-helpers-1.1.1.min.js
+hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/jquery-3.6.0.min.js
+hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/jquery.dataTables.min.js
 --------------------------------------------------------------------------------
 
 Copyright (c) 2010 Aleksander Williams

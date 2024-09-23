@@ -1635,6 +1635,10 @@ public class AzureBlobFileSystem extends FileSystem
     case CommonPathCapabilities.ETAGS_AVAILABLE:
       return true;
 
+      // etags are always available on HEAD requests.
+    case CommonPathCapabilities.ETAGS_AVAILABLE:
+      return true;
+     // but etags are only preserved on hns stores.
     case CommonPathCapabilities.ETAGS_PRESERVED_IN_RENAME:
     case CommonPathCapabilities.FS_ACLS:
       return getIsNamespaceEnabled(

@@ -240,7 +240,7 @@
 | [HDFS-14000](https://issues.apache.org/jira/browse/HDFS-14000) | RBF: Documentation should reflect right scripts for v3.0 and above |  Major | . | CR Hota | CR Hota |
 | [YARN-8868](https://issues.apache.org/jira/browse/YARN-8868) | Set HTTPOnly attribute to Cookie |  Major | . | Chandni Singh | Chandni Singh |
 | [HDFS-14003](https://issues.apache.org/jira/browse/HDFS-14003) | Fix findbugs warning in trunk for FSImageFormatPBINode |  Major | . | Yiqun Lin | Yiqun Lin |
-| [HDFS-14005](https://issues.apache.org/jira/browse/HDFS-14005) | RBF: Web UI update to bootstrap-3.3.7 |  Major | . | Íñigo Goiri | Íñigo Goiri |
+| [HDFS-14005](https://issues.apache.org/jira/browse/HDFS-14005) | RBF: Web UI update to bootstrap-5.0.0 |  Major | . | Íñigo Goiri | Íñigo Goiri |
 | [YARN-8910](https://issues.apache.org/jira/browse/YARN-8910) | Misleading log statement in NM when max retries is -1 |  Minor | . | Chandni Singh | Chandni Singh |
 | [HADOOP-15850](https://issues.apache.org/jira/browse/HADOOP-15850) | CopyCommitter#concatFileChunks should check that the blocks per chunk is not 0 |  Critical | tools/distcp | Ted Yu | Ted Yu |
 | [YARN-7502](https://issues.apache.org/jira/browse/YARN-7502) | Nodemanager restart docs should describe nodemanager supervised property |  Major | documentation | Jason Lowe | Suma Shivaprasad |

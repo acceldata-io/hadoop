@@ -20,11 +20,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project</artifactId>
-    <version>3.3.9-SNAPSHOT</version>
+    <version>3.3.6.3.3.6.0-1</version>
     <relativePath>../../hadoop-project</relativePath>
   </parent>
   <artifactId>hadoop-mapreduce-client</artifactId>
-  <version>3.3.9-SNAPSHOT</version>
+  <version>3.3.6.3.3.6.0-1</version>
   <name>Apache Hadoop MapReduce Client</name>
   <packaging>pom</packaging>
 
@@ -154,7 +154,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
- 
+
   <build>
     <plugins>
        <plugin>
@@ -311,7 +311,7 @@
      </build>
    </profile>
   </profiles>
- 
+
   <modules>
     <module>hadoop-mapreduce-client-core</module>
     <module>hadoop-mapreduce-client-common</module>

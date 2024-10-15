@@ -1,0 +1,5 @@
+/Users/senthilkumar/Documents/Senthilkumar/AccelData/gitups/hadoop/hadoop-common-project/hadoop-common/src/CMakeFiles/hadoop.dir
+/Users/senthilkumar/Documents/Senthilkumar/AccelData/gitups/hadoop/hadoop-common-project/hadoop-common/src/CMakeFiles/hadoop_static.dir
+/Users/senthilkumar/Documents/Senthilkumar/AccelData/gitups/hadoop/hadoop-common-project/hadoop-common/src/CMakeFiles/test_bulk_crc32.dir
+/Users/senthilkumar/Documents/Senthilkumar/AccelData/gitups/hadoop/hadoop-common-project/hadoop-common/src/CMakeFiles/edit_cache.dir
+/Users/senthilkumar/Documents/Senthilkumar/AccelData/gitups/hadoop/hadoop-common-project/hadoop-common/src/CMakeFiles/rebuild_cache.dir

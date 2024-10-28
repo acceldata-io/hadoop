@@ -33,18 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.fs.ByteBufferReadable;
-import org.apache.hadoop.fs.CanSetDropBehind;
-import org.apache.hadoop.fs.CanSetReadahead;
-import org.apache.hadoop.fs.CanUnbuffer;
-import org.apache.hadoop.fs.FSExceptionMessages;
-import org.apache.hadoop.fs.HasEnhancedByteBufferAccess;
-import org.apache.hadoop.fs.HasFileDescriptor;
-import org.apache.hadoop.fs.PositionedReadable;
-import org.apache.hadoop.fs.ReadOption;
-import org.apache.hadoop.fs.Seekable;
-import org.apache.hadoop.fs.StreamCapabilities;
-import org.apache.hadoop.fs.StreamCapabilitiesPolicy;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.ByteBufferPool;
 import org.apache.hadoop.util.StringUtils;
 
@@ -64,7 +53,7 @@ import org.apache.hadoop.util.StringUtils;
 public class CryptoInputStream extends FilterInputStream implements 
     Seekable, PositionedReadable, ByteBufferReadable, HasFileDescriptor, 
     CanSetDropBehind, CanSetReadahead, HasEnhancedByteBufferAccess, 
-    ReadableByteChannel, CanUnbuffer, StreamCapabilities {
+    ReadableByteChannel, CanUnbuffer, StreamCapabilities{
   private final byte[] oneByteBuf = new byte[1];
   private final CryptoCodec codec;
   private final Decryptor decryptor;
@@ -564,6 +553,51 @@ public class CryptoInputStream extends FilterInputStream implements
       }
     }
     buf.position(pos);
+  }
+
+  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)
+          throws IOException {
+    ByteBuffer localInBuffer = null;
+    ByteBuffer localOutBuffer = null;
+
+    // Duplicate the buffer so we don't have to worry about resetting the
+    // original position and limit at the end of the method
+    buf = buf.duplicate();
+
+    int decryptedBytes = 0;
+    Decryptor localDecryptor = null;
+    try {
+      localInBuffer = getBuffer();
+      localOutBuffer = getBuffer();
+      localDecryptor = getDecryptor();
+      byte[] localIV = initIV.clone();
+      updateDecryptor(localDecryptor, filePosition, localIV);
+      byte localPadding = getPadding(filePosition);
+      // Set proper filePosition for inputdata.
+      localInBuffer.position(localPadding);
+
+      while (decryptedBytes < length) {
+        buf.position(start + decryptedBytes);
+        buf.limit(start + decryptedBytes +
+                Math.min(length - decryptedBytes, localInBuffer.remaining()));
+        localInBuffer.put(buf);
+        // Do decryption
+        try {
+          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);
+          buf.position(start + decryptedBytes);
+          buf.limit(start + length);
+          decryptedBytes += localOutBuffer.remaining();
+          buf.put(localOutBuffer);
+        } finally {
+          localPadding = afterDecryption(localDecryptor, localInBuffer,
+                                         filePosition + length, localIV);
+        }
+      }
+    } finally {
+      returnBuffer(localInBuffer);
+      returnBuffer(localOutBuffer);
+      returnDecryptor(localDecryptor);
+    }
   }
   
   @Override

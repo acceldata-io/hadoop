@@ -257,4 +257,14 @@ public class FSDataInputStream extends DataInputStream
     throw new UnsupportedOperationException("Byte-buffer pread unsupported " +
         "by input stream");
   }
+
+  @Override
+  public void readFully(long position, ByteBuffer buf) throws IOException {
+    if (in instanceof ByteBufferPositionedReadable) {
+      ((ByteBufferPositionedReadable) in).readFully(position, buf);
+    } else {
+      throw new UnsupportedOperationException("Byte-buffer pread " +
+              "unsupported by " + in.getClass().getCanonicalName());
+    }
+  }
 }

@@ -57,9 +57,6 @@ tSize readDirect(hdfsFS fs, hdfsFile f, void* buffer, tSize length);
 tSize preadDirect(hdfsFS fs, hdfsFile file, tOffset position, void* buffer,
                   tSize length);
 
-int preadFullyDirect(hdfsFS fs, hdfsFile file, tOffset position, void* buffer,
-                  tSize length);
-
 static void hdfsFreeFileInfoEntry(hdfsFileInfo *hdfsFileInfo);
 
 /**
@@ -1648,7 +1645,6 @@ tSize hdfsPread(hdfsFS fs, hdfsFile f, tOffset position,
             "hdfsPread: NewByteArray");
         return -1;
     }
-
     jthr = invokeMethod(env, &jVal, INSTANCE, f->file,
             JC_FS_DATA_INPUT_STREAM, "read", "(J[BII)I", position,
             jbRarray, 0, length);
@@ -1672,6 +1668,60 @@ tSize hdfsPread(hdfsFS fs, hdfsFile f, tOffset position,
     if ((*env)->ExceptionCheck(env)) {
         errno = printPendingExceptionAndFree(env, PRINT_EXC_ALL,
             "hdfsPread: GetByteArrayRegion");
+        return -1;
+    }
+    return jVal.i;
+}
+
+tSize preadDirect(hdfsFS fs, hdfsFile f, tOffset position, void* buffer,
+                  tSize length)
+{
+    // JAVA EQUIVALENT:
+    //  ByteBuffer buf = ByteBuffer.allocateDirect(length) // wraps C buffer
+    //  fis.read(position, buf);
+
+    jvalue jVal;
+    jthrowable jthr;
+    jobject bb;
+
+    //Get the JNIEnv* corresponding to current thread
+    JNIEnv* env = getJNIEnv();
+    if (env == NULL) {
+      errno = EINTERNAL;
+      return -1;
+    }
+
+    //Error checking... make sure that this file is 'readable'
+    if (f->type != HDFS_STREAM_INPUT) {
+        fprintf(stderr, "Cannot read from a non-InputStream object!\n");
+        errno = EINVAL;
+        return -1;
+    }
+
+    //Read the requisite bytes
+    bb = (*env)->NewDirectByteBuffer(env, buffer, length);
+    if (bb == NULL) {
+        errno = printPendingExceptionAndFree(env, PRINT_EXC_ALL,
+            "readDirect: NewDirectByteBuffer");
+        return -1;
+    }
+
+    jthr = invokeMethod(env, &jVal, INSTANCE, f->file,
+            JC_FS_DATA_INPUT_STREAM, "read", "(JLjava/nio/ByteBuffer;)I",
+            position, bb);
+    destroyLocalReference(env, bb);
+    if (jthr) {
+       errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+           "preadDirect: FSDataInputStream#read");
+       return -1;
+    }
+    // Reached EOF, return 0
+    if (jVal.i < 0) {
+        return 0;
+    }
+    // 0 bytes read, return error
+    if (jVal.i == 0) {
+        errno = EINTR;
         return -1;
     }
     return jVal.i;

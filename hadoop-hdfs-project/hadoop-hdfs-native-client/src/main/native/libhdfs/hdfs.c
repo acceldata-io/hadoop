@@ -56,8 +56,26 @@
 
 // Bit fields for hdfsFile_internal flags
 #define HDFS_FILE_SUPPORTS_DIRECT_READ (1<<0)
+#define HDFS_FILE_SUPPORTS_DIRECT_PREAD (1<<1)
 
+/**
+ * Reads bytes using the read(ByteBuffer) API. By using Java
+ * DirectByteBuffers we can avoid copying the bytes onto the Java heap.
+ * Instead the data will be directly copied from kernel space to the C heap.
+ */
 tSize readDirect(hdfsFS fs, hdfsFile f, void* buffer, tSize length);
+
+/**
+ * Reads bytes using the read(long, ByteBuffer) API. By using Java
+ * DirectByteBuffers we can avoid copying the bytes onto the Java heap.
+ * Instead the data will be directly copied from kernel space to the C heap.
+ */
+tSize preadDirect(hdfsFS fs, hdfsFile file, tOffset position, void* buffer,
+                  tSize length);
+
+int preadFullyDirect(hdfsFS fs, hdfsFile file, tOffset position, void* buffer,
+                  tSize length);
+
 static void hdfsFreeFileInfoEntry(hdfsFileInfo *hdfsFileInfo);
 
 /**
@@ -192,7 +210,7 @@ int hdfsFileGetReadStatistics(hdfsFile file,
         ret = EINVAL;
         goto done;
     }
-    jthr = invokeMethod(env, &jVal, INSTANCE, file->file, 
+    jthr = invokeMethod(env, &jVal, INSTANCE, file->file,
                   "org/apache/hadoop/hdfs/client/HdfsDataInputStream",
                   "getReadStatistics",
                   "()Lorg/apache/hadoop/hdfs/ReadStatistics;");
@@ -316,6 +334,17 @@ void hdfsFileDisableDirectRead(hdfsFile file)
     file->flags &= ~HDFS_FILE_SUPPORTS_DIRECT_READ;
 }
 
+int hdfsFileUsesDirectPread(hdfsFile file)
+{
+    return (file->flags & HDFS_FILE_SUPPORTS_DIRECT_PREAD) != 0;
+}
+
+void hdfsFileDisableDirectPread(hdfsFile file)
+{
+    file->flags &= ~HDFS_FILE_SUPPORTS_DIRECT_PREAD;
+}
+
+
 int hdfsDisableDomainSocketSecurity(void)
 {
     jthrowable jthr;
@@ -346,7 +375,7 @@ typedef struct
 
 /**
  * Helper function to create a org.apache.hadoop.fs.Path object.
- * @param env: The JNIEnv pointer. 
+ * @param env: The JNIEnv pointer.
  * @param path: The file-path for which to construct org.apache.hadoop.fs.Path
  * object.
  * @return Returns a jobject on success and NULL on error.
@@ -513,7 +542,7 @@ int hdfsBuilderConfSetStr(struct hdfsBuilder *bld, const char *key,
                           const char *val)
 {
     struct hdfsBuilderConfOpt *opt, *next;
-    
+
     opt = calloc(1, sizeof(struct hdfsBuilderConfOpt));
     if (!opt)
         return -ENOMEM;
@@ -713,7 +742,7 @@ hdfsFS hdfsBuilderConnect(struct hdfsBuilder *bld)
             goto done;
         }
     }
- 
+
     //Check what type of FileSystem the caller wants...
     if (bld->nn == NULL) {
         // Get a local filesystem.
@@ -800,7 +829,7 @@ hdfsFS hdfsBuilderConnect(struct hdfsBuilder *bld)
         }
         if (bld->forceNewInstance) {
             jthr = invokeMethod(env, &jVal, STATIC, NULL, HADOOP_FS,
-                    "newInstance", JMETHOD3(JPARAM(JAVA_NET_URI), 
+                    "newInstance", JMETHOD3(JPARAM(JAVA_NET_URI),
                         JPARAM(HADOOP_CONF), JPARAM(JAVA_STRING),
                         JPARAM(HADOOP_FS)),
                     jURI, jConfiguration, jUserString);
@@ -1085,7 +1114,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
     }
     jConfiguration = jVal.l;
 
-    jStrBufferSize = (*env)->NewStringUTF(env, "io.file.buffer.size"); 
+    jStrBufferSize = (*env)->NewStringUTF(env, "io.file.buffer.size");
     if (!jStrBufferSize) {
         ret = printPendingExceptionAndFree(env, PRINT_EXC_ALL, "OOM");
         goto done;
@@ -1097,7 +1126,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
     }
 
     if (!bufferSize) {
-        jthr = invokeMethod(env, &jVal, INSTANCE, jConfiguration, 
+        jthr = invokeMethod(env, &jVal, INSTANCE, jConfiguration,
                          HADOOP_CONF, "getInt", "(Ljava/lang/String;I)I",
                          jStrBufferSize, 4096);
         if (jthr) {
@@ -1112,7 +1141,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
 
     if ((accmode == O_WRONLY) && (flags & O_APPEND) == 0) {
         if (!replication) {
-            jthr = invokeMethod(env, &jVal, INSTANCE, jConfiguration, 
+            jthr = invokeMethod(env, &jVal, INSTANCE, jConfiguration,
                              HADOOP_CONF, "getInt", "(Ljava/lang/String;I)I",
                              jStrReplication, 1);
             if (jthr) {
@@ -1124,7 +1153,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
             jReplication = (jshort)jVal.i;
         }
     }
- 
+
     /* Create and return either the FSDataInputStream or
        FSDataOutputStream references jobject jStream */
 
@@ -1168,7 +1197,7 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
     file->file = (*env)->NewGlobalRef(env, jFile);
     if (!file->file) {
         ret = printPendingExceptionAndFree(env, PRINT_EXC_ALL,
-            "hdfsOpenFile(%s): NewGlobalRef", path); 
+            "hdfsOpenFile(%s): NewGlobalRef", path);
         goto done;
     }
     file->type = (((flags & O_WRONLY) == 0) ? HDFS_STREAM_INPUT :
@@ -1193,9 +1222,9 @@ static hdfsFile hdfsOpenFileImpl(hdfsFS fs, const char *path, int flags,
 done:
     destroyLocalReference(env, jStrBufferSize);
     destroyLocalReference(env, jStrReplication);
-    destroyLocalReference(env, jConfiguration); 
-    destroyLocalReference(env, jPath); 
-    destroyLocalReference(env, jFile); 
+    destroyLocalReference(env, jConfiguration);
+    destroyLocalReference(env, jPath);
+    destroyLocalReference(env, jFile);
     if (ret) {
         if (file) {
             if (file->file) {
@@ -1288,7 +1317,7 @@ int hdfsCloseFile(hdfsFS fs, hdfsFile file)
 {
     int ret;
     // JAVA EQUIVALENT:
-    //  file.close 
+    //  file.close
 
     //The interface whose 'close' method to be called
     const char *interface;
@@ -1312,11 +1341,11 @@ int hdfsCloseFile(hdfsFS fs, hdfsFile file)
 
     interface = (file->type == HDFS_STREAM_INPUT) ?
         HADOOP_ISTRM : HADOOP_OSTRM;
-  
+
     jthr = invokeMethod(env, NULL, INSTANCE, file->file, interface,
                      "close", "()V");
     if (jthr) {
-        interfaceShortName = (file->type == HDFS_STREAM_INPUT) ? 
+        interfaceShortName = (file->type == HDFS_STREAM_INPUT) ?
             "FSDataInputStream" : "FSDataOutputStream";
         ret = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
                 "%s#close", interfaceShortName);
@@ -1347,7 +1376,7 @@ int hdfsExists(hdfsFS fs, const char *path)
         errno = EINTERNAL;
         return -1;
     }
-    
+
     if (path == NULL) {
         errno = EINVAL;
         return -1;
@@ -1526,6 +1555,10 @@ tSize hdfsPread(hdfsFS fs, hdfsFile f, tOffset position,
     if (!f || f->type == HDFS_STREAM_UNINITIALIZED) {
         errno = EBADF;
         return -1;
+    }
+
+    if (f->flags & HDFS_FILE_SUPPORTS_DIRECT_PREAD) {
+      return preadDirect(fs, f, position, buffer, length);
     }
 
     env = getJNIEnv();

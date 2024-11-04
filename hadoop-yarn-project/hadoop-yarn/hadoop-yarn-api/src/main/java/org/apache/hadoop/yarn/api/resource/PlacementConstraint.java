@@ -138,8 +138,8 @@ public class PlacementConstraint {
     }
   }
 
-  static final String NODE_SCOPE = "node";
-  static final String RACK_SCOPE = "rack";
+  static final String NODE_SCOPE = "NODE";
+  static final String RACK_SCOPE = "RACK";
 
   /**
    * Consider a set of nodes N that belongs to the scope specified in the

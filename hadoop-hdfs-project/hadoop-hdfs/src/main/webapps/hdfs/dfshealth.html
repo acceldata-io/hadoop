@@ -26,33 +26,48 @@
 </head>
 <body>
 
-<header class="navbar navbar-inverse bs-docs-nav" role="banner">
-<div class="container">
-  <div class="navbar-header">
-    <div class="navbar-brand">Hadoop</div>
-  </div>
-
-  <ul class="nav navbar-nav" id="ui-tabs">
-    <li><a href="#tab-overview">Overview</a></li>
-    <li><a href="#tab-datanode">Datanodes</a></li>
-    <li><a href="#tab-datanode-volume-failures">Datanode Volume Failures</a></li>
-    <li><a href="#tab-snapshot">Snapshot</a></li>
-    <li><a href="#tab-startup-progress">Startup Progress</a></li>
-    <li class="dropdown">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
-      <ul class="dropdown-menu">
-        <li><a href="explorer.html">Browse the file system</a></li>
-        <li><a href="logs">Logs</a></li>
-        <li><a href="logLevel">Log Level</a></li>
-        <li><a href="jmx">Metrics</a></li>
-        <li><a href="conf">Configuration</a></li>
-        <li><a href="stacks">Process Thread Dump</a></li>
-        <li><a href="topology">Network Topology</a></li>
+<header class="navbar navbar-expand-lg navbar-dark bg-dark" role="banner">
+  <div class="container">
+    <a class="navbar-brand" href="#">Hadoop</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav" id="ui-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="#tab-overview">Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tab-datanode">Datanodes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tab-datanode-volume-failures">Datanode Volume Failures</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tab-snapshot">Snapshot</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tab-startup-progress">Startup Progress</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Utilities
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="explorer.html">Browse the file system</a></li>
+            <li><a class="dropdown-item" href="logs">Logs</a></li>
+            <li><a class="dropdown-item" href="logLevel">Log Level</a></li>
+            <li><a class="dropdown-item" href="jmx">Metrics</a></li>
+            <li><a class="dropdown-item" href="conf">Configuration</a></li>
+            <li><a class="dropdown-item" href="stacks">Process Thread Dump</a></li>
+            <li><a class="dropdown-item" href="topology">Network Topology</a></li>
+          </ul>
+        </li>
       </ul>
-    </li>
-  </ul>
-</div>
+    </div>
+  </div>
 </header>
+
 
 <div class="container">
 

@@ -619,7 +619,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 The binary distribution of this product bundles these dependencies under the
 following license:
-hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/bootstrap-3.4.1
+hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/bootstrap-5.3.3
 hadoop-tools/hadoop-sls/src/main/html/js/thirdparty/bootstrap.min.js
 hadoop-tools/hadoop-sls/src/main/html/css/bootstrap.min.css
 hadoop-tools/hadoop-sls/src/main/html/css/bootstrap-responsive.min.css

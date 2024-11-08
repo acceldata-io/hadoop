@@ -341,3 +341,17 @@ src: url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.eot?#iefix") form
         float: left;
     }
 }
+
+@media (min-width: 768px) {
+    .navbar-nav {
+        float: left;
+        margin: 0;
+    }
+    .navbar-nav > li {
+        float: left;
+    }
+    .navbar-nav > li > a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+}

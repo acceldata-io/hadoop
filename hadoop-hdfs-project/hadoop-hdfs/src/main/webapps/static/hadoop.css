@@ -194,7 +194,7 @@ div.security {
   background-color: #5FA33E !important;
 }
 
-header.bs-docs-nav, header.bs-docs-nav .navbar-brand {
+header.bs-docs-nav, header.bs-docs-nav .custom-navbar-brand {
   border-radius: 0px;
   background-color: #5fa33e;
   color: #fff;
@@ -321,6 +321,13 @@ header.bs-docs-nav, header.bs-docs-nav .navbar-brand {
 .bar text {
     fill: #fff;
     font: 10px sans-serif;
+}
+
+.custom-navbar-brand {
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 18px;
+    line-height: 20px;
 }
 
 @font-face {

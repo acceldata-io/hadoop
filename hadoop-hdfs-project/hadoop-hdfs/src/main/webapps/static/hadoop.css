@@ -335,3 +335,9 @@ font-family: "Glyphicons Halflings";
 src: url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.eot");
 src: url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.woff2") format("woff2"), url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.woff") format("woff"), url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
 }
+
+@media (min-width: 768px) {
+    .custom-navbar-header {
+        float: left;
+    }
+}

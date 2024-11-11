@@ -21,7 +21,6 @@ package org.apache.hadoop.mapreduce.jobhistory;
 import java.util.Set;
 
 import org.apache.hadoop.mapreduce.JobID;
-import org.apache.hadoop.thirdparty.avro.util.Utf8;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.timelineservice.TimelineEvent;
 import org.apache.hadoop.yarn.api.records.timelineservice.TimelineMetric;
@@ -31,8 +30,8 @@ public class JobQueueChangeEvent implements HistoryEvent {
   private JobQueueChange datum = new JobQueueChange();
   
   public JobQueueChangeEvent(JobID id, String queueName) {
-    datum.setJobid(new Utf8(id.toString()));
-    datum.setJobQueueName(new Utf8(queueName));
+    datum.setJobid(id.toString());
+    datum.setJobQueueName(queueName);
   }
   
   JobQueueChangeEvent() { }
@@ -59,8 +58,9 @@ public class JobQueueChangeEvent implements HistoryEvent {
   
   /** Get the new Job queue name */
   public String getJobQueueName() {
-    if (datum.getJobQueueName() != null) {
-      return datum.getJobQueueName().toString();
+    java.lang.CharSequence jobQueueName = datum.getJobQueueName();
+    if (jobQueueName != null) {
+      return jobQueueName.toString();
     }
     return null;
   }

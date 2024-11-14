@@ -61,6 +61,7 @@ import org.apache.hadoop.yarn.util.UnitsConversionUtil;
 import org.apache.hadoop.yarn.util.resource.ResourceCalculator;
 import org.apache.hadoop.yarn.util.resource.ResourceUtils;
 import org.apache.hadoop.yarn.util.resource.Resources;
+import org.apache.hadoop.util.Time;
 
 import static org.apache.hadoop.yarn.exceptions
         .InvalidResourceRequestException
@@ -72,7 +73,7 @@ import static org.apache.hadoop.yarn.exceptions
         .InvalidResourceRequestException.UNKNOWN_REASON_MESSAGE_TEMPLATE;
 
 /**
- * Utilities shared by schedulers. 
+ * Utilities shared by schedulers.
  */
 @Private
 @Unstable
@@ -136,7 +137,7 @@ public class SchedulerUtils {
    *
    * @param containerId {@link ContainerId} of returned/released/lost container.
    * @param diagnostics diagnostic message
-   * @return <code>ContainerStatus</code> for an returned/released/lost 
+   * @return <code>ContainerStatus</code> for an returned/released/lost
    *         container
    */
   public static ContainerStatus createAbnormalContainerStatus(
@@ -179,7 +180,7 @@ public class SchedulerUtils {
    *
    * @param containerId {@link ContainerId} of returned/released/lost container.
    * @param diagnostics diagnostic message
-   * @return <code>ContainerStatus</code> for an returned/released/lost 
+   * @return <code>ContainerStatus</code> for an returned/released/lost
    *         container
    */
   private static ContainerStatus createAbnormalContainerStatus(
@@ -603,5 +604,12 @@ public class SchedulerUtils {
     appAttempt.addRMContainer(container.getId(), rmContainer);
     node.allocateContainer(rmContainer);
     return rmContainer;
+  }
+
+  public static boolean isNodeHeartbeated(SchedulerNode node,
+      long skipNodeInterval) {
+    long timeElapsedFromLastHeartbeat =
+        Time.monotonicNow() - node.getLastHeartbeatMonotonicTime();
+    return timeElapsedFromLastHeartbeat <= skipNodeInterval;
   }
 }

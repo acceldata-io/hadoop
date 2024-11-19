@@ -234,6 +234,8 @@
                         <exclude>jnamed*</exclude>
                         <exclude>lookup*</exclude>
                         <exclude>update*</exclude>
+                        <exclude>META-INF/versions/21/*</exclude>
+                        <exclude>META-INF/versions/21/**/*</exclude>
                       </excludes>
                     </filter>
                     <filter>

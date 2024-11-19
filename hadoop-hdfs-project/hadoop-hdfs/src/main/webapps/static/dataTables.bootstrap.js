@@ -30,7 +30,7 @@ $.extend( true, DataTable.defaults, {
 $.extend( DataTable.ext.classes, {
 	sWrapper:      "dataTables_wrapper form-inline dt-bootstrap",
 	sFilterInput:  "form-control input-sm",
-	sLengthSelect: "form-control input-sm"
+	sLengthSelect: "form-select input-sm"
 } );
 
 
@@ -107,6 +107,7 @@ DataTable.ext.renderer.pageButton.bootstrap = function ( settings, host, idx, bu
 						.append( $('<a>', {
 								'href': '#',
 								'aria-controls': settings.sTableId,
+								'class': 'page-link',
 								'data-dt-idx': counter,
 								'tabindex': settings.iTabIndex
 							} )

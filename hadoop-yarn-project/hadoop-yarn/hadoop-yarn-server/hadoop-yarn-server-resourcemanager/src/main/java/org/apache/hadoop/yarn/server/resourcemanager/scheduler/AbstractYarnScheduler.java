@@ -159,6 +159,7 @@ public abstract class AbstractYarnScheduler
   protected ConcurrentMap<ApplicationId, SchedulerApplication<T>> applications;
   protected int nmExpireInterval;
   protected long nmHeartbeatInterval;
+  private long skipNodeInterval;
 
   private final static List<Container> EMPTY_CONTAINER_LIST =
       new ArrayList<Container>();
@@ -359,6 +360,10 @@ public abstract class AbstractYarnScheduler
 
   public long getLastNodeUpdateTime() {
     return lastNodeUpdateTime;
+  }
+
+  public long getSkipNodeInterval(){
+    return skipNodeInterval;
   }
 
   protected void containerLaunchedOnNode(

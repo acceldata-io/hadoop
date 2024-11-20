@@ -27,7 +27,7 @@
 #ifdef UNIX
 static EVP_CIPHER_CTX * (*dlsym_EVP_CIPHER_CTX_new)(void);
 static void (*dlsym_EVP_CIPHER_CTX_free)(EVP_CIPHER_CTX *);
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 static int (*dlsym_EVP_CIPHER_CTX_reset)(EVP_CIPHER_CTX *);
 #else
 static int (*dlsym_EVP_CIPHER_CTX_cleanup)(EVP_CIPHER_CTX *);
@@ -127,7 +127,7 @@ JNIEXPORT void JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_initIDs
                       "EVP_CIPHER_CTX_new");
   LOAD_DYNAMIC_SYMBOL(dlsym_EVP_CIPHER_CTX_free, env, openssl,  \
                       "EVP_CIPHER_CTX_free");
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
   LOAD_DYNAMIC_SYMBOL(dlsym_EVP_CIPHER_CTX_reset, env, openssl,  \
                       "EVP_CIPHER_CTX_reset");
 #else
@@ -161,7 +161,7 @@ JNIEXPORT void JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_initIDs
   LOAD_DYNAMIC_SYMBOL(__dlsym_EVP_CIPHER_CTX_free, dlsym_EVP_CIPHER_CTX_free,  \
                       env, openssl, "EVP_CIPHER_CTX_free");
   LOAD_DYNAMIC_SYMBOL(__dlsym_EVP_CIPHER_CTX_cleanup,  \
-                      dlsym_EVP_CIPHER_CTX_cleanup, env, 
+                      dlsym_EVP_CIPHER_CTX_cleanup, env,
                       openssl, "EVP_CIPHER_CTX_cleanup");
   LOAD_DYNAMIC_SYMBOL(__dlsym_EVP_CIPHER_CTX_init, dlsym_EVP_CIPHER_CTX_init,  \
                       env, openssl, "EVP_CIPHER_CTX_init");
@@ -240,7 +240,7 @@ static EVP_CIPHER * getEvpCipher(int alg, int keyLen)
 }
 
 JNIEXPORT jlong JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_init
-    (JNIEnv *env, jobject object, jlong ctx, jint mode, jint alg, jint padding, 
+    (JNIEnv *env, jobject object, jlong ctx, jint mode, jint alg, jint padding,
     jbyteArray key, jbyteArray iv)
 {
   int jKeyLen = (*env)->GetArrayLength(env, key);
@@ -253,7 +253,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_init
     THROW(env, "java/lang/IllegalArgumentException", "Invalid iv length.");
     return (jlong)0;
   }
-  
+
   EVP_CIPHER_CTX *context = CONTEXT(ctx);
   if (context == 0) {
     // Create and initialize a EVP_CIPHER_CTX
@@ -263,7 +263,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_init
       return (jlong)0;
     }
   }
-  
+
   jbyte *jKey = (*env)->GetByteArrayElements(env, key, NULL);
   if (jKey == NULL) {
     THROW(env, "java/lang/InternalError", "Cannot get bytes array for key.");
@@ -275,13 +275,13 @@ JNIEXPORT jlong JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_init
     THROW(env, "java/lang/InternalError", "Cannot get bytes array for iv.");
     return (jlong)0;
   }
-  
+
   int rc = dlsym_EVP_CipherInit_ex(context, getEvpCipher(alg, jKeyLen),  \
       NULL, (unsigned char *)jKey, (unsigned char *)jIv, mode == ENCRYPT_MODE);
   (*env)->ReleaseByteArrayElements(env, key, jKey, 0);
   (*env)->ReleaseByteArrayElements(env, iv, jIv, 0);
   if (rc == 0) {
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     dlsym_EVP_CIPHER_CTX_reset(context);
 #else
     dlsym_EVP_CIPHER_CTX_cleanup(context);
@@ -348,7 +348,7 @@ JNIEXPORT jint JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_update
   int output_len = 0;
   if (!dlsym_EVP_CipherUpdate(context, output_bytes, &output_len,  \
       input_bytes, input_len)) {
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     dlsym_EVP_CIPHER_CTX_reset(context);
 #else
     dlsym_EVP_CIPHER_CTX_cleanup(context);
@@ -394,7 +394,7 @@ JNIEXPORT jint JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_doFinal
   
   int output_len = 0;
   if (!dlsym_EVP_CipherFinal_ex(context, output_bytes, &output_len)) {
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     dlsym_EVP_CIPHER_CTX_reset(context);
 #else
     dlsym_EVP_CIPHER_CTX_cleanup(context);
@@ -418,7 +418,7 @@ JNIEXPORT jstring JNICALL Java_org_apache_hadoop_crypto_OpensslCipher_getLibrary
     (JNIEnv *env, jclass clazz) 
 {
 #ifdef UNIX
-#if OPENSSL_API_COMPAT < 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
   if (dlsym_EVP_CIPHER_CTX_reset) {
     Dl_info dl_info;
     if(dladdr(

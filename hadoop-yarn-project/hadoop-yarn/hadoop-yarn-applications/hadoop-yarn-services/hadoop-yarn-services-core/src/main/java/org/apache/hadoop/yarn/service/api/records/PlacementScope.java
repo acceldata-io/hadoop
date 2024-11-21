@@ -22,6 +22,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.yarn.api.resource.PlacementConstraints;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import io.swagger.annotations.ApiModel;
 
@@ -43,6 +44,13 @@ public enum PlacementScope {
 
   public String getValue() {
     return value;
+  }
+
+  @JsonCreator
+  public static PlacementScope fromString(String key) {
+    return key == null
+            ? null
+            : PlacementScope.valueOf(key.toUpperCase());
   }
 
   @Override

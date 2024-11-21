@@ -117,9 +117,9 @@
   <div class="page-header">
     <h1>Browse Directory</h1>
   </div>
-  <div class="alert alert-danger" id="alert-panel" style="display:none">
-    <button type="button" class="close" onclick="$('#alert-panel').hide();">&times;</button>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert" id="alert-panel" style="display:none">
     <div class="alert-body" id="alert-panel-body"></div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
   <div class="modal" id="btn-create-directory" tabindex="-1" role="dialog"
        aria-hidden="true">
@@ -209,7 +209,7 @@
       </button>
       <button class="btn btn-light  dropdown-toggle" type="button"
               data-bs-toggle="dropdown" title="Cut & Paste">
-        <span class="glyphicon glyphicon-list-alt"></span></button>        
+        <span class="glyphicon glyphicon-list-alt"></span></button>
       </button>
       <ul class="dropdown-menu cut-paste">
         <li><a class="dropdown-item" id="explorer-cut" href="#">Cut</a></li>

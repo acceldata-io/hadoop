@@ -1185,3 +1185,8 @@ src: url("./bootstrap-5.3.3/fonts/glyphicons-halflings-regular.eot?#iefix") form
         width: 58.33333333%;
     }
 }
+
+.alert .alert-body p {
+    margin-top: 0;
+    margin-bottom: 0;
+}

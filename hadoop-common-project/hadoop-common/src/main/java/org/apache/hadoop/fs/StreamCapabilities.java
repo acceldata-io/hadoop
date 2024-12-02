@@ -64,7 +64,6 @@ public interface StreamCapabilities {
    * {@link ByteBufferReadable#read(java.nio.ByteBuffer)}.
    */
   String READBYTEBUFFER = "in:readbytebuffer";
-
   /**
    * Stream read(long, ByteBuffer) capability implemented by
    * {@link ByteBufferPositionedReadable#read(long, java.nio.ByteBuffer)}.

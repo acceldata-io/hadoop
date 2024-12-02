@@ -58,21 +58,11 @@ if(WIN32)
     # Omit unneeded headers.
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWIN32_LEAN_AND_MEAN")
     set(OS_DIR ${CMAKE_SOURCE_DIR}/main/native/libhdfs/os/windows)
-
-    # IMPORTANT: OUT_DIR MUST be relative to maven's
-    # project.build.directory (=target) and match dist-copynativelibs
-    # in order to be in a release
-    set(OUT_DIR bin)
+    set(OUT_DIR target/bin)
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
-    # using old default behavior on GCC >= 10.0
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
     set(OS_DIR ${CMAKE_SOURCE_DIR}/main/native/libhdfs/os/posix)
-
-    # IMPORTANT: OUT_DIR MUST be relative to maven's
-    # project.build.directory (=target) and match dist-copynativelibs
-    # in order to be in a release
-    set(OUT_DIR native/target/usr/local/lib)
+    set(OUT_DIR target/usr/local/lib)
 endif()
 
 # Configure JNI.
@@ -148,12 +138,12 @@ endif()
 
 add_subdirectory(main/native/libhdfs)
 add_subdirectory(main/native/libhdfs-tests)
+add_subdirectory(main/native/libhdfs-examples)
 
 # Temporary fix to disable Libhdfs++ build on older systems that do not support thread_local
 include(CheckCXXSourceCompiles)
 unset (THREAD_LOCAL_SUPPORTED CACHE)
-set (CMAKE_CXX_STANDARD 11)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_REQUIRED_DEFINITIONS "-std=c++11")
 set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 check_cxx_source_compiles(
     "#include <thread>

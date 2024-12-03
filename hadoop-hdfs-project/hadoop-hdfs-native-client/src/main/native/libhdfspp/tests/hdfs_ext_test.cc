@@ -475,11 +475,7 @@ TEST_F(HdfsExtTest, TestReadStats) {
   hdfsFile file = hdfsOpenFile(fs, path.c_str(), O_WRONLY, 0, 0, 0);
   EXPECT_NE(nullptr, file);
   void * buf = malloc(size);
-#ifdef HAVE_EXPLICIT_BZERO
-  explicit_bzero(buf, size);
-#else
   bzero(buf, size);
-#endif
   EXPECT_EQ(size, hdfsWrite(fs, file, buf, size));
   free(buf);
   EXPECT_EQ(0, hdfsCloseFile(fs, file));
@@ -507,10 +503,7 @@ TEST_F(HdfsExtTest, TestReadStats) {
   hdfsFileFreeReadStatistics(stats);
 
   EXPECT_EQ(0, hdfsCloseFile(fs, file));
-  // Since libhdfs is not guaranteed to set errno to 0 on successful
-  // operations, we disable this check for now, see HDFS-14325 for a
-  // long term solution to this problem
-  // EXPECT_EQ(0, errno);
+  EXPECT_EQ(0, errno);
 }
 
 //Testing working directory

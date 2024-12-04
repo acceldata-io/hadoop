@@ -62,6 +62,7 @@
   "resolutions": {
     "graceful-fs": "^4.2.4",
     "**/mkdirp/minimist": "1.2.6",
-    "**/optimist/minimist": "1.2.6"
+    "**/optimist/minimist": "1.2.6",
+    "**/form-data/async": "2.6.4"
   }
 }

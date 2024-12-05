@@ -66,9 +66,7 @@ public class JQueryUI extends HtmlBlock {
   @Override
   protected void render(Block html) {
     html.link(root_url("static/jquery/themes-1.14.1/base/jquery-ui.css"))
-        .link(root_url("static/dt-1.10.7/css/jquery.dataTables.css"))
         .link(root_url("static/dt-1.10.7/css/jui-dt.css"))
-        .link(root_url("static/dt-1.10.7/css/custom_datatable.css"))
         .script(root_url("static/jquery/jquery-3.7.1.min.js"))
         .script(root_url("static/jquery/jquery-ui-1.14.1.custom.min.js"))
         .script(root_url("static/dt-1.10.7/js/jquery.dataTables.min.js"))

@@ -108,7 +108,7 @@
     <zookeeper.version>3.8.4.3.3.6.1-1</zookeeper.version>
     <curator.version>5.2.0</curator.version>
     <findbugs.version>3.0.5</findbugs.version>
-    <dnsjava.version>3.6.1</dnsjava.version>
+    <dnsjava.version>3.6.0</dnsjava.version>
 
     <guava.version>32.0.1-jre</guava.version>
     <guice.version>4.0</guice.version>

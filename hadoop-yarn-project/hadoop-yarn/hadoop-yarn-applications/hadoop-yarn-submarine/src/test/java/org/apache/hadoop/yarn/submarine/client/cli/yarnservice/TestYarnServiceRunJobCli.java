@@ -152,7 +152,7 @@ public class TestYarnServiceRunJobCli {
         new String[]{"--name", "my-job", "--docker_image", "tf-docker:1.1.0",
             "--input_path", "s3://input", "--checkpoint_path", "s3://output",
             "--num_workers", "3", "--num_ps", "2", "--worker_launch_cmd",
-            "python run-job.py", "--worker_resources", "memory=2048M,vcores=2",
+            "ambari-python-wrap run-job.py", "--worker_resources", "memory=2048M,vcores=2",
             "--ps_resources", "memory=4096M,vcores=4", "--ps_docker_image",
             "ps.image", "--worker_docker_image", "worker.image",
             "--ps_launch_cmd", "python run-ps.py", "--verbose"});

@@ -90,9 +90,9 @@ public class TestRunJobCliParsing {
         new String[] { "--name", "my-job", "--docker_image", "tf-docker:1.1.0",
             "--input_path", "hdfs://input", "--checkpoint_path", "hdfs://output",
             "--num_workers", "3", "--num_ps", "2", "--worker_launch_cmd",
-            "python run-job.py", "--worker_resources", "memory=2048M,vcores=2",
+            "ambari-python-wrap run-job.py", "--worker_resources", "memory=2048M,vcores=2",
             "--ps_resources", "memory=4G,vcores=4", "--tensorboard", "true",
-            "--ps_launch_cmd", "python run-ps.py", "--keytab", "/keytab/path",
+            "--ps_launch_cmd", "ambari-python-wrap run-ps.py", "--keytab", "/keytab/path",
             "--principal", "user/_HOST@domain.com", "--distribute_keytab",
             "--verbose" });
 
@@ -101,11 +101,11 @@ public class TestRunJobCliParsing {
     Assert.assertEquals(jobRunParameters.getInputPath(), "hdfs://input");
     Assert.assertEquals(jobRunParameters.getCheckpointPath(), "hdfs://output");
     Assert.assertEquals(jobRunParameters.getNumPS(), 2);
-    Assert.assertEquals(jobRunParameters.getPSLaunchCmd(), "python run-ps.py");
+    Assert.assertEquals(jobRunParameters.getPSLaunchCmd(), "ambari-python-wrap run-ps.py");
     Assert.assertEquals(Resources.createResource(4096, 4),
         jobRunParameters.getPsResource());
     Assert.assertEquals(jobRunParameters.getWorkerLaunchCmd(),
-        "python run-job.py");
+        "ambari-python-wrap run-job.py");
     Assert.assertEquals(Resources.createResource(2048, 2),
         jobRunParameters.getWorkerResource());
     Assert.assertEquals(jobRunParameters.getDockerImageName(),
@@ -126,7 +126,7 @@ public class TestRunJobCliParsing {
     runJobCli.run(
         new String[] { "--name", "my-job", "--docker_image", "tf-docker:1.1.0",
             "--input_path", "hdfs://input", "--checkpoint_path", "hdfs://output",
-            "--num_workers", "1", "--worker_launch_cmd", "python run-job.py",
+            "--num_workers", "1", "--worker_launch_cmd", "ambari-python-wrap run-job.py",
             "--worker_resources", "memory=4g,vcores=2", "--tensorboard",
             "true", "--verbose", "--wait_job_finish" });
 
@@ -136,7 +136,7 @@ public class TestRunJobCliParsing {
     Assert.assertEquals(jobRunParameters.getCheckpointPath(), "hdfs://output");
     Assert.assertEquals(jobRunParameters.getNumWorkers(), 1);
     Assert.assertEquals(jobRunParameters.getWorkerLaunchCmd(),
-        "python run-job.py");
+        "ambari-python-wrap run-job.py");
     Assert.assertEquals(Resources.createResource(4096, 2),
         jobRunParameters.getWorkerResource());
     Assert.assertTrue(SubmarineLogs.isVerbose());
@@ -152,7 +152,7 @@ public class TestRunJobCliParsing {
       runJobCli.run(
           new String[]{"--name", "my-job", "--docker_image", "tf-docker:1.1.0",
               "--checkpoint_path", "hdfs://output",
-              "--num_workers", "1", "--worker_launch_cmd", "python run-job.py",
+              "--num_workers", "1", "--worker_launch_cmd", "ambari-python-wrap run-job.py",
               "--worker_resources", "memory=4g,vcores=2", "--tensorboard",
               "true", "--verbose", "--wait_job_finish"});
     } catch (ParseException e) {
@@ -190,14 +190,14 @@ public class TestRunJobCliParsing {
         new String[] { "--name", "my-job", "--docker_image", "tf-docker:1.1.0",
             "--input_path", "hdfs://input", "--checkpoint_path", "hdfs://output",
             "--num_workers", "3", "--num_ps", "2", "--worker_launch_cmd",
-            "python run-job.py --input=%input_path% --model_dir=%checkpoint_path% --export_dir=%saved_model_path%/savedmodel",
+            "ambari-python-wrap run-job.py --input=%input_path% --model_dir=%checkpoint_path% --export_dir=%saved_model_path%/savedmodel",
             "--worker_resources", "memory=2048,vcores=2", "--ps_resources",
             "memory=4096,vcores=4", "--tensorboard", "true", "--ps_launch_cmd",
-            "python run-ps.py --input=%input_path% --model_dir=%checkpoint_path%/model",
+            "ambari-python-wrap run-ps.py --input=%input_path% --model_dir=%checkpoint_path%/model",
             "--verbose" });
 
     Assert.assertEquals(
-        "python run-job.py --input=hdfs://input --model_dir=hdfs://output "
+        "ambari-python-wrap run-job.py --input=hdfs://input --model_dir=hdfs://output "
             + "--export_dir=hdfs://output/savedmodel",
         runJobCli.getRunJobParameters().getWorkerLaunchCmd());
     Assert.assertEquals(

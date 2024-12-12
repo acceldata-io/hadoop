@@ -1,20 +1,20 @@
 /**
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.hadoop.yarn.webapp.view;
 
@@ -47,15 +47,15 @@ public class JQueryUI extends HtmlBlock {
 
   // common CSS classes
   public static final String _PROGRESSBAR =
-      ".ui-progressbar.ui-widget.ui-widget-content.ui-corner-all";
+          ".ui-progressbar.ui-widget.ui-widget-content.ui-corner-all";
   public static final String C_PROGRESSBAR =
-      _PROGRESSBAR.replace('.', ' ').trim();
+          _PROGRESSBAR.replace('.', ' ').trim();
   public static final String _PROGRESSBAR_VALUE =
-      ".ui-progressbar-value.ui-widget-header.ui-corner-left";
+          ".ui-progressbar-value.ui-widget-header.ui-corner-left";
   public static final String C_PROGRESSBAR_VALUE =
-      _PROGRESSBAR_VALUE.replace('.', ' ').trim();
+          _PROGRESSBAR_VALUE.replace('.', ' ').trim();
   public static final String _INFO_WRAP =
-      ".info-wrap.ui-widget-content.ui-corner-bottom";
+          ".info-wrap.ui-widget-content.ui-corner-bottom";
   public static final String _TH = ".ui-state-default";
   public static final String C_TH = _TH.replace('.', ' ').trim();
   public static final String C_TABLE = "table";
@@ -65,17 +65,15 @@ public class JQueryUI extends HtmlBlock {
 
   @Override
   protected void render(Block html) {
-    html.link(root_url("static/jquery/themes-1.9.1/base/jquery-ui.css"))
-        .link(root_url("static/dt-1.10.18/css/jquery.dataTables.css"))
-        .link(root_url("static/dt-1.10.18/css/jui-dt.css"))
-        .link(root_url("static/dt-1.10.18/css/custom_datatable.css"))
-        .script(root_url("static/jquery/jquery-3.6.0.min.js"))
-        .script(root_url("static/jquery/jquery-ui-1.13.2.custom.min.js"))
-        .script(root_url("static/dt-1.10.18/js/jquery.dataTables.min.js"))
-        .script(root_url("static/yarn.dt.plugins.js"))
-        .script(root_url("static/dt-sorting/natural.js"))
-        .style("#jsnotice { padding: 0.2em; text-align: center; }",
-            ".ui-progressbar { height: 1em; min-width: 5em }"); // required
+    html.link(root_url("static/jquery/themes-1.14.1/base/jquery-ui.css"))
+            .link(root_url("static/dt-1.10.7/css/jui-dt.css"))
+            .script(root_url("static/jquery/jquery-3.7.1.min.js"))
+            .script(root_url("static/jquery/jquery-ui-1.14.1.custom.min.js"))
+            .script(root_url("static/dt-1.10.7/js/jquery.dataTables.min.js"))
+            .script(root_url("static/yarn.dt.plugins.js"))
+            .script(root_url("static/dt-sorting/natural.js"))
+            .style("#jsnotice { padding: 0.2em; text-align: center; }",
+                    ".ui-progressbar { height: 1em; min-width: 5em }"); // required
 
     List<String> list = Lists.newArrayList();
     initAccordions(list);
@@ -85,18 +83,18 @@ public class JQueryUI extends HtmlBlock {
 
     if (!list.isEmpty()) {
       html.script().$type("text/javascript").__("$(function() {")
-          .__(list.toArray()).__("});").__();
+              .__(list.toArray()).__("});").__();
     }
   }
 
   public static void jsnotice(HTML html) {
     html.
-      div("#jsnotice.ui-state-error").
-        __("This page will not function without javascript enabled."
-            + " Please enable javascript on your browser.").__();
+            div("#jsnotice.ui-state-error").
+            __("This page will not function without javascript enabled."
+                    + " Please enable javascript on your browser.").__();
     html.
-      script().$type("text/javascript").
-        __("$('#jsnotice').hide();").__();
+            script().$type("text/javascript").
+            __("$('#jsnotice').hide();").__();
   }
 
   protected void initAccordions(List<String> list) {
@@ -114,15 +112,15 @@ public class JQueryUI extends HtmlBlock {
   protected void initDataTables(List<String> list) {
     String defaultInit = "{bJQueryUI: true, sPaginationType: 'full_numbers'}";
     String stateSaveInit = "bStateSave : true, " +
-        "\"fnStateSave\": function (oSettings, oData) { " +
-              " data = oData.aoSearchCols;"
-              + "for(i =0 ; i < data.length; i ++) {"
-              + "data[i].sSearch = \"\""
-              + "}"
-        + " sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, " +
-          "\"fnStateLoad\": function (oSettings) { " +
-              "return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, ";
-      
+            "\"fnStateSave\": function (oSettings, oData) { " +
+            " data = oData.aoSearchCols;"
+            + "for(i =0 ; i < data.length; i ++) {"
+            + "data[i].sSearch = \"\""
+            + "}"
+            + " sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, " +
+            "\"fnStateLoad\": function (oSettings) { " +
+            "return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, ";
+
     for (String id : split($(DATATABLES_ID))) {
       if (Html.isValidId(id)) {
         String init = $(initID(DATATABLES, id));
@@ -130,10 +128,10 @@ public class JQueryUI extends HtmlBlock {
           init = defaultInit;
         }
         // for inserting stateSaveInit
-        int pos = init.indexOf('{') + 1;  
-        init = new StringBuffer(init).insert(pos, stateSaveInit).toString(); 
+        int pos = init.indexOf('{') + 1;
+        init = new StringBuffer(init).insert(pos, stateSaveInit).toString();
         list.add(join(id, "DataTable =  $('#", id, "').dataTable(", init,
-                      ").fnSetFilteringDelay(188);"));
+                ").fnSetFilteringDelay(188);"));
         String postInit = $(postInitID(DATATABLES, id));
         if(!postInit.isEmpty()) {
           list.add(postInit);
@@ -145,12 +143,12 @@ public class JQueryUI extends HtmlBlock {
       String init = $(initSelector(DATATABLES));
       if (init.isEmpty()) {
         init = defaultInit;
-      }      
-      int pos = init.indexOf('{') + 1;  
-      init = new StringBuffer(init).insert(pos, stateSaveInit).toString();  
+      }
+      int pos = init.indexOf('{') + 1;
+      init = new StringBuffer(init).insert(pos, stateSaveInit).toString();
       list.add(join("  $('", escapeEcmaScript(selector), "').dataTable(", init,
-               ").fnSetFilteringDelay(288);"));      
-      
+              ").fnSetFilteringDelay(288);"));
+
     }
   }
 
@@ -166,7 +164,7 @@ public class JQueryUI extends HtmlBlock {
         list.add(join("  $('#", id, "').dialog(", init, ");"));
         if (!opener.isEmpty() && Html.isValidId(opener)) {
           list.add(join("  $('#", opener, "').click(function() { ",
-                   "$('#", id, "').dialog('open'); return false; });"));
+                  "$('#", id, "').dialog('open'); return false; });"));
         }
       }
     }
@@ -177,8 +175,8 @@ public class JQueryUI extends HtmlBlock {
         init = defaultInit;
       }
       list.add(join("  $('", escapeEcmaScript(selector),
-               "').click(function() { $(this).children('.dialog').dialog(",
-               init, "); return false; });"));
+              "').click(function() { $(this).children('.dialog').dialog(",
+              init, "); return false; });"));
     }
   }
 
@@ -194,7 +192,7 @@ public class JQueryUI extends HtmlBlock {
   public static String initID(String name, String id) {
     return djoin(name, id, "init");
   }
-  
+
   public static String postInitID(String name, String id) {
     return djoin(name, id, "postinit");
   }
@@ -205,7 +203,7 @@ public class JQueryUI extends HtmlBlock {
 
   public static StringBuilder tableInit() {
     return new StringBuilder("{bJQueryUI:true, ").
-        append("sPaginationType: 'full_numbers', iDisplayLength:20, ").
-        append("aLengthMenu:[20, 40, 60, 80, 100]");
+            append("sPaginationType: 'full_numbers', iDisplayLength:20, ").
+            append("aLengthMenu:[20, 40, 60, 80, 100]");
   }
 }

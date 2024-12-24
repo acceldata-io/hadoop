@@ -11,7 +11,7 @@
 
 name: "Frogbot Scan and Fix"
 on:
-  push:
+  workflow_dispatch:
     branches: [ "hf/ODP-3.2.3.2-201" ]
 permissions:
   contents: write

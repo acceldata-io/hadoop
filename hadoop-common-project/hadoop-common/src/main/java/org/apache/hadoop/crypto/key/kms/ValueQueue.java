@@ -63,7 +63,7 @@ public class ValueQueue <E> {
      * @param keyName Key name
      * @param keyQueue Queue that needs to be filled
      * @param numValues number of Values to be added to the queue.
-     * @throws IOException
+     * @throws IOException raised on errors performing I/O.
      */
     public void fillQueueForKey(String keyName,
         Queue<E> keyQueue, int numValues) throws IOException;
@@ -268,12 +268,30 @@ public class ValueQueue <E> {
    * Initializes the Value Queues for the provided keys by calling the
    * fill Method with "numInitValues" values
    * @param keyNames Array of key Names
-   * @throws ExecutionException
+   * @throws IOException if initialization fails for any provided keys
    */
-  public void initializeQueuesForKeys(String... keyNames)
-      throws ExecutionException {
+  public void initializeQueuesForKeys(String... keyNames) throws IOException {
+    int successfulInitializations = 0;
+    StringBuilder failedKeys = new StringBuilder();
+    ExecutionException lastException = null;
+
     for (String keyName : keyNames) {
-      keyQueues.get(keyName);
+      try {
+        keyQueues.get(keyName);
+        successfulInitializations++;
+      } catch (ExecutionException e) {
+        if (failedKeys.length() > 0) {
+          failedKeys.append(", ");
+        }
+        failedKeys.append(keyName); // Add the failed key to the list
+        lastException = e;          // Store the last exception
+      }
+    }
+
+    if (keyNames.length > 0 && successfulInitializations != keyNames.length) {
+      throw new IOException(String.format("Failed to initialize %s queues for the provided keys. " +
+                                          "Failed keys %s",
+          keyNames.length - successfulInitializations, failedKeys), lastException);
     }
   }
 
@@ -285,8 +303,8 @@ public class ValueQueue <E> {
    * function to add 1 value to Queue and then drain it.
    * @param keyName String key name
    * @return E the next value in the Queue
-   * @throws IOException
-   * @throws ExecutionException
+   * @throws IOException raised on errors performing I/O.
+   * @throws ExecutionException executionException.
    */
   public E getNext(String keyName)
       throws IOException, ExecutionException {
@@ -299,26 +317,25 @@ public class ValueQueue <E> {
    * @param keyName the key to drain the Queue for
    */
   public void drain(String keyName) {
+    Runnable e;
+    while ((e = queue.deleteByName(keyName)) != null) {
+      executor.remove(e);
+    }
+    writeLock(keyName);
     try {
-      Runnable e;
-      while ((e = queue.deleteByName(keyName)) != null) {
-        executor.remove(e);
+      LinkedBlockingQueue kq = keyQueues.getIfPresent(keyName);
+      if (kq != null) {
+        kq.clear();
       }
-      writeLock(keyName);
-      try {
-        keyQueues.get(keyName).clear();
-      } finally {
-        writeUnlock(keyName);
-      }
-    } catch (ExecutionException ex) {
-      //NOP
+    } finally {
+      writeUnlock(keyName);
     }
   }
 
   /**
    * Get size of the Queue for keyName. This is only used in unit tests.
    * @param keyName the key name
-   * @return int queue size
+   * @return int queue size. Zero means the queue is empty or the key does not exist.
    */
   public int getSize(String keyName) {
     readLock(keyName);
@@ -327,10 +344,12 @@ public class ValueQueue <E> {
       // since that will have the side effect of populating the cache.
       Map<String, LinkedBlockingQueue<E>> map =
           keyQueues.getAllPresent(Arrays.asList(keyName));
-      if (map.get(keyName) == null) {
+      final LinkedBlockingQueue<E> linkedQueue = map.get(keyName);
+      if (linkedQueue == null) {
         return 0;
+      } else {
+        return linkedQueue.size();
       }
-      return map.get(keyName).size();
     } finally {
       readUnlock(keyName);
     }
@@ -344,9 +363,9 @@ public class ValueQueue <E> {
    * <code>SyncGenerationPolicy</code> specified by the user.
    * @param keyName String key name
    * @param num Minimum number of values to return.
-   * @return List<E> values returned
-   * @throws IOException
-   * @throws ExecutionException
+   * @return {@literal List<E>} values returned
+   * @throws IOException raised on errors performing I/O.
+   * @throws ExecutionException execution exception.
    */
   public List<E> getAtMost(String keyName, int num) throws IOException,
       ExecutionException {

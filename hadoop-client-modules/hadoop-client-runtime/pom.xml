@@ -43,6 +43,10 @@
         -->
       <optional>true</optional>
       <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop.thirdparty</groupId>
+          <artifactId>hadoop-shaded-avro_1_11</artifactId>
+        </exclusion>
         <!-- these APIs are a part of the SE JDK -->
         <exclusion>
           <groupId>javax.xml.bind</groupId>

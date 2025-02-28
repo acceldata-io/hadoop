@@ -20,10 +20,14 @@ package org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugi
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ResourceInformation;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Container;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ResourceMappings;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.runtime.docker.DockerRunCommand;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.ContainerExecutionException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,7 +73,13 @@ public class TestNvidiaDockerV2CommandPlugin {
       extends NvidiaDockerV2CommandPlugin {
     private boolean requestsGpu = false;
 
-    MyNvidiaDockerV2CommandPlugin() {}
+    MyNvidiaDockerV2CommandPlugin() {
+      super(new Configuration());
+    }
+
+    MyNvidiaDockerV2CommandPlugin(Configuration conf) {
+      super(conf);
+    }
 
     public void setRequestsGpu(boolean r) {
       requestsGpu = r;
@@ -124,6 +134,120 @@ public class TestNvidiaDockerV2CommandPlugin {
     // NVIDIA_VISIBLE_DEVICES will be set
     Assert.assertTrue(
         runCommand.getEnv().get("NVIDIA_VISIBLE_DEVICES").equals("0,1"));
+    // runtime should exist
+    Assert.assertTrue(newCommandLine.containsKey("runtime"));
+  }
+
+  @Test
+  public void testPluginMIG() throws Exception {
+    DockerRunCommand runCommand = new DockerRunCommand("container_1", "user",
+        "fakeimage");
+
+    Map<String, List<String>> originalCommandline = copyCommandLine(
+        runCommand.getDockerCommandWithArguments());
+
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.USE_MIG_ENABLED_GPUS, "true");
+    MyNvidiaDockerV2CommandPlugin
+        commandPlugin = new MyNvidiaDockerV2CommandPlugin(conf);
+
+    Container nmContainer = mock(Container.class);
+    ResourceMappings resourceMappings = new ResourceMappings();
+    when(nmContainer.getResourceMappings()).thenReturn(resourceMappings);
+
+    // Assign GPU resource
+    ResourceMappings.AssignedResources assigned =
+        new ResourceMappings.AssignedResources();
+    assigned.updateAssignedResources(
+        ImmutableList.of(new GpuDevice(0, 0, 0)));
+    resourceMappings.addAssignedResources(ResourceInformation.GPU_URI,
+        assigned);
+
+    commandPlugin.setRequestsGpu(true);
+    commandPlugin.updateDockerRunCommand(runCommand, nmContainer);
+    Map<String, List<String>> newCommandLine =
+        runCommand.getDockerCommandWithArguments();
+
+    // Command line will be updated
+    Assert.assertFalse(commandlinesEquals(originalCommandline, newCommandLine));
+    // NVIDIA_VISIBLE_DEVICES will be set
+    Assert.assertTrue(
+        runCommand.getEnv().get("NVIDIA_VISIBLE_DEVICES").equals("0:0"));
+    // runtime should exist
+    Assert.assertTrue(newCommandLine.containsKey("runtime"));
+  }
+
+  @Test(expected = ContainerExecutionException.class)
+  public void testPluginMIGThrowsMulti() throws Exception {
+    DockerRunCommand runCommand = new DockerRunCommand("container_1", "user",
+        "fakeimage");
+
+    Map<String, List<String>> originalCommandline = copyCommandLine(
+        runCommand.getDockerCommandWithArguments());
+
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.USE_MIG_ENABLED_GPUS, "true");
+    MyNvidiaDockerV2CommandPlugin
+        commandPlugin = new MyNvidiaDockerV2CommandPlugin(conf);
+
+    Container nmContainer = mock(Container.class);
+    ResourceMappings resourceMappings = new ResourceMappings();
+    Map<String, String> env = new HashMap<>();
+    env.put("NVIDIA_MIG_PLUGIN_THROW_ON_MULTIPLE_GPUS", "true");
+    when(nmContainer.getResourceMappings()).thenReturn(resourceMappings);
+    ContainerLaunchContext launchCtx = mock(ContainerLaunchContext.class);
+    when(nmContainer.getLaunchContext()).thenReturn(launchCtx);
+    when(launchCtx.getEnvironment()).thenReturn(env);
+
+    // Assign GPU resource
+    ResourceMappings.AssignedResources assigned =
+        new ResourceMappings.AssignedResources();
+    assigned.updateAssignedResources(
+        ImmutableList.of(new GpuDevice(0, 0, 0), new GpuDevice(1, 1, 2)));
+    resourceMappings.addAssignedResources(ResourceInformation.GPU_URI,
+        assigned);
+
+    commandPlugin.setRequestsGpu(true);
+    commandPlugin.updateDockerRunCommand(runCommand, nmContainer);
+  }
+
+  @Test
+  public void testPluginMIGNoThrowsMulti() throws Exception {
+    DockerRunCommand runCommand = new DockerRunCommand("container_1", "user",
+        "fakeimage");
+
+    Map<String, List<String>> originalCommandline = copyCommandLine(
+        runCommand.getDockerCommandWithArguments());
+
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.USE_MIG_ENABLED_GPUS, "true");
+    MyNvidiaDockerV2CommandPlugin
+        commandPlugin = new MyNvidiaDockerV2CommandPlugin(conf);
+
+    Container nmContainer = mock(Container.class);
+    ResourceMappings resourceMappings = new ResourceMappings();
+    Map<String, String> env = new HashMap<>();
+    env.put("NVIDIA_MIG_PLUGIN_THROW_ON_MULTIPLE_GPUS", "false");
+    when(nmContainer.getResourceMappings()).thenReturn(resourceMappings);
+    ContainerLaunchContext launchCtx = mock(ContainerLaunchContext.class);
+    when(nmContainer.getLaunchContext()).thenReturn(launchCtx);
+    when(launchCtx.getEnvironment()).thenReturn(env);
+
+    // Assign GPU resource
+    ResourceMappings.AssignedResources assigned =
+        new ResourceMappings.AssignedResources();
+    assigned.updateAssignedResources(
+        ImmutableList.of(new GpuDevice(0, 0, 0), new GpuDevice(1, 1, 2)));
+    resourceMappings.addAssignedResources(ResourceInformation.GPU_URI,
+        assigned);
+
+    commandPlugin.setRequestsGpu(true);
+    commandPlugin.updateDockerRunCommand(runCommand, nmContainer);
+    Map<String, List<String>> newCommandLine =
+        runCommand.getDockerCommandWithArguments();
+    // NVIDIA_VISIBLE_DEVICES will be set
+    Assert.assertTrue(
+        runCommand.getEnv().get("NVIDIA_VISIBLE_DEVICES").equals("0:0,1:2"));
     // runtime should exist
     Assert.assertTrue(newCommandLine.containsKey("runtime"));
   }

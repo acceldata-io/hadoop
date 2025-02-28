@@ -34,6 +34,12 @@ public class AssignedGpuDevice extends GpuDevice {
     this.containerId = containerId.toString();
   }
 
+  public AssignedGpuDevice(int index, int minorNumber,
+                           int migIndex, ContainerId containerId) {
+    super(index, minorNumber, migIndex);
+    this.containerId = containerId.toString();
+  }
+
   public String getContainerId() {
     return containerId;
   }
@@ -49,6 +55,7 @@ public class AssignedGpuDevice extends GpuDevice {
     }
     AssignedGpuDevice other = (AssignedGpuDevice) obj;
     return index == other.index && minorNumber == other.minorNumber
+        && migDeviceIndex == other.migDeviceIndex
         && containerId.equals(other.containerId);
   }
 
@@ -68,12 +75,16 @@ public class AssignedGpuDevice extends GpuDevice {
     if (0 != result) {
       return result;
     }
-    return containerId.compareTo(other.containerId);
+    result = containerId.compareTo(other.containerId);
+    if (0 != result) {
+      return result;
+    }
+    return Integer.compare(migDeviceIndex, other.migDeviceIndex);
   }
 
   @Override
   public int hashCode() {
     final int prime = 47;
-    return prime * (prime * index + minorNumber) + containerId.hashCode();
+    return prime * (prime * index + minorNumber + migDeviceIndex) + containerId.hashCode();
   }
 }

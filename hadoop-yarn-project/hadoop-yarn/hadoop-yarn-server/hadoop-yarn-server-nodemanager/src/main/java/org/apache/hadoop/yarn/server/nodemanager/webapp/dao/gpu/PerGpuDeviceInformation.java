@@ -22,8 +22,10 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.List;
 
 /**
  * Capture single GPU device information such as memory size, temperature,
@@ -37,6 +39,8 @@ public class PerGpuDeviceInformation {
   private String uuid = "N/A";
   private int minorNumber = -1;
 
+  private List<PerGpuMigDevice> migDevices;
+  private PerGpuMigMode migMode;
   private PerGpuUtilizations gpuUtilizations;
   private PerGpuMemoryUsage gpuMemoryUsage;
   private PerGpuTemperature temperature;
@@ -105,6 +109,25 @@ public class PerGpuDeviceInformation {
 
   public void setUuid(String uuid) {
     this.uuid = uuid;
+  }
+
+  @XmlElement(name = "mig_mode")
+  public PerGpuMigMode getMIGMode() {
+    return migMode;
+  }
+
+  public void setMIGMode(PerGpuMigMode mode) {
+    this.migMode = mode;
+  }
+
+  @XmlElementWrapper( name = "mig_devices" )
+  @XmlElement(name = "mig_device")
+  public List<PerGpuMigDevice> getMIGDevices() {
+    return migDevices;
+  }
+
+  public void setMIGDevices(List<PerGpuMigDevice> devices) {
+    this.migDevices = devices;
   }
 
   @XmlElement(name = "product_name")

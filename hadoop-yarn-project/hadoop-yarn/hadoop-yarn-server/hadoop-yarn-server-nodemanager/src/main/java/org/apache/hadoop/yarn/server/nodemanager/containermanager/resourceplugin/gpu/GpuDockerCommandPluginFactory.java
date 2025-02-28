@@ -36,7 +36,7 @@ public class GpuDockerCommandPluginFactory {
     }
     // nvidia-docker2
     if (impl.equals(YarnConfiguration.NVIDIA_DOCKER_V2)) {
-      return new NvidiaDockerV2CommandPlugin();
+      return new NvidiaDockerV2CommandPlugin(conf);
     }
 
     throw new YarnException(

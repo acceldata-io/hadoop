@@ -33,6 +33,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.gpu.GpuDeviceInformation;
 import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.gpu.GpuDeviceInformationParser;
 import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.gpu.PerGpuDeviceInformation;
+import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.gpu.PerGpuMigDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ public class GpuDiscoverer extends Configured {
   private GpuDeviceInformation lastDiscoveredGpuInformation = null;
 
   private List<GpuDevice> gpuDevicesFromUser;
+  private Boolean useMIGEnabledGPUs = false;
 
   private void validateConfOrThrowException() throws YarnException {
     if (getConf() == null) {
@@ -184,8 +186,17 @@ public class GpuDiscoverer extends Configured {
       for (int i = 0; i < numberOfGpus; i++) {
         List<PerGpuDeviceInformation> gpuInfos =
             lastDiscoveredGpuInformation.getGpus();
-        gpuDevices.add(new GpuDevice(i, gpuInfos.get(i).getMinorNumber()));
+        if (useMIGEnabledGPUs &&
+            gpuInfos.get(i).getMIGMode().getCurrentMigMode().equalsIgnoreCase("enabled")) {
+          LOG.info("GPU id " + i + " has MIG mode enabled.");
+          for (PerGpuMigDevice dev: gpuInfos.get(i).getMIGDevices()) {
+            gpuDevices.add(new GpuDevice(i, gpuInfos.get(i).getMinorNumber(), dev.getMigDeviceIndex()));
+          }
+        } else {
+          gpuDevices.add(new GpuDevice(i, gpuInfos.get(i).getMinorNumber()));
+        }
       }
+      LOG.info("Discovered GPU devices: " + gpuDevices);
     }
     return gpuDevices;
   }
@@ -208,28 +219,56 @@ public class GpuDiscoverer extends Configured {
     for (String device : devices.split(",")) {
       if (device.trim().length() > 0) {
         String[] splitByColon = device.trim().split(":");
-        if (splitByColon.length != 2) {
-          throwIfNecessary(GpuDeviceSpecificationException
-              .createWithWrongValueSpecified(device, devices), getConf());
-          LOG.warn("Wrong GPU specification string {}, ignored", device);
-        }
 
-        GpuDevice gpuDevice;
-        try {
-          gpuDevice = parseGpuDevice(splitByColon);
-        } catch (NumberFormatException e) {
-          throwIfNecessary(GpuDeviceSpecificationException
-              .createWithWrongValueSpecified(device, devices, e), getConf());
-          LOG.warn("Cannot parse GPU device numbers: {}", device);
-          continue;
-        }
+        if (useMIGEnabledGPUs) {
+          if (splitByColon.length != 2 && splitByColon.length != 3) {
+            throwIfNecessary(GpuDeviceSpecificationException
+                .createWithWrongValueSpecifiedMIG(device, devices), conf);
+            LOG.warn("Wrong GPU specification string {}, ignored", device);
+          }
+          GpuDevice gpuDevice;
+          try {
+            if (splitByColon.length == 3) {
+              gpuDevice = parseGpuMIGDevice(splitByColon);
+            } else {
+              gpuDevice = parseGpuDevice(splitByColon);
+            }
+          } catch (NumberFormatException e) {
+            throwIfNecessary(GpuDeviceSpecificationException
+                .createWithWrongValueSpecifiedMIG(device, devices, e), conf);
+            LOG.warn("Cannot parse GPU device numbers: {}", device);
+            continue;
+          }
+          if (!gpuDevices.contains(gpuDevice)) {
+            gpuDevices.add(gpuDevice);
+          } else {
+            throw GpuDeviceSpecificationException
+                .createWithDuplicateValueSpecified(device, devices);
+          }
 
-        if (!gpuDevices.contains(gpuDevice)) {
-          gpuDevices.add(gpuDevice);
         } else {
-          throwIfNecessary(GpuDeviceSpecificationException
-              .createWithDuplicateValueSpecified(device, devices), getConf());
-          LOG.warn("CPU device is duplicated: {}", device);
+          if (splitByColon.length != 2) {
+            throwIfNecessary(GpuDeviceSpecificationException
+                .createWithWrongValueSpecified(device, devices), conf);
+            LOG.warn("Wrong GPU specification string {}, ignored", device);
+          }
+          GpuDevice gpuDevice;
+          try {
+            gpuDevice = parseGpuDevice(splitByColon);
+          } catch (NumberFormatException e) {
+            throwIfNecessary(GpuDeviceSpecificationException
+                .createWithWrongValueSpecified(device, devices, e), conf);
+            LOG.warn("Cannot parse GPU device numbers: {}", device);
+            continue;
+          }
+
+          if (!gpuDevices.contains(gpuDevice)) {
+            gpuDevices.add(gpuDevice);
+          } else {
+            throwIfNecessary(GpuDeviceSpecificationException
+                .createWithDuplicateValueSpecified(device, devices), conf);
+            LOG.warn("CPU device is duplicated: {}", device);
+          }
         }
       }
     }
@@ -242,6 +281,13 @@ public class GpuDiscoverer extends Configured {
     int index = Integer.parseInt(splitByColon[0]);
     int minorNumber = Integer.parseInt(splitByColon[1]);
     return new GpuDevice(index, minorNumber);
+  }
+
+  private GpuDevice parseGpuMIGDevice(String[] splitByColon) {
+      int index = Integer.parseInt(splitByColon[0]);
+      int minorNumber = Integer.parseInt(splitByColon[1]);
+      int migIndex = Integer.parseInt(splitByColon[2]);
+      return new GpuDevice(index, minorNumber, migIndex);
   }
 
   public synchronized void initialize(Configuration config,
@@ -264,6 +310,9 @@ public class GpuDiscoverer extends Configured {
         LOG.warn(msg);
       }
     }
+    useMIGEnabledGPUs = conf.getBoolean(YarnConfiguration.USE_MIG_ENABLED_GPUS, false);
+    LOG.info("Use MIG enabled is: " + useMIGEnabledGPUs);
+
   }
 
   private void lookUpAutoDiscoveryBinary(Configuration config)

@@ -374,6 +374,37 @@ public class TestGpuDiscoverer {
   }
 
   @Test
+  public void testGetNumberOfUsableGpusFromConfigMIG() throws YarnException {
+    Configuration conf = createConfigWithAllowedDevices("0:0,1:1:0,1:1:3,2:2,3:4");
+    conf.set(YarnConfiguration.USE_MIG_ENABLED_GPUS, "true");
+    GpuDiscoverer discoverer = new GpuDiscoverer();
+    discoverer.initialize(conf, binaryHelper);
+
+    List<GpuDevice> usableGpuDevices = discoverer.getGpusUsableByYarn();
+    assertEquals(5, usableGpuDevices.size());
+
+    assertEquals(0, usableGpuDevices.get(0).getIndex());
+    assertEquals(0, usableGpuDevices.get(0).getMinorNumber());
+    assertEquals(-1, usableGpuDevices.get(0).getMIGIndex());
+
+    assertEquals(1, usableGpuDevices.get(1).getIndex());
+    assertEquals(1, usableGpuDevices.get(1).getMinorNumber());
+    assertEquals(0, usableGpuDevices.get(1).getMIGIndex());
+
+    assertEquals(1, usableGpuDevices.get(2).getIndex());
+    assertEquals(1, usableGpuDevices.get(2).getMinorNumber());
+    assertEquals(3, usableGpuDevices.get(2).getMIGIndex());
+
+    assertEquals(2, usableGpuDevices.get(3).getIndex());
+    assertEquals(2, usableGpuDevices.get(3).getMinorNumber());
+    assertEquals(-1, usableGpuDevices.get(3).getMIGIndex());
+
+    assertEquals(3, usableGpuDevices.get(4).getIndex());
+    assertEquals(4, usableGpuDevices.get(4).getMinorNumber());
+    assertEquals(-1, usableGpuDevices.get(4).getMIGIndex());
+  }
+
+  @Test
   public void testGetNumberOfUsableGpusFromConfigDuplicateValues()
       throws YarnException {
     Configuration conf = createConfigWithAllowedDevices("0:0,1:1,2:2,1:1");

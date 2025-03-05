@@ -3597,6 +3597,7 @@ done:
     destroyLocalReference(env, jUserName);
     destroyLocalReference(env, jGroupName);
     destroyLocalReference(env, jPermission);
+    destroyLocalReference(env, jPath);
     return jthr;
 }
 

@@ -46,14 +46,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.fs.ByteBufferPositionedReadable;
 import org.apache.hadoop.fs.ByteBufferReadable;
 import org.apache.hadoop.fs.ByteBufferUtil;
 import org.apache.hadoop.fs.CanSetDropBehind;
 import org.apache.hadoop.fs.CanSetReadahead;
 import org.apache.hadoop.fs.CanUnbuffer;
 import org.apache.hadoop.fs.ChecksumException;
-import org.apache.hadoop.fs.FSExceptionMessages;
 import org.apache.hadoop.fs.FSInputStream;
 import org.apache.hadoop.fs.FileEncryptionInfo;
 import org.apache.hadoop.fs.HasEnhancedByteBufferAccess;
@@ -102,8 +100,7 @@ import static org.apache.hadoop.hdfs.util.IOUtilsClient.updateReadStatistics;
 @InterfaceAudience.Private
 public class DFSInputStream extends FSInputStream
     implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
-               HasEnhancedByteBufferAccess, CanUnbuffer, StreamCapabilities,
-               ByteBufferPositionedReadable {
+               HasEnhancedByteBufferAccess, CanUnbuffer, StreamCapabilities {
   @VisibleForTesting
   public static boolean tcpReadsDisabledForTesting = false;
   private long hedgedReadOpsLoopNumForTesting = 0;
@@ -321,7 +318,8 @@ public class DFSInputStream extends FSInputStream
     }
 
     if (locatedBlocks != null) {
-      Iterator<LocatedBlock> oldIter = locatedBlocks.getLocatedBlocks().iterator();
+      Iterator<LocatedBlock> oldIter =
+          locatedBlocks.getLocatedBlocks().iterator();
       Iterator<LocatedBlock> newIter = newInfo.getLocatedBlocks().iterator();
       while (oldIter.hasNext() && newIter.hasNext()) {
         if (!oldIter.next().getBlock().equals(newIter.next().getBlock())) {
@@ -644,6 +642,7 @@ public class DFSInputStream extends FSInputStream
       //
       // Compute desired block
       //
+
       LocatedBlock targetBlock = getBlockAt(target);
 
       // update current position
@@ -1652,27 +1651,6 @@ public class DFSInputStream extends FSInputStream
   @Override
   public void reset() throws IOException {
     throw new IOException("Mark/reset not supported");
-  }
-
-  @Override
-  public int read(long position, final ByteBuffer buf) throws IOException {
-    if (!buf.hasRemaining()) {
-      return 0;
-    }
-    return pread(position, buf);
-  }
-
-  @Override
-  public void readFully(long position, final ByteBuffer buf)
-      throws IOException {
-    int nread = 0;
-    while (buf.hasRemaining()) {
-      int nbytes = read(position + nread, buf);
-      if (nbytes < 0) {
-        throw new EOFException(FSExceptionMessages.EOF_IN_READ_FULLY);
-      }
-      nread += nbytes;
-    }
   }
 
   /** Utility class to encapsulate data node info and its address. */

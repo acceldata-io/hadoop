@@ -566,52 +566,7 @@ public class CryptoInputStream extends FilterInputStream implements
     }
     buf.position(pos);
   }
-
-  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)
-          throws IOException {
-    ByteBuffer localInBuffer = null;
-    ByteBuffer localOutBuffer = null;
-
-    // Duplicate the buffer so we don't have to worry about resetting the
-    // original position and limit at the end of the method
-    buf = buf.duplicate();
-
-    int decryptedBytes = 0;
-    Decryptor localDecryptor = null;
-    try {
-      localInBuffer = getBuffer();
-      localOutBuffer = getBuffer();
-      localDecryptor = getDecryptor();
-      byte[] localIV = initIV.clone();
-      updateDecryptor(localDecryptor, filePosition, localIV);
-      byte localPadding = getPadding(filePosition);
-      // Set proper filePosition for inputdata.
-      localInBuffer.position(localPadding);
-
-      while (decryptedBytes < length) {
-        buf.position(start + decryptedBytes);
-        buf.limit(start + decryptedBytes +
-                Math.min(length - decryptedBytes, localInBuffer.remaining()));
-        localInBuffer.put(buf);
-        // Do decryption
-        try {
-          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);
-          buf.position(start + decryptedBytes);
-          buf.limit(start + length);
-          decryptedBytes += localOutBuffer.remaining();
-          buf.put(localOutBuffer);
-        } finally {
-          localPadding = afterDecryption(localDecryptor, localInBuffer,
-                                         filePosition + length, localIV);
-        }
-      }
-    } finally {
-      returnBuffer(localInBuffer);
-      returnBuffer(localOutBuffer);
-      returnDecryptor(localDecryptor);
-    }
-  }
-
+  
   @Override
   public int available() throws IOException {
     checkStream();

@@ -346,7 +346,7 @@ public class CryptoInputStream extends FilterInputStream implements
   /**
    * Positioned readFully using {@link ByteBuffer}s. This method is thread-safe.
    */
-  // @Override
+  @Override
   public void readFully(long position, final ByteBuffer buf)
       throws IOException {
     checkStream();

@@ -429,8 +429,6 @@ public class TestCryptoStreams extends CryptoStreamsTestBase {
       case StreamCapabilities.READAHEAD:
       case StreamCapabilities.DROPBEHIND:
       case StreamCapabilities.UNBUFFER:
-      case StreamCapabilities.READBYTEBUFFER:
-      case StreamCapabilities.PREADBYTEBUFFER:
         return true;
       default:
         return false;

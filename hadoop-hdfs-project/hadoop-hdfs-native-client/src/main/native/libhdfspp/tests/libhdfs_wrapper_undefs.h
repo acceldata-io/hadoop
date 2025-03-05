@@ -47,7 +47,6 @@
 #undef hdfsTell
 #undef hdfsRead
 #undef hdfsPread
-#undef hdfsPreadFully
 #undef hdfsWrite
 #undef hdfsFlush
 #undef hdfsHFlush

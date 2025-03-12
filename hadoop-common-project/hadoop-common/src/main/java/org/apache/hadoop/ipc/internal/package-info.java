@@ -17,13 +17,12 @@
  */
 
 /**
- * Package org.apache.hadoop.yarn.server.timelineservice.storage.flow
- * contains classes related to implementation for flow related tables, viz. flow
- * run table and flow activity table.
+ * IPC internal classes not for any use by libraries outside
+ * the apache hadoop source tree.
  */
-@InterfaceAudience.Private
+@InterfaceAudience.LimitedPrivate({"HDFS", "MapReduce", "YARN"})
 @InterfaceStability.Unstable
-package org.apache.hadoop.yarn.server.timelineservice.storage.flow;
+package org.apache.hadoop.ipc.internal;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;

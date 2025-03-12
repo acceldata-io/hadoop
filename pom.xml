@@ -46,7 +46,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
      <url>https://repo1.acceldata.dev/repository/odp-snapshot/</url>
    </snapshotRepository>
  </distributionManagement>
- 
+
   <repositories>
     <repository>
       <id>${distMgmtSnapshotsId}</id>
@@ -61,16 +61,27 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
       </snapshots>
     </repository>
     <repository>
-            <id>acceldata repo</id>
-            <name>acceldata repo</name>
-            <url>https://repo1.acceldata.dev/repository/odp-central/</url>
-            <releases>
+      <id>acceldata repo</id>
+      <name>acceldata repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-central/</url>
+      <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
-        </repository>
+    </repository>
+    <repository>
+      <id>acceldata staging repo</id>
+      <name>acceldata repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-staging-central/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
 
   </repositories>
 

@@ -1433,7 +1433,6 @@ public class Client implements AutoCloseable {
   private void checkAsyncCall() throws IOException {
     if (isAsynchronousMode()) {
       if (asyncCallCounter.incrementAndGet() > maxAsyncCalls) {
-        asyncCallCounter.decrementAndGet();
         String errMsg = String.format(
             "Exceeded limit of max asynchronous calls: %d, " +
             "please configure %s to adjust it.",
@@ -1489,7 +1488,7 @@ public class Client implements AutoCloseable {
         ioe.initCause(ie);
         throw ioe;
       }
-    } catch(Exception e) {
+    } catch (Exception e) {
       if (isAsynchronousMode()) {
         releaseAsyncCall();
       }

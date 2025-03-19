@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.gpu;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.yarn.api.records.ResourceInformation;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Container;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ResourceMappings;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.gpu.GpuResourceAllocator;
@@ -48,12 +46,8 @@ public class NvidiaDockerV2CommandPlugin implements DockerCommandPlugin {
 
   private String nvidiaRuntime = "nvidia";
   private String nvidiaVisibleDevices = "NVIDIA_VISIBLE_DEVICES";
-  private String nvidiaMigThrowOnMultiGpus = "NVIDIA_MIG_PLUGIN_THROW_ON_MULTIPLE_GPUS";
-  private Boolean isMigEnabled = false;
 
-  public NvidiaDockerV2CommandPlugin(Configuration conf) {
-    isMigEnabled = conf.getBoolean(YarnConfiguration.USE_MIG_ENABLED_GPUS, false);
-  }
+  public NvidiaDockerV2CommandPlugin() {}
 
   private Set<GpuDevice> getAssignedGpus(Container container) {
     ResourceMappings resourceMappings = container.getResourceMappings();
@@ -91,23 +85,10 @@ public class NvidiaDockerV2CommandPlugin implements DockerCommandPlugin {
       return;
     }
     Map<String, String> environment = new HashMap<>();
-    if (isMigEnabled && assignedResources.size() > 1) {
-      Map<String, String> existingEnv = container.getLaunchContext().getEnvironment();
-      Boolean shouldThrowOnMultipleGpus = Boolean.parseBoolean(
-              existingEnv.getOrDefault(nvidiaMigThrowOnMultiGpus, "true"));
-      if (shouldThrowOnMultipleGpus) {
-        throw new ContainerExecutionException("Allocating more than 1 GPU per container is " +
-                "not supported with use of MIG!");
-      }
-    }
     String gpuIndexList = "";
     for (GpuDevice gpuDevice : assignedResources) {
-      String deviceIndex = String.valueOf(gpuDevice.getIndex());
-      if (gpuDevice.getMIGIndex() != -1) {
-        deviceIndex = gpuDevice.getIndex() + ":" + gpuDevice.getMIGIndex();
-      }
-      gpuIndexList = gpuIndexList + deviceIndex + ",";
-      LOG.info("nvidia docker2 assigned gpu index: " + deviceIndex);
+      gpuIndexList = gpuIndexList + gpuDevice.getIndex() + ",";
+      LOG.info("nvidia docker2 assigned gpu index: " + gpuDevice.getIndex());
     }
     dockerRunCommand.addRuntime(nvidiaRuntime);
     environment.put(nvidiaVisibleDevices,

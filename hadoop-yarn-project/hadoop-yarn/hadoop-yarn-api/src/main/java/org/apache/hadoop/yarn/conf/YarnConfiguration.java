@@ -1825,10 +1825,6 @@ public class YarnConfiguration extends Configuration {
   @Private
   public static final String AUTOMATICALLY_DISCOVER_GPU_DEVICES = "auto";
 
-  @Private
-  public static final String USE_MIG_ENABLED_GPUS =
-          NM_GPU_RESOURCE_PREFIX + "use-mig-enabled";
-
   /**
    * This setting controls where to how to invoke GPU binaries
    */

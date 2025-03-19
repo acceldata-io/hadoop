@@ -26,8 +26,6 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 public final class GpuDeviceSpecificationException extends YarnException {
   private static final String VALID_FORMAT_MESSAGE = "The valid format " +
       "should be: index:minor_number";
-  private static final String VALID_MIG_FORMAT_MESSAGE = VALID_FORMAT_MESSAGE +
-      " or with MIG enabled: index:minor_number:mig_index";
 
   private GpuDeviceSpecificationException(String message) {
     super(message);
@@ -59,29 +57,10 @@ public final class GpuDeviceSpecificationException extends YarnException {
     return new GpuDeviceSpecificationException(message);
   }
 
-  public static GpuDeviceSpecificationException createWithWrongValueSpecifiedMIG(
-      String device, String configValue, Exception cause) {
-    final String message = createIllegalFormatMessageMIG(device, configValue);
-    return new GpuDeviceSpecificationException(message, cause);
-  }
-
-  public static GpuDeviceSpecificationException createWithWrongValueSpecifiedMIG(
-      String device, String configValue) {
-    final String message = createIllegalFormatMessageMIG(device, configValue);
-    return new GpuDeviceSpecificationException(message);
-  }
-
   public static GpuDeviceSpecificationException createWithDuplicateValueSpecified(
       String device, String configValue) {
     final String message = createDuplicateFormatMessage(device, configValue);
     return new GpuDeviceSpecificationException(message);
-  }
-
-  private static String createIllegalFormatMessageMIG(String device,
-      String configValue) {
-    return String.format("Illegal format of individual GPU device: %s, " +
-            "the whole config value was: '%s'! " + VALID_MIG_FORMAT_MESSAGE,
-        device, configValue);
   }
 
   private static String createIllegalFormatMessage(String device,

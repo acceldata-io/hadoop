@@ -21,7 +21,6 @@ import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTest
 import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 import org.apache.hadoop.HadoopIllegalArgumentException;
-import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.XAttr;
 import org.apache.hadoop.fs.XAttrSetFlag;
@@ -45,8 +44,6 @@ import java.util.ListIterator;
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.CRYPTO_XATTR_ENCRYPTION_ZONE;
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.SECURITY_XATTR_UNREADABLE_BY_SUPERUSER;
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.XATTR_SATISFY_STORAGE_POLICY;
-import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.CRYPTO_XATTR_FILE_ENCRYPTION_INFO;
-
 class FSDirXAttrOp {
   private static final XAttr KEYID_XATTR =
       XAttrHelper.buildXAttr(CRYPTO_XATTR_ENCRYPTION_ZONE, null);
@@ -281,25 +278,6 @@ class FSDirXAttrOp {
        * If we're adding the encryption zone xattr, then add src to the list
        * of encryption zones.
        */
-
-      if (CRYPTO_XATTR_FILE_ENCRYPTION_INFO.equals(xaName)) {
-        HdfsProtos.PerFileEncryptionInfoProto fileProto = HdfsProtos.
-                PerFileEncryptionInfoProto.parseFrom(xattr.getValue());
-        String keyVersionName = fileProto.getEzKeyVersionName();
-        String zoneKeyName = fsd.ezManager.getKeyName(iip);
-        if (zoneKeyName == null) {
-          throw new IOException("Cannot add raw feInfo XAttr to a file in a " +
-                  "non-encryption zone");
-        }
-
-        if (!KeyProviderCryptoExtension.
-                getBaseName(keyVersionName).equals(zoneKeyName)) {
-          throw new IllegalArgumentException(String.format(
-                  "KeyVersion '%s' does not belong to the key '%s'",
-                  keyVersionName, zoneKeyName));
-        }
-      }
-
       if (CRYPTO_XATTR_ENCRYPTION_ZONE.equals(xaName)) {
         final HdfsProtos.ZoneEncryptionInfoProto ezProto =
             HdfsProtos.ZoneEncryptionInfoProto.parseFrom(xattr.getValue());

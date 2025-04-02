@@ -73,7 +73,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     </repository>
     <repository>
       <id>acceldata staging repo</id>
-      <name>acceldata repo</name>
+      <name>acceldata staging repo</name>
       <url>https://repo1.acceldata.dev/repository/odp-staging-central/</url>
       <releases>
         <enabled>true</enabled>
@@ -82,7 +82,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
         <enabled>true</enabled>
       </snapshots>
     </repository>
-
   </repositories>
 
   <licenses>

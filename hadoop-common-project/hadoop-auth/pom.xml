@@ -76,7 +76,7 @@
       <artifactId>slf4j-api</artifactId>
       <scope>compile</scope>
     </dependency>
-       <dependency>
+    <dependency>
       <groupId>org.apache.kerby</groupId>
       <artifactId>kerb-util</artifactId>
     </dependency>

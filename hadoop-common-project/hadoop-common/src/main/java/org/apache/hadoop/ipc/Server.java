@@ -3304,10 +3304,10 @@ public abstract class Server {
     cos.writeRawByte((byte)((length >>> 16) & 0xFF));
     cos.writeRawByte((byte)((length >>>  8) & 0xFF));
     cos.writeRawByte((byte)((length >>>  0) & 0xFF));
-    cos.writeUInt32NoTag(header.getSerializedSize());
+    cos.writeRawVarint32(header.getSerializedSize());
     header.writeTo(cos);
     if (payload != null) {
-      cos.writeUInt32NoTag(payload.getSerializedSize());
+      cos.writeRawVarint32(payload.getSerializedSize());
       payload.writeTo(cos);
     }
     return buf;
@@ -3315,7 +3315,7 @@ public abstract class Server {
 
   private static int getDelimitedLength(Message message) {
     int length = message.getSerializedSize();
-    return length + CodedOutputStream.computeUInt32SizeNoTag(length);
+    return length + CodedOutputStream.computeRawVarint32Size(length);
   }
 
   /**

@@ -69,7 +69,7 @@ public class TestProtoUtil {
   private void doVarIntTest(int value) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     CodedOutputStream cout = CodedOutputStream.newInstance(baos);
-    cout.writeUInt32NoTag(value);
+    cout.writeRawVarint32(value);
     cout.flush();
 
     DataInputStream dis = new DataInputStream(

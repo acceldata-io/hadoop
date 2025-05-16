@@ -332,6 +332,7 @@ public class Client implements AutoCloseable {
     final RPC.RpcKind rpcKind;      // Rpc EngineKind
     boolean done;               // true when call is done
     private final Object externalHandler;
+    private AlignmentContext alignmentContext;
 
     private Call(RPC.RpcKind rpcKind, Writable param) {
       this.rpcKind = rpcKind;
@@ -449,13 +450,7 @@ public class Client implements AutoCloseable {
         Consumer<Connection> removeMethod) {
       this.remoteId = remoteId;
       this.server = remoteId.getAddress();
-      if (server.isUnresolved()) {
-        throw NetUtils.wrapException(server.getHostName(),
-            server.getPort(),
-            null,
-            0,
-            new UnknownHostException());
-      }
+
       this.maxResponseLength = remoteId.conf.getInt(
           CommonConfigurationKeys.IPC_MAXIMUM_RESPONSE_LENGTH,
           CommonConfigurationKeys.IPC_MAXIMUM_RESPONSE_LENGTH_DEFAULT);
@@ -474,7 +469,12 @@ public class Client implements AutoCloseable {
             .makeRpcRequestHeader(RpcKind.RPC_PROTOCOL_BUFFER,
                 OperationProto.RPC_FINAL_PACKET, PING_CALL_ID,
                 RpcConstants.INVALID_RETRY_COUNT, clientId);
-        pingHeader.writeDelimitedTo(buf);
+        try {
+          pingHeader.writeDelimitedTo(buf);
+        } catch (IOException e) {
+          throw new IllegalStateException("Failed to write to buf for "
+              + remoteId + " in " + Client.this + " due to " + e, e);
+        }
         pingRequest = buf.toByteArray();
       }
       this.pingInterval = remoteId.getPingInterval();
@@ -819,14 +819,10 @@ public class Client implements AutoCloseable {
         short numRetries = 0;
         Random rand = null;
         while (true) {
-          setupConnection();
+          setupConnection(ticket);
           ipcStreams = new IpcStreams(socket, maxResponseLength);
           writeConnectionHeader(ipcStreams);
           if (authProtocol == AuthProtocol.SASL) {
-            UserGroupInformation ticket = remoteId.getTicket();
-            if (ticket.getRealUser() != null) {
-              ticket = ticket.getRealUser();
-            }
             try {
               authMethod = ticket
                   .doAs(new PrivilegedExceptionAction<AuthMethod>() {
@@ -1267,7 +1263,7 @@ public class Client implements AutoCloseable {
         connThread.interrupt();
       }
     }
-
+    
     /** Close the connection. */
     private synchronized void close() {
       if (!shouldCloseConnection.get()) {
@@ -1881,7 +1877,9 @@ public class Client implements AutoCloseable {
     }
 
     void setSaslClient(SaslRpcClient client) throws IOException {
-      setInputStream(client.getInputStream(in));
+      // Wrap the input stream in a BufferedInputStream to fill the buffer
+      // before reading its length (HADOOP-14062).
+      setInputStream(new BufferedInputStream(client.getInputStream(in)));
       setOutputStream(client.getOutputStream(out));
     }
 

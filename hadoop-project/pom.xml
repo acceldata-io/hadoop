@@ -31,7 +31,7 @@
 
   <properties>
     <!-- Set the Release year during release -->
-    <release-year>2022</release-year>
+    <release-year>2023</release-year>
 
     <failIfNoTests>false</failIfNoTests>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -111,7 +111,6 @@
     <ldap-api.version>1.0.0-M33</ldap-api.version>
 
     <!-- Apache Commons dependencies -->
-    <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.14</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
@@ -1110,11 +1109,6 @@
         <version>${commons-collections.version}</version>
       </dependency>
       <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils</artifactId>
-        <version>${commons-beanutils.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-configuration2</artifactId>
         <version>2.1.1</version>
@@ -1479,10 +1473,6 @@
           <exclusion>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
           </exclusion>
         </exclusions>
      </dependency>

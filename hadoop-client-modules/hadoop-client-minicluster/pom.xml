@@ -931,11 +931,16 @@
                       </excludes>
                     </relocation>
                     <relocation>
+                      <pattern>com/google/protobuf/</pattern>
+                      <shadedPattern>org.apache.hadoop.thirdparty.protobuf.</shadedPattern>
+                    </relocation>
+                    <relocation>
                       <pattern>com/</pattern>
                       <shadedPattern>${shaded.dependency.prefix}.com.</shadedPattern>
                       <excludes>
                         <exclude>**/pom.xml</exclude>
                         <!-- Not the com/ packages that are a part of particular jdk implementations -->
+                        <pattern>com/google/protobuf/*</pattern>
                         <exclude>com/sun/tools/*</exclude>
                         <exclude>com/sun/javadoc/*</exclude>
                         <exclude>com/sun/security/*</exclude>

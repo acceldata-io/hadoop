@@ -284,7 +284,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <scope>${common.protobuf2.scope}</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -520,6 +520,7 @@
               <!--These classes have direct Protobuf references for backward compatibility reasons-->
               <excludes>
                 <exclude>**/ProtobufHelper.java</exclude>
+                <exclude>**/RpcWritable.java</exclude>
                 <exclude>**/ProtobufRpcEngineCallback.java</exclude>
                 <exclude>**/ProtobufRpcEngine.java</exclude>
                 <exclude>**/ProtobufRpcEngine2.java</exclude>

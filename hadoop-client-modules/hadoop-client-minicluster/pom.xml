@@ -18,11 +18,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project</artifactId>
-    <version>3.3.6.3.3.6.1-SNAPSHOT</version>
+    <version>3.3.6.3.3.6.2-1</version>
     <relativePath>../../hadoop-project</relativePath>
   </parent>
   <artifactId>hadoop-client-minicluster</artifactId>
-  <version>3.3.6.3.3.6.1-SNAPSHOT</version>
+  <version>3.3.6.3.3.6.2-1</version>
   <packaging>jar</packaging>
 
   <description>Apache Hadoop Minicluster for Clients</description>
@@ -683,13 +683,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-maven-plugins</artifactId>
-                <version>${project.version}</version>
-              </dependency>
-            </dependencies>
+            <version>${maven-shade-plugin.version}</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -763,15 +757,10 @@
                       </excludes>
                     </filter>
                     <filter>
-                      <artifact>com.fasterxml.jackson.*:*</artifact>
+                      <artifact>*:*</artifact>
                       <excludes>
                         <exclude>META-INF/versions/9/module-info.class</exclude>
-                      </excludes>
-                    </filter>
-                    <filter>
-                      <artifact>com.google.code.gson:gson</artifact>
-                      <excludes>
-                        <exclude>META-INF/versions/9/module-info.class</exclude>
+                        <exclude>META-INF/versions/11/module-info.class</exclude>
                       </excludes>
                     </filter>
 
@@ -1064,8 +1053,7 @@
                     </relocation>
                   </relocations>
                   <transformers>
-                    <!-- Needed until MSHADE-182 -->
-                    <transformer implementation="org.apache.hadoop.maven.plugin.shade.resource.ServicesResourceTransformer"/>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                       <resources>

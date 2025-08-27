@@ -18,7 +18,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.hadoop</groupId>
   <artifactId>hadoop-main</artifactId>
-  <version>3.3.6.3.3.6.1-SNAPSHOT</version>
+  <version>3.3.6.3.3.6.2-1</version>
   <description>Apache Hadoop Main</description>
   <name>Apache Hadoop Main</name>
   <packaging>pom</packaging>
@@ -38,15 +38,15 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <repository>
       <id>nexus-releases</id>
       <name>Releases</name>
-     <url>https://repo1.acceldata.dev/repository/odp-staging-release/</url>
+     <url>https://repo1.acceldata.dev/repository/odp-release/</url>
    </repository>
    <snapshotRepository>
      <id>nexus-snapshots</id>
      <name>Snapshot</name>
-     <url>https://repo1.acceldata.dev/repository/odp-staging-snapshot/</url>
+     <url>https://repo1.acceldata.dev/repository/odp-snapshot/</url>
    </snapshotRepository>
  </distributionManagement>
- 
+
   <repositories>
     <repository>
       <id>${distMgmtSnapshotsId}</id>
@@ -61,21 +61,21 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
       </snapshots>
     </repository>
     <repository>
-            <id>acceldata repo</id>
-            <name>acceldata repo</name>
-            <url>https://repo1.acceldata.dev/repository/odp-central/</url>
-            <releases>
+      <id>acceldata repo</id>
+      <name>acceldata repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-central/</url>
+      <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
-        </repository>
+    </repository>
     <repository>
-            <id>acceldata staging repo</id>
-            <name>acceldata staging repo</name>
-            <url>https://repo1.acceldata.dev/repository/odp-staging-central/</url>
-            <releases>
+      <id>acceldata staging repo</id>
+      <name>acceldata staging repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-central/</url>
+      <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
@@ -98,7 +98,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <properties>
     <!-- required as child projects with different version can't use ${project.version} -->
-    <hadoop.version>3.3.6.3.3.6.1-SNAPSHOT</hadoop.version>
+    <hadoop.version>3.3.6.3.3.6.2-1</hadoop.version>
 
     <distMgmtSnapshotsId>apache.snapshots.https</distMgmtSnapshotsId>
     <distMgmtSnapshotsName>Apache Development Snapshot Repository</distMgmtSnapshotsName>
@@ -176,7 +176,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                 <version>[3.0.2,)</version>
               </requireMavenVersion>
               <requireJavaVersion>
-                <version>[11,)</version>
+                <version>[1.8,)</version>
               </requireJavaVersion>
             </rules>
           </configuration>

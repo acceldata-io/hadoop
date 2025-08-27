@@ -116,12 +116,12 @@ RUN apt-get -q update \
     && rm -rf /var/lib/apt/lists/*
 
 ######
-# Install Google Protobuf 3.7.1 (3.0.0 ships with Bionic)
+# Install Google Protobuf 3.25.5 (3.0.0 ships with Bionic)
 ######
 # hadolint ignore=DL3003
 RUN mkdir -p /opt/protobuf-src \
     && curl -L -s -S \
-      https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-java-3.7.1.tar.gz \
+      https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.25.5.tar.gz \
       -o /opt/protobuf.tar.gz \
     && tar xzf /opt/protobuf.tar.gz --strip-components 1 -C /opt/protobuf-src \
     && cd /opt/protobuf-src \

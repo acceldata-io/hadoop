@@ -20,11 +20,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project-dist</artifactId>
-    <version>3.3.6.3.3.6.1-SNAPSHOT</version>
+    <version>3.3.6.3.3.6.2-1</version>
     <relativePath>../../hadoop-project-dist</relativePath>
   </parent>
   <artifactId>hadoop-common</artifactId>
-  <version>3.3.6.3.3.6.1-SNAPSHOT</version>
+  <version>3.3.6.3.3.6.2-1</version>
   <description>Apache Hadoop Common</description>
   <name>Apache Hadoop Common</name>
   <packaging>jar</packaging>
@@ -42,7 +42,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.hadoop.thirdparty</groupId>
-      <artifactId>hadoop-shaded-protobuf_3_21</artifactId>
+      <artifactId>hadoop-shaded-protobuf_3_25</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -227,11 +227,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-configuration2</artifactId>
       <scope>compile</scope>
@@ -285,6 +280,7 @@
       <artifactId>re2j</artifactId>
       <scope>compile</scope>
     </dependency>
+    <!-- Needed for compilation, though no longer in production.  -->
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
@@ -388,6 +384,12 @@
     <dependency>
       <groupId>org.apache.kerby</groupId>
       <artifactId>kerb-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -523,6 +525,7 @@
                 <exclude>**/ProtobufRpcEngine.java</exclude>
                 <exclude>**/ProtobufRpcEngine2.java</exclude>
                 <exclude>**/ProtobufRpcEngineProtos.java</exclude>
+                <exclude>**/ProtobufWrapperLegacy.java</exclude>
               </excludes>
             </configuration>
           </execution>

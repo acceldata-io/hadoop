@@ -99,7 +99,8 @@
            $('#delete-button').button('reset');
         });
     })
-    $('#delete-modal').modal();
+    const deleteModal = new bootstrap.Modal(document.getElementById('delete-modal'), {})
+    deleteModal.show();
   }
 
   /* This method loads the checkboxes on the permission info modal. It accepts

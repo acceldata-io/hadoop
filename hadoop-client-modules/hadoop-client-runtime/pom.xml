@@ -226,6 +226,9 @@
                       <artifact>com.google.code.gson:gson</artifact>
                       <excludes>
                         <exclude>META-INF/versions/9/module-info.class</exclude>
+                        <exclude>META-INF/versions/11/module-info.class</exclude>
+                        <exclude>META-INF/versions/18/module-info.class</exclude>
+                        <exclude>META-INF/versions/21/module-info.class</exclude>
                       </excludes>
                     </filter>
                     <!-- remove utility classes which are not required from
@@ -237,6 +240,12 @@
                         <exclude>jnamed*</exclude>
                         <exclude>lookup*</exclude>
                         <exclude>update*</exclude>
+                        <exclude>META-INF/versions/11/*</exclude>
+                        <exclude>META-INF/versions/11/**/*</exclude>
+                        <exclude>META-INF/versions/18/*</exclude>
+                        <exclude>META-INF/versions/18/**/*</exclude>
+                        <exclude>META-INF/versions/21/*</exclude>
+                        <exclude>META-INF/versions/21/**/*</exclude>
                       </excludes>
                     </filter>
                   </filters>

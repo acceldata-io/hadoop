@@ -19,14 +19,16 @@
 package org.apache.hadoop.fs.s3a;
 
 import com.amazonaws.regions.Regions;
-import org.assertj.core.api.Assertions;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.test.HadoopTestBase;
+import org.apache.hadoop.fs.s3a.ArnResource;
 
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Verifies the mapping of ARN declaration of resource to the associated
@@ -70,10 +72,9 @@ public class TestArnResource extends HadoopTestBase {
     ArnResource accessPoint = getArnResourceFrom("aws", "eu-west-1", MOCK_ACCOUNT,
         "test");
     String expected = "s3-accesspoint.eu-west-1.amazonaws.com";
+    assertEquals("Endpoint has invalid format. Access Point requests will not work",
+        expected, accessPoint.getEndpoint());
 
-    Assertions.assertThat(accessPoint.getEndpoint())
-        .describedAs("Endpoint has invalid format. Access Point requests will not work")
-        .isEqualTo(expected);
   }
 
   @Test

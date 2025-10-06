@@ -1681,7 +1681,7 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
                   DNSSEC.sign(rRset, dnskeyRecord, privateKey,
                       inception, expiration);
               LOG.info("Adding {}", rrsigRecord);
-              zone.addRecord(rrsigRecord);
+              rRset.addRR(rrsigRecord);
 
               //addDSRecord(zone, record.getName(), record.getDClass(),
               //  record.getTTL(), inception, expiration);

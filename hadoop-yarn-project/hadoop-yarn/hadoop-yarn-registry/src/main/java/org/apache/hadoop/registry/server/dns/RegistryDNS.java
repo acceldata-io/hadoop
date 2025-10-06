@@ -75,6 +75,7 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -86,10 +87,8 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -233,7 +232,13 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
       } catch (SocketException e) {
       }
       ResolverConfig.refresh();
-      ExtendedResolver resolver = new ExtendedResolver();
+      ExtendedResolver resolver;
+      try {
+        resolver = new ExtendedResolver();
+      } catch (UnknownHostException e) {
+        LOG.error("Can not resolve DNS servers: ", e);
+        return;
+      }
       for (Resolver check : resolver.getResolvers()) {
         if (check instanceof SimpleResolver) {
           InetAddress address = ((SimpleResolver) check).getAddress()
@@ -242,7 +247,7 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
             resolver.deleteResolver(check);
             continue;
           } else {
-            check.setTimeout(Duration.ofSeconds(30));
+            check.setTimeout(30);
           }
         } else {
           LOG.error("Not simple resolver!!!?" + check);
@@ -255,10 +260,12 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
       }
       StringBuilder message = new StringBuilder();
       message.append("DNS servers: ");
-      for (InetSocketAddress address :
-          ResolverConfig.getCurrentConfig().servers()) {
-        message.append(address);
-        message.append(" ");
+      if (ResolverConfig.getCurrentConfig().servers() != null) {
+        for (String server : ResolverConfig.getCurrentConfig()
+            .servers()) {
+          message.append(server);
+          message.append(" ");
+        }
       }
       LOG.info(message.toString());
     }
@@ -324,10 +331,11 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
     if (isDNSSECEnabled()) {
       Collection<Zone> zoneCollection = zones.values();
       for (Zone zone : zoneCollection) {
-        Iterator<RRset> itor = zone.iterator();
+        Iterator itor = zone.iterator();
         while (itor.hasNext()) {
-          RRset rRset = itor.next();
-          if (!rRset.sigs().isEmpty()) {
+          RRset rRset = (RRset) itor.next();
+          Iterator sigs = rRset.sigs();
+          if (!sigs.hasNext()) {
             try {
               signSiteRecord(zone, rRset.first());
             } catch (DNSSEC.DNSSECException e) {
@@ -684,8 +692,10 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
       throws DNSSEC.DNSSECException {
     RRset rrset = zone.findExactMatch(record.getName(),
         record.getType());
-    Instant inception = Instant.now();
-    Instant expiration = inception.plus(365, ChronoUnit.DAYS);
+    Calendar cal = Calendar.getInstance();
+    Date inception = cal.getTime();
+    cal.add(Calendar.YEAR, 1);
+    Date expiration = cal.getTime();
     RRSIGRecord rrsigRecord =
         DNSSEC.sign(rrset, dnsKeyRecs.get(zone.getOrigin()),
             privateKey, inception, expiration);
@@ -1149,7 +1159,7 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
           }
         }
         if (r.getType() == Type.CNAME) {
-          Name cname = r.getName();
+          Name cname = ((CNAMERecord) r).getAlias();
           if (iterations < 6) {
             remoteLookup(response, cname, type, iterations + 1);
           }
@@ -1245,7 +1255,9 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
    * @param flags the flags.
    */
   private void addAdditional2(Message response, int section, int flags) {
-    for (Record r : response.getSection(section)) {
+    Record[] records = response.getSectionArray(section);
+    for (int i = 0; i < records.length; i++) {
+      Record r = records[i];
       Name glueName = r.getAdditionalName();
       if (glueName != null) {
         addGlue(response, glueName, flags);
@@ -1391,10 +1403,11 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
           response.getHeader().setFlag(Flags.AA);
         }
       } else if (sr.isSuccessful()) {
-        List<RRset> rrsets = sr.answers();
+        RRset[] rrsets = sr.answers();
         LOG.info("found answers {}", rrsets);
-        for (RRset rrset : rrsets) {
-          addRRset(name, response, rrset, Section.ANSWER, flags);
+        for (int i = 0; i < rrsets.length; i++) {
+          addRRset(name, response, rrsets[i],
+              Section.ANSWER, flags);
         }
         addNS(response, zone, flags);
         if (iterations == 0) {
@@ -1443,7 +1456,7 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
   private void addNXT(Message response, int flags)
       throws DNSSEC.DNSSECException, IOException {
     Record nxtRecord = getNXTRecord(
-        response.getSection(Section.QUESTION).get(0));
+        response.getSectionArray(Section.QUESTION)[0]);
     Zone zone = findBestZone(nxtRecord.getName());
     addRecordCommand.exec(zone, nxtRecord);
     RRset nxtRR = zone.findExactMatch(nxtRecord.getName(), Type.NXT);
@@ -1502,7 +1515,9 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
       }
     }
     if ((flags & FLAG_SIGONLY) == 0) {
-      for (Record r : rrset.rrs()) {
+      Iterator it = rrset.rrs();
+      while (it.hasNext()) {
+        Record r = (Record) it.next();
         if (r.getName().isWild() && !name.isWild()) {
           r = r.withName(name);
         }
@@ -1510,7 +1525,9 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
       }
     }
     if ((flags & (FLAG_SIGONLY | FLAG_DNSSECOK)) != 0) {
-      for (Record r : rrset.sigs()) {
+      Iterator it = rrset.sigs();
+      while (it.hasNext()) {
+        Record r = (Record) it.next();
         if (r.getName().isWild() && !name.isWild()) {
           r = r.withName(name);
         }
@@ -1537,13 +1554,13 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
     if (zone == null) {
       return errorMessage(query, Rcode.REFUSED);
     }
-    Iterator<RRset> it = zone.AXFR();
+    Iterator it = zone.AXFR();
     try {
       DataOutputStream dataOut;
       dataOut = new DataOutputStream(s.getOutputStream());
       int id = query.getHeader().getID();
       while (it.hasNext()) {
-        RRset rrset = it.next();
+        RRset rrset = (RRset) it.next();
         Message response = new Message(id);
         Header header = response.getHeader();
         header.setFlag(Flags.QR);
@@ -1551,7 +1568,7 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
         addRRset(rrset.getName(), response, rrset,
             Section.ANSWER, FLAG_DNSSECOK);
         if (tsig != null) {
-          tsig.apply(response, qtsig, first);
+          tsig.applyStream(response, qtsig, first);
           qtsig = response.getTSIG();
         }
         first = false;
@@ -1671,8 +1688,10 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
           zone.addRecord(record);
           LOG.info("Registered {}", record);
           if (isDNSSECEnabled()) {
-            Instant inception = Instant.now();
-            Instant expiration = inception.plus(365, ChronoUnit.DAYS);
+            Calendar cal = Calendar.getInstance();
+            Date inception = cal.getTime();
+            cal.add(Calendar.YEAR, 1);
+            Date expiration = cal.getTime();
             RRset rRset =
                 zone.findExactMatch(record.getName(), record.getType());
             try {
@@ -1708,8 +1727,8 @@ public class RegistryDNS extends AbstractService implements DNSOperations,
      */
     private void addDSRecord(Zone zone,
         Name name, int dClass, long dsTtl,
-        Instant inception,
-        Instant expiration) throws DNSSEC.DNSSECException {
+        Date inception,
+        Date expiration) throws DNSSEC.DNSSECException {
       RRset rRset;
       RRSIGRecord rrsigRecord;
 

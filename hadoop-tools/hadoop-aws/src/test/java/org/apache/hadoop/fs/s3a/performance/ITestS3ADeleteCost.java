@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
@@ -38,6 +39,7 @@ import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.fs.s3a.Tristate;
 import org.apache.hadoop.fs.s3a.impl.StatusProbeEnum;
 
+import static org.apache.hadoop.fs.s3a.S3ATestUtils.setPerformanceFlags;
 import static org.apache.hadoop.fs.s3a.Statistic.*;
 import static org.apache.hadoop.fs.s3a.performance.OperationCost.*;
 import static org.apache.hadoop.fs.s3a.performance.OperationCostValidator.probe;
@@ -75,6 +77,13 @@ public class ITestS3ADeleteCost extends AbstractS3ACostTest {
   }
 
   @Override
+  public Configuration createConfiguration() {
+    return setPerformanceFlags(
+        super.createConfiguration(),
+        "");
+  }
+
+  @Override
   public void teardown() throws Exception {
     if (isKeepingMarkers()) {
       // do this ourselves to avoid audits teardown failing
@@ -99,35 +108,29 @@ public class ITestS3ADeleteCost extends AbstractS3ACostTest {
     // still be there
     Path simpleFile = file(new Path(dir, "simple.txt"));
 
-    boolean rawAndKeeping = !isDeleting();
-    boolean rawAndDeleting = isDeleting();
+    boolean keeping = !isDeleting();
+    boolean deleting = isDeleting();
+    boolean bulkDelete = isBulkDelete();
     verifyMetrics(() -> {
           fs.delete(simpleFile, false);
           return "after fs.delete(simpleFile) " + getMetricSummary();
         },
-        probe(rawAndKeeping, OBJECT_METADATA_REQUESTS,
+        probe(keeping, OBJECT_METADATA_REQUESTS,
             FILESTATUS_FILE_PROBE_H),
         // if deleting markers, look for the parent too
-        probe(rawAndDeleting, OBJECT_METADATA_REQUESTS,
+        probe(deleting, OBJECT_METADATA_REQUESTS,
             FILESTATUS_FILE_PROBE_H + FILESTATUS_DIR_PROBE_H),
         with(OBJECT_LIST_REQUEST,
             FILESTATUS_FILE_PROBE_L + FILESTATUS_DIR_PROBE_L),
         with(DIRECTORIES_DELETED, 0),
         with(FILES_DELETED, 1),
-
         // a single DELETE call is made to delete the object
         with(OBJECT_DELETE_REQUEST, DELETE_OBJECT_REQUEST),
 
-        // keeping: create no parent dirs or delete parents
-        withWhenKeeping(DIRECTORIES_CREATED, 0),
-        withWhenKeeping(OBJECT_BULK_DELETE_REQUEST, 0),
-
-        // deleting: create a parent and delete any of its parents
-        withWhenDeleting(DIRECTORIES_CREATED, 1),
-        // a bulk delete for all parents is issued.
-        // the number of objects in it depends on the depth of the tree;
-        // don't worry about that
-        withWhenDeleting(OBJECT_BULK_DELETE_REQUEST, DELETE_MARKER_REQUEST)
+        // create no parent dirs or delete parents
+        with(DIRECTORIES_CREATED, 0),
+        // even when bulk delete is enabled, there is no use of this.
+        with(OBJECT_BULK_DELETE_REQUEST, 0)
     );
 
     // there is an empty dir for a parent

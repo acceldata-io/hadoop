@@ -24,6 +24,12 @@ import com.amazonaws.AmazonServiceException;
  * Status code 443, no response from server. This is considered idempotent.
  */
 public class AWSNoResponseException extends AWSServiceIOException {
+
+  /**
+   * Constructor.
+   * @param operation operation in progress.
+   * @param cause inner cause
+   */
   public AWSNoResponseException(String operation,
       AmazonServiceException cause) {
     super(operation, cause);

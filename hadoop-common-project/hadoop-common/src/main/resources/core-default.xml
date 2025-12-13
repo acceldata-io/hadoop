@@ -48,6 +48,14 @@
   ordering of the filters.</description>
 </property>
 
+  <property>
+    <name>hadoop.http.idle_timeout.ms</name>
+    <value>60000</value>
+    <description>
+      NN/JN/DN Server connection timeout in milliseconds.
+    </description>
+  </property>
+
 <!--- security properties -->
 
 <property>
@@ -371,16 +379,6 @@
 </property>
 
 <property>
-  <name>hadoop.security.group.mapping.ldap.bind.password.alias</name>
-  <value></value>
-  <description>
-    The alias of the bind user to be used to get the password from credential
-    providers. If the alias is empty, property
-    hadoop.security.group.mapping.ldap.bind.password is used instead.
-  </description>
-</property>
-
-<property>
   <name>hadoop.security.group.mapping.ldap.bind.password.file</name>
   <value></value>
   <description>
@@ -657,6 +655,27 @@
   </description>
 </property>
 
+  <property>
+    <name>hadoop.security.token.service.use_ip</name>
+    <value>true</value>
+    <description>
+      Controls whether tokens always use IP addresses.
+      DNS changes will not be detected if this option is enabled.
+      Existing client connections that break will always reconnect
+      to the IP of the original host. New clients will connect
+      to the host's new IP but fail to locate a token.
+      Disabling this option will allow existing and new clients
+      to detect an IP change and continue to locate the new host's token.
+
+      In secure multi-homed environments, this parameter will need to
+      be set to false on both cluster servers and clients (see HADOOP-7733).
+      If it is not set correctly, the symptom will be inability to
+      submit an application to YARN from an external client
+      (with error "client host not a member of the Hadoop cluster"),
+      or even from an in-cluster client if server failover occurs.
+    </description>
+  </property>
+
 <property>
   <name>hadoop.workaround.non.threadsafe.getpwuid</name>
   <value>true</value>
@@ -688,14 +707,6 @@
     <description>The minimum time between relogin attempts for Kerberos, in
     seconds.
     </description>
-</property>
-
-<property>
-  <name>hadoop.kerberos.keytab.login.autorenewal.enabled</name>
-  <value>false</value>
-  <description>Used to enable automatic renewal of keytab based kerberos login.
-    By default the automatic renewal is disabled for keytab based kerberos login.
-  </description>
 </property>
 
 <property>
@@ -921,6 +932,124 @@
 </property>
 
 <property>
+  <name>fs.viewfs.overload.scheme.target.hdfs.impl</name>
+  <value>org.apache.hadoop.hdfs.DistributedFileSystem</value>
+  <description>The DistributedFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are hdfs.
+   </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.s3a.impl</name>
+  <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+  <description>The S3AFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are s3a.</description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.ofs.impl</name>
+  <value>org.apache.hadoop.fs.ozone.RootedOzoneFileSystem</value>
+  <description>The RootedOzoneFileSystem for view file system overload scheme
+    when child file system and ViewFSOverloadScheme's schemes are ofs.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.o3fs.impl</name>
+  <value>org.apache.hadoop.fs.ozone.OzoneFileSystem</value>
+  <description>The OzoneFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are o3fs.</description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.ftp.impl</name>
+  <value>org.apache.hadoop.fs.ftp.FTPFileSystem</value>
+  <description>The FTPFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are ftp.
+   </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.webhdfs.impl</name>
+  <value>org.apache.hadoop.hdfs.web.WebHdfsFileSystem</value>
+  <description>The WebHdfsFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are webhdfs.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.swebhdfs.impl</name>
+  <value>org.apache.hadoop.hdfs.web.SWebHdfsFileSystem</value>
+  <description>The SWebHdfsFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are swebhdfs.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.file.impl</name>
+  <value>org.apache.hadoop.fs.LocalFileSystem</value>
+  <description>The LocalFileSystem for view file system overload scheme when
+   child file system and ViewFSOverloadScheme's schemes are file.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.abfs.impl</name>
+  <value>org.apache.hadoop.fs.azurebfs.AzureBlobFileSystem</value>
+  <description>The AzureBlobFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are abfs.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.abfss.impl</name>
+  <value>org.apache.hadoop.fs.azurebfs.SecureAzureBlobFileSystem</value>
+  <description>The SecureAzureBlobFileSystem for view file system overload
+   scheme when child file system and ViewFSOverloadScheme's schemes are abfss.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.wasb.impl</name>
+  <value>org.apache.hadoop.fs.azure.NativeAzureFileSystem</value>
+  <description>The NativeAzureFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are wasb.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.swift.impl</name>
+  <value>org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem</value>
+  <description>The SwiftNativeFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are swift.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.oss.impl</name>
+  <value>org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem</value>
+  <description>The AliyunOSSFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are oss.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.http.impl</name>
+  <value>org.apache.hadoop.fs.http.HttpFileSystem</value>
+  <description>The HttpFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are http.
+  </description>
+</property>
+
+<property>
+  <name>fs.viewfs.overload.scheme.target.https.impl</name>
+  <value>org.apache.hadoop.fs.http.HttpsFileSystem</value>
+  <description>The HttpsFileSystem for view file system overload scheme
+   when child file system and ViewFSOverloadScheme's schemes are https.
+  </description>
+</property>
+
+<property>
   <name>fs.AbstractFileSystem.ftp.impl</name>
   <value>org.apache.hadoop.fs.ftp.FtpFs</value>
   <description>The FileSystem for Ftp: uris.</description>
@@ -977,14 +1106,6 @@
 </property>
 
 <property>
-  <name>fs.ftp.timeout</name>
-  <value>0</value>
-  <description>
-    FTP filesystem's timeout in seconds.
-  </description>
-</property>
-
-<property>
   <name>fs.df.interval</name>
   <value>60000</value>
   <description>Disk usage statistics refresh interval in msec.</description>
@@ -1024,33 +1145,19 @@
 
 <property>
   <name>fs.s3a.aws.credentials.provider</name>
-  <value>
-    org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider,
-    org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,
-    com.amazonaws.auth.EnvironmentVariableCredentialsProvider,
-    org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider
-  </value>
   <description>
     Comma-separated class names of credential provider classes which implement
     com.amazonaws.auth.AWSCredentialsProvider.
 
-    When S3A delegation tokens are not enabled, this list will be used
-    to directly authenticate with S3 and DynamoDB services.
-    When S3A Delegation tokens are enabled, depending upon the delegation
-    token binding it may be used
-    to communicate wih the STS endpoint to request session/role
-    credentials.
-
     These are loaded and queried in sequence for a valid set of credentials.
     Each listed class must implement one of the following means of
     construction, which are attempted in order:
-    * a public constructor accepting java.net.URI and
+    1. a public constructor accepting java.net.URI and
         org.apache.hadoop.conf.Configuration,
-    * a public constructor accepting org.apache.hadoop.conf.Configuration,
-    * a public static method named getInstance that accepts no
+    2. a public static method named getInstance that accepts no
        arguments and returns an instance of
        com.amazonaws.auth.AWSCredentialsProvider, or
-    * a public default constructor.
+    3. a public default constructor.
 
     Specifying org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider allows
     anonymous access to a publicly accessible S3 bucket without any credentials.
@@ -1060,15 +1167,13 @@
 
     If unspecified, then the default list of credential provider classes,
     queried in sequence, is:
-    * org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider: looks
-       for session login secrets in the Hadoop configuration.
-    * org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider:
+    1. org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider:
        Uses the values of fs.s3a.access.key and fs.s3a.secret.key.
-    * com.amazonaws.auth.EnvironmentVariableCredentialsProvider: supports
+    2. com.amazonaws.auth.EnvironmentVariableCredentialsProvider: supports
         configuration of AWS access key ID and secret access key in
-        environment variables named AWS_ACCESS_KEY_ID and
-        AWS_SECRET_ACCESS_KEY, as documented in the AWS SDK.
-    * com.amazonaws.auth.InstanceProfileCredentialsProvider: supports use
+        environment variables named AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+        and AWS_SESSION_TOKEN as documented in the AWS SDK.
+    3. com.amazonaws.auth.InstanceProfileCredentialsProvider: supports use
         of instance profile credentials if running in an EC2 VM.
   </description>
 </property>
@@ -1124,7 +1229,7 @@
   <value>30m</value>
   <description>
     Duration of assumed roles before a refresh is attempted.
-    Used when session tokens are requested.
+    Only used if AssumedRoleCredentialProvider is the AWS credential provider.
     Range: 15m to 1h
   </description>
 </property>
@@ -1136,20 +1241,17 @@
     AWS Security Token Service Endpoint.
     If unset, uses the default endpoint.
     Only used if AssumedRoleCredentialProvider is the AWS credential provider.
-    Used by the AssumedRoleCredentialProvider and in Session and Role delegation
-    tokens.
   </description>
 </property>
 
 <property>
   <name>fs.s3a.assumed.role.sts.endpoint.region</name>
-  <value></value>
+  <value>us-west-1</value>
   <description>
     AWS Security Token Service Endpoint's region;
     Needed if fs.s3a.assumed.role.sts.endpoint points to an endpoint
     other than the default one and the v4 signature is used.
-    Used by the AssumedRoleCredentialProvider and in Session and Role delegation
-    tokens.
+    Only used if AssumedRoleCredentialProvider is the AWS credential provider.
   </description>
 </property>
 
@@ -1161,29 +1263,6 @@
     retrieve short-lived role credentials.
     Only used if AssumedRoleCredentialProvider is the AWS credential provider.
     If unset, uses "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider".
-  </description>
-</property>
-
-<property>
-  <name>fs.s3a.delegation.tokens.enabled</name>
-  <value>false</value>
-  <description></description>
-</property>
-
-<property>
-  <name>fs.s3a.delegation.token.binding</name>
-  <value></value>
-  <description>
-    The name of a class to provide delegation tokens support in S3A.
-    If unset: delegation token support is disabled.
-
-    Note: for job submission to actually collect these tokens,
-    Kerberos must be enabled.
-
-    Options are:
-    org.apache.hadoop.fs.s3a.auth.delegation.SessionTokenBinding
-    org.apache.hadoop.fs.s3a.auth.delegation.FullCredentialsTokenBinding
-    and org.apache.hadoop.fs.s3a.auth.delegation.RoleTokenBinding
   </description>
 </property>
 
@@ -1738,6 +1817,48 @@
   </description>
 </property>
 
+<property>
+  <name>fs.s3a.change.detection.source</name>
+  <value>etag</value>
+  <description>
+    Select which S3 object attribute to use for change detection.
+    Currently support 'etag' for S3 object eTags and 'versionid' for
+    S3 object version IDs.  Use of version IDs requires object versioning to be
+    enabled for each S3 bucket utilized.  Object versioning is disabled on
+    buckets by default. When version ID is used, the buckets utilized should
+    have versioning enabled before any data is written.
+  </description>
+</property>
+
+<property>
+  <name>fs.s3a.change.detection.mode</name>
+  <value>server</value>
+  <description>
+    Determines how change detection is applied to alert to S3 objects
+    rewritten while being read. Value 'server' indicates to apply the attribute
+    constraint directly on GetObject requests to S3. Value 'client' means to do a
+    client-side comparison of the attribute value returned in the response.  Value
+    'server' would not work with third-party S3 implementations that do not
+    support these constraints on GetObject. Values 'server' and 'client' generate
+    RemoteObjectChangedException when a mismatch is detected.  Value 'warn' works
+    like 'client' but generates only a warning.  Value 'none' will ignore change
+    detection completely.
+  </description>
+</property>
+
+<property>
+  <name>fs.s3a.change.detection.version.required</name>
+  <value>true</value>
+  <description>
+    Determines if S3 object version attribute defined by
+    fs.s3a.change.detection.source should be treated as required.  If true and the
+    referred attribute is unavailable in an S3 GetObject response,
+    NoVersionAttributeException is thrown.  Setting to 'true' is encouraged to
+    avoid potential for inconsistent reads with third-party S3 implementations or
+    against S3 buckets that have object versioning disabled.
+  </description>
+</property>
+
 <!-- Azure file system properties -->
 <property>
   <name>fs.AbstractFileSystem.wasb.impl</name>
@@ -1879,7 +2000,6 @@
   two values: 'murmur' to select MurmurHash and 'jenkins' to select JenkinsHash.
   </description>
 </property>
-
 
 <!-- ipc properties -->
 
@@ -2230,7 +2350,7 @@
   <value>${user.home}/hadoop-http-auth-signature-secret</value>
   <description>
     The signature secret for signing the authentication tokens.
-    The same secret should be used for JT/NN/DN/TT configurations.
+    A different secret should be used for each service.
   </description>
 </property>
 
@@ -2459,19 +2579,10 @@
 </property>
 
 <property>
-  <name>hadoop.ssl.enabled</name>
-  <value>false</value>
-  <description>
-    Deprecated. Use dfs.http.policy and yarn.http.policy instead.
-  </description>
-</property>
-
-<property>
   <name>hadoop.ssl.enabled.protocols</name>
-  <value>TLSv1.1,TLSv1.2</value>
+  <value>TLSv1,SSLv2Hello,TLSv1.1,TLSv1.2</value>
   <description>
-    The supported SSL protocols. The parameter will only used from
-    DatanodeHttpServer.
+    The supported SSL protocols.
   </description>
 </property>
 
@@ -2549,6 +2660,14 @@
   <value>1</value>
   <description>
     FC connection retries for graceful fencing
+  </description>
+</property>
+
+<property>
+  <name>ha.failover-controller.active-standby-elector.zk.op.retries</name>
+  <value>3</value>
+  <description>
+    The number of zookeeper operation retry times in ActiveStandbyElector
   </description>
 </property>
 
@@ -3246,6 +3365,35 @@
     <value>false</value>
     <description>When set to true Clients will bind socket to wildcard
       address. (i.e 0.0.0.0)
+    </description>
+  </property>
+
+  <property>
+    <name>fs.getspaceused.classname</name>
+    <value></value>
+    <description>
+      The class that can tell estimate much space is used in a directory.
+      There are four impl classes that being supported:
+      org.apache.hadoop.fs.DU(default), org.apache.hadoop.fs.WindowsGetSpaceUsed
+      org.apache.hadoop.fs.DFCachingGetSpaceUsed and
+      org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaCachingGetSpaceUsed.
+      And the ReplicaCachingGetSpaceUsed impl class only used in HDFS module.
+    </description>
+  </property>
+
+  <property>
+    <name>fs.getspaceused.jitterMillis</name>
+    <value>60000</value>
+    <description>
+      fs space usage statistics refresh jitter in msec.
+    </description>
+  </property>
+
+  <property>
+    <name>hadoop.http.sni.host.check.enabled</name>
+    <value>false</value>
+    <description>
+      Enable Server Name Indication (SNI) host check for HTTPS enabled server.
     </description>
   </property>
 </configuration>

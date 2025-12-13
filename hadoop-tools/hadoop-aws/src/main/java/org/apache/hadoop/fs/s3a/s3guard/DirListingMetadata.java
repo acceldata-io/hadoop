@@ -273,22 +273,21 @@ public class DirListingMetadata extends ExpirableMetadata {
 
     // If this dir's path has host (and thus scheme), so must its children
     URI parentUri = path.toUri();
-    URI childUri = childPath.toUri();
     if (parentUri.getHost() != null) {
-      Preconditions.checkNotNull(childUri.getHost(), "Expected non-null URI " +
-          "host: %s", childUri);
+      URI childUri = childPath.toUri();
+      Preconditions.checkNotNull(childUri.getHost(),
+          String.format("Expected non-null URI host: %s", childUri));
       Preconditions.checkArgument(
           childUri.getHost().equals(parentUri.getHost()),
-          "childUri %s and parentUri %s must have the same host",
-          childUri, parentUri);
-      Preconditions.checkNotNull(childUri.getScheme(), "No scheme in path %s",
-          childUri);
+          String.format("childUri %s and parentUri %s must have the same host",
+            childUri, parentUri));
+      Preconditions.checkNotNull(childUri.getScheme(),
+          String.format("No scheme in path %s", childUri));
     }
     Preconditions.checkArgument(!childPath.isRoot(),
-        "childPath cannot be the root path: %s", childPath);
-    Preconditions.checkArgument(parentUri.getPath().equals(
-        childPath.getParent().toUri().getPath()),
-        "childPath %s must be a child of %s", childPath, path);
+        String.format("childPath cannot be the root path: %s", childPath));
+    Preconditions.checkArgument(childPath.getParent().equals(path),
+        String.format("childPath %s must be a child of %s", childPath, path));
   }
 
   /**
@@ -306,9 +305,9 @@ public class DirListingMetadata extends ExpirableMetadata {
     Path p = status.getPath();
     Preconditions.checkNotNull(p, "Child status' path cannot be null");
     Preconditions.checkArgument(!p.isRoot(),
-        "childPath cannot be the root path: %s", p);
+        String.format("childPath cannot be the root path: %s", p));
     Preconditions.checkArgument(p.getParent().equals(path),
-        "childPath %s must be a child of %s", p, path);
+        String.format("childPath %s must be a child of %s", p, path));
     URI uri = p.toUri();
     URI parentUri = path.toUri();
     // If FileStatus' path is missing host, but should have one, add it.
@@ -327,6 +326,7 @@ public class DirListingMetadata extends ExpirableMetadata {
 
   private void checkPathAbsolute(Path p) {
     Preconditions.checkNotNull(p, "path must be non-null");
-    Preconditions.checkArgument(p.isAbsolute(), "path must be absolute: %s", p);
+    Preconditions.checkArgument(p.isAbsolute(),
+        String.format("path must be absolute: %s", p));
   }
 }

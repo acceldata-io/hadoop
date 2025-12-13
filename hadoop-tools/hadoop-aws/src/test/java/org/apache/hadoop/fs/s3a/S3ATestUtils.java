@@ -29,21 +29,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.fs.s3a.auth.MarshalledCredentialBinding;
-import org.apache.hadoop.fs.s3a.auth.MarshalledCredentials;
 import org.apache.hadoop.fs.s3a.commit.CommitConstants;
+
+import org.apache.hadoop.service.Service;
+import org.apache.hadoop.service.ServiceOperations;
 
 import org.apache.hadoop.fs.s3a.s3guard.MetadataStore;
 import org.apache.hadoop.fs.s3a.s3guard.MetadataStoreCapabilities;
-import org.apache.hadoop.fs.s3native.S3xLoginHelper;
-import org.apache.hadoop.io.DataInputBuffer;
-import org.apache.hadoop.io.DataOutputBuffer;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.service.Service;
-import org.apache.hadoop.service.ServiceOperations;
-import org.apache.hadoop.util.ReflectionUtils;
-
-import com.amazonaws.auth.AWSCredentialsProvider;
 import org.hamcrest.core.Is;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -62,7 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_CREDENTIAL_PROVIDER_PATH;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 import static org.apache.hadoop.fs.s3a.FailureInjectionPolicy.*;
 import static org.apache.hadoop.fs.s3a.S3ATestConstants.*;
@@ -87,27 +79,6 @@ public final class S3ATestUtils {
    */
   public static final String UNSET_PROPERTY = "unset";
   public static final int PURGE_DELAY_SECONDS = 60 * 60;
-
-  /** Add any deprecated keys. */
-  @SuppressWarnings("deprecation")
-  private static void addDeprecatedKeys() {
-    // STS endpoint configuration option
-    Configuration.DeprecationDelta[] deltas = {
-        // STS endpoint configuration option
-        new Configuration.DeprecationDelta(
-            S3ATestConstants.TEST_STS_ENDPOINT,
-            ASSUMED_ROLE_STS_ENDPOINT)
-    };
-
-    if (deltas.length > 0) {
-      Configuration.addDeprecations(deltas);
-      Configuration.reloadExistingConfigurations();
-    }
-  }
-
-  static {
-    addDeprecatedKeys();
-  }
 
   /**
    * Get S3A FS name.
@@ -548,111 +519,15 @@ public final class S3ATestUtils {
   }
 
   /**
-   * Clear any Hadoop credential provider path.
-   * This is needed if people's test setups switch to credential providers,
-   * and the test case is altering FS login details: changes made in the
-   * config will not be picked up.
-   * @param conf configuration to update
+   * Get the name of the test bucket.
+   * @param conf configuration to scan.
+   * @return the bucket name from the config.
+   * @throws NullPointerException: no test bucket
    */
-  public static void unsetHadoopCredentialProviders(final Configuration conf) {
-    conf.unset(HADOOP_SECURITY_CREDENTIAL_PROVIDER_PATH);
-  }
-
-  /**
-   * Build AWS credentials to talk to the STS. Also where checks for the
-   * session tests being disabled are implemented.
-   * @return a set of credentials
-   * @throws IOException on a failure
-   */
-  public static AWSCredentialsProvider buildAwsCredentialsProvider(
-      final Configuration conf)
-      throws IOException {
-    assumeSessionTestsEnabled(conf);
-
-    S3xLoginHelper.Login login = S3AUtils.getAWSAccessKeys(
-        URI.create("s3a://foobar"), conf);
-    if (!login.hasLogin()) {
-      skip("testSTS disabled because AWS credentials not configured");
-    }
-    return new SimpleAWSCredentialsProvider(login);
-  }
-
-  /**
-   * Skip the current test if STS tess are not enabled.
-   * @param conf configuration to examine
-   */
-  public static void assumeSessionTestsEnabled(final Configuration conf) {
-    if (!conf.getBoolean(TEST_STS_ENABLED, true)) {
-      skip("STS functional tests disabled");
-    }
-  }
-
-  /**
-   * Request session credentials for the default time (900s).
-   * @param conf configuration to use for login
-   * @param bucket Optional bucket to use to look up per-bucket proxy secrets
-   * @return the credentials
-   * @throws IOException on a failure
-   */
-  public static MarshalledCredentials requestSessionCredentials(
-      final Configuration conf,
-      final String bucket)
-      throws IOException {
-    return requestSessionCredentials(conf, bucket,
-        TEST_SESSION_TOKEN_DURATION_SECONDS);
-  }
-
-  /**
-   * Request session credentials.
-   * @param conf The Hadoop configuration
-   * @param bucket Optional bucket to use to look up per-bucket proxy secrets
-   * @param duration duration in seconds.
-   * @return the credentials
-   * @throws IOException on a failure
-   */
-  public static MarshalledCredentials requestSessionCredentials(
-      final Configuration conf,
-      final String bucket,
-      final int duration)
-      throws IOException {
-    assumeSessionTestsEnabled(conf);
-    MarshalledCredentials sc = MarshalledCredentialBinding
-        .requestSessionCredentials(
-          buildAwsCredentialsProvider(conf),
-          S3AUtils.createAwsConf(conf, bucket),
-          conf.getTrimmed(ASSUMED_ROLE_STS_ENDPOINT,
-              DEFAULT_ASSUMED_ROLE_STS_ENDPOINT),
-          conf.getTrimmed(ASSUMED_ROLE_STS_ENDPOINT_REGION,
-              ASSUMED_ROLE_STS_ENDPOINT_REGION_DEFAULT),
-          duration,
-          new Invoker(new S3ARetryPolicy(conf), Invoker.LOG_EVENT));
-    sc.validate("requested session credentials: ",
-        MarshalledCredentials.CredentialTypeRequired.SessionOnly);
-    return sc;
-  }
-
-  /**
-   * Round trip a writable to a new instance.
-   * @param source source object
-   * @param conf configuration
-   * @param <T> type
-   * @return an unmarshalled instance of the type
-   * @throws Exception on any failure.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T extends Writable> T roundTrip(
-      final T source,
-      final Configuration conf)
-      throws Exception {
-    DataOutputBuffer dob = new DataOutputBuffer();
-    source.write(dob);
-
-    DataInputBuffer dib = new DataInputBuffer();
-    dib.reset(dob.getData(), dob.getLength());
-
-    T after = ReflectionUtils.newInstance((Class<T>) source.getClass(), conf);
-    after.readFields(dib);
-    return after;
+  public static String getTestBucketName(final Configuration conf) {
+    String bucket = checkNotNull(conf.get(TEST_FS_S3A_NAME),
+        "No test bucket");
+    return URI.create(bucket).getHost();
   }
 
   /**
@@ -1128,9 +1003,12 @@ public final class S3ATestUtils {
    * Skip a test if the FS isn't marked as supporting magic commits.
    * @param fs filesystem
    */
-  public static void assumeMagicCommitEnabled(S3AFileSystem fs) {
+  public static void assumeMagicCommitEnabled(S3AFileSystem fs)
+      throws IOException {
     assume("Magic commit option disabled on " + fs,
-        fs.hasCapability(CommitConstants.STORE_CAPABILITY_MAGIC_COMMITTER));
+        fs.hasPathCapability(
+            fs.getWorkingDirectory(),
+            CommitConstants.STORE_CAPABILITY_MAGIC_COMMITTER));
   }
 
   /**

@@ -92,7 +92,7 @@ public class TestEditLogJournalFailures {
     cluster.waitActive();
     fs = cluster.getFileSystem();
   }
-  
+
   @After
   public void shutDownMiniCluster() throws IOException {
     if (fs != null) {
@@ -109,7 +109,7 @@ public class TestEditLogJournalFailures {
       }
     }
   }
-   
+
   @Test
   public void testSingleFailedEditsDirOnFlush() throws IOException {
     assertTrue(doAnEdit());
@@ -120,7 +120,7 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-   
+
   @Test
   public void testAllEditsDirsFailOnFlush() throws IOException {
     assertTrue(doAnEdit());
@@ -139,7 +139,7 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-  
+
   @Test
   public void testAllEditsDirFailOnWrite() throws IOException {
     assertTrue(doAnEdit());
@@ -159,7 +159,7 @@ public class TestEditLogJournalFailures {
           "Unsynced transactions: 1", re);
     }
   }
-  
+
   @Test
   public void testSingleFailedEditsDirOnSetReadyToFlush() throws IOException {
     assertTrue(doAnEdit());
@@ -170,7 +170,7 @@ public class TestEditLogJournalFailures {
     // A single journal failure should not result in a call to terminate
     assertFalse(cluster.getNameNode().isInSafeMode());
   }
-  
+
   @Test
   public void testSingleRequiredFailedEditsDirOnSetReadyToFlush()
       throws IOException {
@@ -183,19 +183,19 @@ public class TestEditLogJournalFailures {
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_MINIMUM_KEY, 0);
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_CHECKED_VOLUMES_MINIMUM_KEY, 0);
     setUpMiniCluster(conf, true);
-    
+
     assertTrue(doAnEdit());
     // Invalidated the one required edits journal.
     invalidateEditsDirAtIndex(0, false, false);
     JournalAndStream nonRequiredJas = getJournalAndStream(1);
     EditLogFileOutputStream nonRequiredSpy =
       spyOnStream(nonRequiredJas);
-    
+
     // The NN has not terminated (no ExitException thrown)
-    
+
     // ..and that the other stream is active.
     assertTrue(nonRequiredJas.isActive());
-    
+
     try {
       doAnEdit();
       fail("A single failure of a required journal should have halted the NN");
@@ -204,7 +204,7 @@ public class TestEditLogJournalFailures {
       GenericTestUtils.assertExceptionContains(
           "setReadyToFlush failed for required journal", re);
     }
-    
+
     // Since the required directory failed setReadyToFlush, and that
     // directory was listed prior to the non-required directory,
     // we should not call setReadyToFlush on the non-required
@@ -212,7 +212,7 @@ public class TestEditLogJournalFailures {
     Mockito.verify(nonRequiredSpy, Mockito.never()).setReadyToFlush();
     assertFalse(nonRequiredJas.isActive());
   }
-  
+
   @Test
   public void testMultipleRedundantFailedEditsDirOnSetReadyToFlush()
       throws IOException {
@@ -227,15 +227,15 @@ public class TestEditLogJournalFailures {
     }
     conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY,
         StringUtils.join(nameDirs, ","));
-    
+
     // Keep running unless there are less than 2 edits dirs remaining.
     conf.setInt(DFSConfigKeys.DFS_NAMENODE_EDITS_DIR_MINIMUM_KEY, 2);
     setUpMiniCluster(conf, false);
-    
+
     // All journals active.
     assertTrue(doAnEdit());
     // The NN has not terminated (no ExitException thrown)
-    
+
     // Invalidate 1/4 of the redundant journals.
     invalidateEditsDirAtIndex(0, false, false);
     assertTrue(doAnEdit());
@@ -245,7 +245,7 @@ public class TestEditLogJournalFailures {
     invalidateEditsDirAtIndex(1, false, false);
     assertTrue(doAnEdit());
     // The NN has not terminated (no ExitException thrown)
-    
+
     // Invalidate 3/4 of the redundant journals.
     invalidateEditsDirAtIndex(2, false, false);
 
@@ -265,7 +265,7 @@ public class TestEditLogJournalFailures {
   /**
    * Replace the journal at index <code>index</code> with one that throws an
    * exception on flush.
-   * 
+   *
    * @param index the index of the journal to take offline.
    * @return the original <code>EditLogOutputStream</code> of the journal.
    */
@@ -305,7 +305,7 @@ public class TestEditLogJournalFailures {
 
   /**
    * Do a mutative metadata operation on the file system.
-   * 
+   *
    * @return true if the operation was successful, false otherwise.
    */
   private boolean doAnEdit() throws IOException {

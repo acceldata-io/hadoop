@@ -45,6 +45,8 @@ import java.util.Map;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doNothing;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +77,7 @@ public class MockRunningServiceContext extends ServiceContext {
         NMClientAsync nmClientAsync = super.createNMClient();
         NMClient nmClient = mock(NMClient.class);
         try {
-          when(nmClient.getContainerStatus(anyObject(), anyObject()))
+          when(nmClient.getContainerStatus(any(), any()))
               .thenAnswer(
                   (Answer<ContainerStatus>) invocation -> ContainerStatus
                       .newInstance((ContainerId) invocation.getArguments()[0],

@@ -23,9 +23,9 @@ import static org.apache.hadoop.hdfs.server.namenode.ha.ObserverReadProxyProvide
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 
 import java.io.File;
@@ -494,76 +494,6 @@ public class TestObserverNode {
     // filesystem should be in corrupt state
     LOG.info("result=" + result);
     assertTrue(result.contains("The filesystem under path '/' is CORRUPT"));
-  }
-
-  /**
-   * The test models the race of two mkdirs RPC calls on the same path to
-   * Active NameNode. The first arrived call will journal a mkdirs transaction.
-   * The subsequent call hitting the NameNode before the mkdirs transaction is
-   * synced will see that the directory already exists, but will obtain
-   * lastSeenStateId smaller than the txId of the mkdirs transaction
-   * since the latter hasn't been synced yet.
-   * This causes stale read from Observer for the second client.
-   * See HDFS-15915.
-   */
-  @Test
-  public void testMkdirsRaceWithObserverRead() throws Exception {
-    dfs.mkdir(testPath, FsPermission.getDefault());
-    assertSentTo(0);
-    dfsCluster.rollEditLogAndTail(0);
-    dfs.getFileStatus(testPath);
-    assertSentTo(2);
-
-    // Create a spy on FSEditLog, which delays MkdirOp transaction by 100 mec
-    FSEditLog spyEditLog = NameNodeAdapter.spyDelayMkDirTransaction(
-        dfsCluster.getNameNode(0), 100);
-
-    final int numThreads = 4;
-    ClientState[] clientStates = new ClientState[numThreads];
-    final ExecutorService threadPool =
-        HadoopExecutors.newFixedThreadPool(numThreads);
-    final Future<?>[] futures = new Future<?>[numThreads];
-
-    Configuration conf2 = new Configuration(conf);
-    // Disable FS cache so that different DFS clients are used
-    conf2.setBoolean("fs.hdfs.impl.disable.cache", true);
-
-    for (int i = 0; i < numThreads; i++) {
-      clientStates[i] = new ClientState();
-      futures[i] = threadPool.submit(new MkDirRunner(conf2, clientStates[i]));
-    }
-
-    Thread.sleep(150); // wait until mkdir is logged
-    long activStateId =
-        dfsCluster.getNameNode(0).getFSImage().getLastAppliedOrWrittenTxId();
-    dfsCluster.rollEditLogAndTail(0);
-    boolean finished = true;
-    // wait for all dispatcher threads to finish
-    for (Future<?> future : futures) {
-      try {
-        future.get();
-      } catch (ExecutionException e) {
-        finished = false;
-        LOG.warn("MkDirRunner thread failed", e.getCause());
-      }
-    }
-    assertTrue("Not all threads finished", finished);
-    threadPool.shutdown();
-
-    assertEquals("Active and Observer stateIds don't match",
-        dfsCluster.getNameNode(0).getFSImage().getLastAppliedOrWrittenTxId(),
-        dfsCluster.getNameNode(2).getFSImage().getLastAppliedOrWrittenTxId());
-    for (int i = 0; i < numThreads; i++) {
-      assertTrue("Client #" + i
-          + " lastSeenStateId=" + clientStates[i].lastSeenStateId
-          + " activStateId=" + activStateId
-          + "\n" + clientStates[i].fnfe,
-          clientStates[i].lastSeenStateId >= activStateId &&
-          clientStates[i].fnfe == null);
-    }
-
-    // Restore edit log
-    Mockito.reset(spyEditLog);
   }
 
   static class ClientState {

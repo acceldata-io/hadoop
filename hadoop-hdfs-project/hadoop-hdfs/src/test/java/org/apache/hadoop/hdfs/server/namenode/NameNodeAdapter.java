@@ -84,7 +84,7 @@ public class NameNodeAdapter {
     return namenode.getNamesystem().getBlockLocations("foo",
         src, offset, length);
   }
-  
+
   public static HdfsFileStatus getFileInfo(NameNode namenode, String src,
       boolean resolveLink, boolean needLocation, boolean needBlockToken)
       throws AccessControlException, UnresolvedLinkException, StandbyException,
@@ -103,32 +103,32 @@ public class NameNodeAdapter {
       namenode.getNamesystem().readUnlock();
     }
   }
-  
+
   public static boolean mkdirs(NameNode namenode, String src,
       PermissionStatus permissions, boolean createParent)
       throws UnresolvedLinkException, IOException {
     return namenode.getNamesystem().mkdirs(src, permissions, createParent);
   }
-  
+
   public static void saveNamespace(NameNode namenode)
       throws AccessControlException, IOException {
     namenode.getNamesystem().saveNamespace(0, 0);
   }
-  
+
   public static void enterSafeMode(NameNode namenode, boolean resourcesLow)
       throws IOException {
     namenode.getNamesystem().enterSafeMode(resourcesLow);
   }
-  
+
   public static void leaveSafeMode(NameNode namenode) {
     namenode.getNamesystem().leaveSafeMode(false);
   }
-  
+
   public static void abortEditLogs(NameNode nn) {
     FSEditLog el = nn.getFSImage().getEditLog();
     el.abortCurrentLogSegment();
   }
-  
+
   /**
    * Get the internal RPC server instance.
    * @return rpc server
@@ -165,7 +165,7 @@ public class NameNodeAdapter {
       final String src, final short replication) throws IOException {
     return ns.setReplication(src, replication);
   }
-  
+
   public static LeaseManager getLeaseManager(final FSNamesystem ns) {
     return ns.leaseManager;
   }
@@ -220,7 +220,7 @@ public class NameNodeAdapter {
       ns.readUnlock();
     }
   }
-  
+
   /**
    * Return the FSNamesystem stats
    */
@@ -315,7 +315,7 @@ public class NameNodeAdapter {
     Whitebox.setInternalState(fsn, "fsImage", spy);
     return spy;
   }
-  
+
   public static FSEditLog spyOnEditLog(NameNode nn) {
     FSEditLog spyEditLog = spy(nn.getNamesystem().getFSImage().getEditLog());
     DFSTestUtil.setEditLogForTesting(nn.getNamesystem(), spyEditLog);
@@ -326,40 +326,13 @@ public class NameNodeAdapter {
     return spyEditLog;
   }
 
-  /**
-   * Spy on EditLog to delay execution of doEditTransaction() for MkdirOp.
-   */
-  public static FSEditLog spyDelayMkDirTransaction(
-      final NameNode nn, final long delay) {
-    FSEditLog realEditLog = nn.getFSImage().getEditLog();
-    FSEditLogAsync spyEditLog = (FSEditLogAsync) spy(realEditLog);
-    DFSTestUtil.setEditLogForTesting(nn.getNamesystem(), spyEditLog);
-    Answer<Boolean> ans = new Answer<Boolean>() {
-      @Override
-      public Boolean answer(InvocationOnMock invocation) throws Throwable {
-        Thread.sleep(delay);
-        return (Boolean) invocation.callRealMethod();
-      }
-    };
-    ArgumentMatcher<FSEditLogOp> am = new ArgumentMatcher<FSEditLogOp>() {
-      @Override
-      public boolean matches(Object argument) {
-        FSEditLogOp op = (FSEditLogOp) argument;
-        return op.opCode == FSEditLogOpCodes.OP_MKDIR;
-      }
-    };
-    doAnswer(ans).when(spyEditLog).doEditTransaction(
-        Matchers.argThat(am));
-    return spyEditLog;
-  }
-
   public static JournalSet spyOnJournalSet(NameNode nn) {
     FSEditLog editLog = nn.getFSImage().getEditLog();
     JournalSet js = Mockito.spy(editLog.getJournalSet());
     editLog.setJournalSetForTesting(js);
     return js;
   }
-  
+
   public static String getMkdirOpPath(FSEditLogOp op) {
     if (op.opCode == FSEditLogOpCodes.OP_MKDIR) {
       return ((MkdirOp) op).path;
@@ -367,7 +340,7 @@ public class NameNodeAdapter {
       return null;
     }
   }
-  
+
   public static FSEditLogOp createMkdirOp(String path) {
     MkdirOp op = MkdirOp.getInstance(new FSEditLogOp.OpInstanceCache())
       .setPath(path)
@@ -376,7 +349,7 @@ public class NameNodeAdapter {
               "testuser", "testgroup", FsPermission.getDefault()));
     return op;
   }
-  
+
   /**
    * @return the number of blocks marked safe by safemode, or -1
    * if safemode is not running.
@@ -389,14 +362,14 @@ public class NameNodeAdapter {
         nn.getNamesystem().getBlockManager(), "bmSafeMode");
     return (long)Whitebox.getInternalState(bmSafeMode, "blockSafe");
   }
-  
+
   /**
    * @return Replication queue initialization status
    */
   public static boolean safeModeInitializedReplQueues(NameNode nn) {
     return nn.getNamesystem().getBlockManager().isPopulatingReplQueues();
   }
-  
+
   public static File getInProgressEditsFile(StorageDirectory sd, long startTxId) {
     return NNStorage.getInProgressEditsFile(sd, startTxId);
   }

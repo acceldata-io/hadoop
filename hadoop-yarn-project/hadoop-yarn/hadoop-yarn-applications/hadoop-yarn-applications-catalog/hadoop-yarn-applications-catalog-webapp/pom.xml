@@ -108,6 +108,27 @@
       </dependency>
 
       <dependency>
+          <groupId>org.eclipse.jetty.http2</groupId>
+          <artifactId>http2-hpack</artifactId>
+          <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.eclipse.jetty.http2</groupId>
+          <artifactId>http2-client</artifactId>
+          <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.eclipse.jetty.http2</groupId>
+          <artifactId>http2-common</artifactId>
+          <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.eclipse.jetty.http2</groupId>
+          <artifactId>http2-http-client-transport</artifactId>
+          <version>${jetty.version}</version>
+      </dependency>
+
+      <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
             <version>${solr.version}</version>
@@ -131,6 +152,26 @@
                 <exclusion>
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-io</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-alpn-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-hpack</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-http-client-transport</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -161,8 +202,28 @@
                     <artifactId>jetty-client</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-alpn-client</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>commons-collections</groupId>
                     <artifactId>commons-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-hpack</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-http-client-transport</artifactId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>
@@ -194,8 +255,28 @@
                     <artifactId>jetty-client</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-alpn-client</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>commons-collections</groupId>
                     <artifactId>commons-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-hpack</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-http-client-transport</artifactId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>

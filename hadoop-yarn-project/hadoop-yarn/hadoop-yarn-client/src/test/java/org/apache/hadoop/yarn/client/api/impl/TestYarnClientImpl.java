@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -125,7 +125,7 @@ public class TestYarnClientImpl extends ParameterizedSchedulerTestBase {
       @Override
       TimelineClient createTimelineClient() throws IOException, YarnException {
         timelineClient = mock(TimelineClient.class);
-        when(timelineClient.getDelegationToken(any(String.class)))
+        when(timelineClient.getDelegationToken(any()))
                 .thenThrow(new RuntimeException("Best effort test exception"));
         return timelineClient;
       }
@@ -166,8 +166,7 @@ public class TestYarnClientImpl extends ParameterizedSchedulerTestBase {
       @Override
       TimelineClient createTimelineClient() throws IOException, YarnException {
         timelineClient = mock(TimelineClient.class);
-        when(timelineClient.getDelegationToken(any(String.class)))
-                .thenReturn(dToken);
+        when(timelineClient.getDelegationToken(any())).thenReturn(dToken);
         return timelineClient;
       }
 

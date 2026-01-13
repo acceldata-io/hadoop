@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -401,7 +401,7 @@ public class TestProportionalCapacityPreemptionPolicyForReservedContainers
         "root(=[100 100 89 9 9]);" + //root
             "-a(=[50 100 80 0]);" + // a
             "-b(=[50 100 9 9 9])"; // b
-    String appsConfig=
+    String appsConfig =
         //queueName\t(priority,resource,host,expression,#repeat,reserved)
         "a\t" // app1 in a
             + "(1,2,n1,,10,false)" // 10 in n1

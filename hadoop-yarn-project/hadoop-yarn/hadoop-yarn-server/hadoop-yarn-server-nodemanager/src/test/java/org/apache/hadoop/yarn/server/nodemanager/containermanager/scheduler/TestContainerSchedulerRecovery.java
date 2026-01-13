@@ -74,6 +74,7 @@ public class TestContainerSchedulerRecovery {
 
   private ContainerScheduler spy;
 
+
   private RecoveredContainerState createRecoveredContainerState(
       RecoveredContainerStatus status) {
     RecoveredContainerState mockState = mock(RecoveredContainerState.class);

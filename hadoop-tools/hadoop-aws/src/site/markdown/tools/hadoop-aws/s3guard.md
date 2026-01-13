@@ -165,6 +165,17 @@ In particular: **If the Metadata Store is declared as authoritative,
 all interactions with the S3 bucket(s) must be through S3A clients sharing
 the same Metadata Store**
 
+It can be configured how long a directory listing in the MetadataStore is
+considered as authoritative. If `((lastUpdated + ttl) <= now)` is false, the
+directory  listing is no longer considered authoritative, so the flag will be
+removed on `S3AFileSystem` level.
+
+```xml
+<property>
+    <name>fs.s3a.metadatastore.authoritative.dir.ttl</name>
+    <value>3600000</value>
+</property>
+```
 
 ### 3. Configure the Metadata Store.
 
@@ -494,7 +505,7 @@ Options
 | argument | meaning |
 |-----------|-------------|
 | `-guarded` | Require S3Guard to be enabled |
-| `-unguarded` | Require S3Guard to be disabled |
+| `-unguarded` | Force S3Guard to be disabled |
 | `-auth` | Require the S3Guard mode to be "authoritative" |
 | `-nonauth` | Require the S3Guard mode to be "non-authoritative" |
 | `-magic` | Require the S3 filesystem to be support the "magic" committer |
@@ -995,6 +1006,20 @@ There's are limit on how often you can change the capacity of an DynamoDB table;
 if you call set-capacity too often, it fails. Wait until the after the time indicated
 and try again.
 
+### Error `Invalid region specified`
+
+```
+java.io.IOException: Invalid region specified "iceland-2":
+  Region can be configured with fs.s3a.s3guard.ddb.region:
+  us-gov-west-1, us-east-1, us-east-2, us-west-1, us-west-2,
+  eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
+  ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
+  sa-east-1, cn-north-1, cn-northwest-1, ca-central-1
+  at org.apache.hadoop.fs.s3a.s3guard.DynamoDBClientFactory$DefaultDynamoDBClientFactory.getRegion
+  at org.apache.hadoop.fs.s3a.s3guard.DynamoDBClientFactory$DefaultDynamoDBClientFactory.createDynamoDBClient
+```
+
+The region specified in `fs.s3a.s3guard.ddb.region` is invalid.
 
 ## Other Topics
 

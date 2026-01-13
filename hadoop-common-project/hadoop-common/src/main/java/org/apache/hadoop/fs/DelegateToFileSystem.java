@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -34,7 +36,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * Implementation of AbstractFileSystem based on the existing implementation of 
+ * Implementation of AbstractFileSystem based on the existing implementation of
  * {@link FileSystem}.
  */
 @InterfaceAudience.Private
@@ -42,11 +44,11 @@ import org.apache.hadoop.util.Progressable;
 public abstract class DelegateToFileSystem extends AbstractFileSystem {
   private static final int DELEGATE_TO_FS_DEFAULT_PORT = -1;
   protected final FileSystem fsImpl;
-  
+
   protected DelegateToFileSystem(URI theUri, FileSystem theFsImpl,
       Configuration conf, String supportedScheme, boolean authorityRequired)
       throws IOException, URISyntaxException {
-    super(theUri, supportedScheme, authorityRequired, 
+    super(theUri, supportedScheme, authorityRequired,
         getDefaultPortIfDefined(theFsImpl));
     fsImpl = theFsImpl;
     fsImpl.initialize(theUri, conf);
@@ -72,7 +74,7 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
   public Path getInitialWorkingDirectory() {
     return fsImpl.getInitialWorkingDirectory();
   }
-  
+
   @Override
   @SuppressWarnings("deprecation") // call to primitiveCreate
   public FSDataOutputStream createInternal (Path f,
@@ -80,7 +82,7 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
       short replication, long blockSize, Progressable progress,
       ChecksumOpt checksumOpt, boolean createParent) throws IOException {
     checkPath(f);
-    
+
     // Default impl assumes that permissions do not matter
     // calling the regular create is good enough.
     // FSs that implement permissions should override this.
@@ -153,7 +155,7 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
   public FsServerDefaults getServerDefaults() throws IOException {
     return fsImpl.getServerDefaults();
   }
-  
+
   @Override
   public FsServerDefaults getServerDefaults(final Path f) throws IOException {
     return fsImpl.getServerDefaults(f);
@@ -181,7 +183,7 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
       throws IOException {
     checkPath(dir);
     fsImpl.primitiveMkdir(dir, permission, createParent);
-    
+
   }
 
   @Override
@@ -239,14 +241,14 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
   @Override
   public boolean supportsSymlinks() {
     return fsImpl.supportsSymlinks();
-  }  
-  
+  }
+
   @Override
-  public void createSymlink(Path target, Path link, boolean createParent) 
-      throws IOException { 
+  public void createSymlink(Path target, Path link, boolean createParent)
+      throws IOException {
     fsImpl.createSymlink(target, link, createParent);
-  } 
-  
+  }
+
   @Override
   public Path getLinkTarget(final Path f) throws IOException {
     return fsImpl.getLinkTarget(f);
@@ -256,7 +258,7 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
   public String getCanonicalServiceName() {
     return fsImpl.getCanonicalServiceName();
   }
-  
+
   @Override //AbstractFileSystem
   public List<Token<?>> getDelegationTokens(String renewer) throws IOException {
     return Arrays.asList(fsImpl.addDelegationTokens(renewer, null));
@@ -267,5 +269,23 @@ public abstract class DelegateToFileSystem extends AbstractFileSystem {
       final String capability)
       throws IOException {
     return fsImpl.hasPathCapability(path, capability);
+  }
+
+  /**
+   * Open a file by delegating to
+   * {@link FileSystem#openFileWithOptions(Path, Set, Configuration, int)}.
+   * @param path path to the file
+   * @param mandatoryKeys set of options declared as mandatory.
+   * @param options options set during the build sequence.
+   * @param bufferSize buffer size
+   * @return a future which will evaluate to the opened file.
+   * @throws IOException failure to resolve the link.
+   * @throws IllegalArgumentException unknown mandatory key
+   */
+  public CompletableFuture<FSDataInputStream> openFileWithOptions(Path path,
+      Set<String> mandatoryKeys,
+      Configuration options,
+      int bufferSize) throws IOException {
+    return fsImpl.openFileWithOptions(path, mandatoryKeys, options, bufferSize);
   }
 }

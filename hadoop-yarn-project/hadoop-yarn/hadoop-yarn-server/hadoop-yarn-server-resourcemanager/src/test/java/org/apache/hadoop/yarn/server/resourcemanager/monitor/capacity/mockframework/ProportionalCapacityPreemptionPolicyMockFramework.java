@@ -293,7 +293,7 @@ public class ProportionalCapacityPreemptionPolicyMockFramework {
   }
 
   public static class IsPreemptionRequestForQueueAndNode
-      extends  ArgumentMatcher<ContainerPreemptEvent> {
+      implements   ArgumentMatcher<ContainerPreemptEvent> {
     private final ApplicationAttemptId appAttId;
     private final String queueName;
     private final NodeId nodeId;
@@ -305,11 +305,10 @@ public class ProportionalCapacityPreemptionPolicyMockFramework {
       this.nodeId = nodeId;
     }
     @Override
-    public boolean matches(Object cpe) {
-      ContainerPreemptEvent event = (ContainerPreemptEvent) cpe;
-      return appAttId.equals(event.getAppId())
-          && queueName.equals(event.getContainer().getQueueName())
-          && nodeId.equals(event.getContainer().getAllocatedNode());
+    public boolean matches(ContainerPreemptEvent cpe) {
+      return appAttId.equals(cpe.getAppId())
+          && queueName.equals(cpe.getContainer().getQueueName())
+          && nodeId.equals(cpe.getContainer().getAllocatedNode());
     }
     @Override
     public String toString() {

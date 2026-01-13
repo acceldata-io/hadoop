@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.namenode;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getFinalizedEditsFileName;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getImageFileName;
 import static org.apache.hadoop.hdfs.server.namenode.NNStorage.getInProgressEditsFileName;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.io.File;
 import java.io.IOException;
@@ -475,18 +476,20 @@ public class TestNNStorageRetentionManager {
     return paths;
   }
 
-  private static NNStorage mockStorageForDirs(final StorageDirectory... mockDirs)
+  private static NNStorage mockStorageForDirs(final StorageDirectory ... mockDirs)
       throws IOException {
     NNStorage mockStorage = Mockito.mock(NNStorage.class);
-    Mockito.doAnswer(invocation -> {
-      FSImageStorageInspector inspector =
+    Mockito.doAnswer(new Answer<Void>() {
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        FSImageStorageInspector inspector =
           (FSImageStorageInspector) invocation.getArguments()[0];
-      for (StorageDirectory sd : mockDirs) {
-        inspector.inspectDirectory(sd);
+        for (StorageDirectory sd : mockDirs) {
+          inspector.inspectDirectory(sd);
+        }
+        return null;
       }
-      return null;
-    }).when(mockStorage).inspectStorageDirs(
-        Mockito.<FSImageStorageInspector>anyObject());
+    }).when(mockStorage).inspectStorageDirs(any());
     return mockStorage;
   }
 }

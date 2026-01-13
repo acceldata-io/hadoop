@@ -104,6 +104,18 @@
                         <ignoreClass>*</ignoreClass>
                       </ignoreClasses>
                     </dependency>
+                    <!--
+                      Multi-release jars include a Java 9 module descriptor at META-INF/versions/9/module-info.class.
+                      This entry can legitimately appear in multiple Hadoop client artifacts and should not fail the
+                      duplicate class check.
+                    -->
+                    <dependency>
+                      <groupId>org.apache.hadoop</groupId>
+                      <artifactId>hadoop-client-runtime</artifactId>
+                      <ignoreClasses>
+                        <ignoreClass>META-INF/versions/9/module-info.class</ignoreClass>
+                      </ignoreClasses>
+                    </dependency>
                   </dependencies>
                 </banDuplicateClasses>
               </rules>

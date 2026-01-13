@@ -112,6 +112,26 @@
                         <ignoreClass>*</ignoreClass>
                       </ignoreClasses>
                     </dependency>
+                    <!--
+                      Both hadoop-client-runtime and hadoop-client-minicluster are multi-release jars and
+                      include a Java 9 module descriptor at META-INF/versions/9/module-info.class.
+                      This is not a real classpath conflict for our Java 8/11 builds, but it trips the
+                      BanDuplicateClasses rule when both artifacts are present.
+                    -->
+                    <dependency>
+                      <groupId>org.apache.hadoop</groupId>
+                      <artifactId>hadoop-client-runtime</artifactId>
+                      <ignoreClasses>
+                        <ignoreClass>META-INF/versions/9/module-info.class</ignoreClass>
+                      </ignoreClasses>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.apache.hadoop</groupId>
+                      <artifactId>hadoop-client-minicluster</artifactId>
+                      <ignoreClasses>
+                        <ignoreClass>META-INF/versions/9/module-info.class</ignoreClass>
+                      </ignoreClasses>
+                    </dependency>
                   </dependencies>
                 </banDuplicateClasses>
               </rules>

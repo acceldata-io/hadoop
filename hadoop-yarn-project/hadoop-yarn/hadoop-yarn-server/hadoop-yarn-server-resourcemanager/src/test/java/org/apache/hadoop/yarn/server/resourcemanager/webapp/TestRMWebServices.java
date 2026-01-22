@@ -95,6 +95,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoSchedule
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ApplicationSubmissionContextInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.AppsInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterUserInfo;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.server.security.ApplicationACLsManager;
 import org.apache.hadoop.yarn.util.AdHocLogDumper;
 import org.apache.hadoop.yarn.util.AppsCacheKey;
@@ -120,7 +121,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.TestProperties;
 
@@ -136,7 +136,8 @@ public class TestRMWebServices extends JerseyTestBase {
     config.register(new JerseyBinder());
     config.register(RMWebServices.class);
     config.register(GenericExceptionHandler.class);
-    config.register(new JettisonFeature()).register(JAXBContextResolver.class);
+    config.register(JsonProviderFeature.class);
+    config.register(JAXBContextResolver.class);
     forceSet(TestProperties.CONTAINER_PORT, JERSEY_RANDOM_PORT);
     return config;
   }
@@ -420,7 +421,7 @@ public class TestRMWebServices extends JerseyTestBase {
 
     assertEquals(MediaType.APPLICATION_JSON + ";" + JettyUtils.UTF_8,
         response.getMediaType().toString());
-    JSONObject json =response.readEntity(JSONObject.class);
+    JSONObject json = response.readEntity(JSONObject.class);
     verifyClusterMetricsJSON(json);
   }
 
@@ -646,7 +647,7 @@ public class TestRMWebServices extends JerseyTestBase {
     LOG.debug("schedulerInfo: {}", info);
     assertEquals("incorrect number of elements in: " + info, 11, info.length());
 
-    verifyClusterSchedulerFifoGeneric(info.getString("@xsi.type"),
+    verifyClusterSchedulerFifoGeneric(info.getString("type"),
         info.getString("qstate"), (float) info.getDouble("capacity"),
         (float) info.getDouble("usedCapacity"),
         info.getInt("minQueueMemoryCapacity"),

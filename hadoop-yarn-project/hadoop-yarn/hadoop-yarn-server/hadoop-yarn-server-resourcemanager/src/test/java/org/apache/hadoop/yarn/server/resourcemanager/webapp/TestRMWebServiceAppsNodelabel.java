@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -50,17 +50,17 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
 import org.apache.hadoop.yarn.webapp.JerseyTestBase;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.TestProperties;
 
@@ -84,7 +84,8 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
     config.register(new JerseyBinder());
     config.register(RMWebServices.class);
     config.register(GenericExceptionHandler.class);
-    config.register(new JettisonFeature()).register(JAXBContextResolver.class);
+    config.register(JsonProviderFeature.class);
+    config.register(JAXBContextResolver.class);
     forceSet(TestProperties.CONTAINER_PORT, JERSEY_RANDOM_PORT);
     return config;
   }
@@ -105,7 +106,7 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
         nodeLabelManager = rm.getRMContext().getNodeLabelManager();
         nodeLabelManager.addToCluserNodeLabels(labels);
       } catch (Exception e) {
-        Assert.fail();
+        fail();
       }
       final HttpServletRequest request = mock(HttpServletRequest.class);
       final HttpServletResponse response = mock(HttpServletResponse.class);
@@ -123,19 +124,19 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
       CapacitySchedulerConfiguration config) {
 
     // Define top-level queues
-    config.setQueues(CapacitySchedulerConfiguration.ROOT,
+    QueuePath root = new QueuePath(CapacitySchedulerConfiguration.ROOT);
+    QueuePath queueA = root.createNewLeaf("a");
+    QueuePath defaultQueue = root.createNewLeaf("default");
+
+    config.setQueues(root,
         new String[]{"a", "default"});
 
-    final String queueA = CapacitySchedulerConfiguration.ROOT + ".a";
     config.setCapacity(queueA, 50f);
     config.setMaximumCapacity(queueA, 50);
 
-    final String defaultQueue =
-        CapacitySchedulerConfiguration.ROOT + ".default";
     config.setCapacity(defaultQueue, 50f);
-    config.setCapacityByLabel(CapacitySchedulerConfiguration.ROOT, "X", 100);
-    config.setMaximumCapacityByLabel(CapacitySchedulerConfiguration.ROOT, "X",
-        100);
+    config.setCapacityByLabel(root, "X", 100);
+    config.setMaximumCapacityByLabel(root, "X", 100);
     // set for default queue
     config.setCapacityByLabel(defaultQueue, "X", 100);
     config.setMaximumCapacityByLabel(defaultQueue, "X", 100);
@@ -154,13 +155,12 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
         .request(MediaType.APPLICATION_JSON).get(Response.class);
     JSONObject json = response.readEntity(JSONObject.class);
     JSONObject apps = json.getJSONObject("apps");
-    assertEquals("incorrect number of elements", 1, apps.length());
+    assertEquals(1, apps.length(), "incorrect number of elements");
     try {
       apps.getJSONArray("app").getJSONObject(0).getJSONObject("resourceInfo");
       fail("resourceInfo object shouldn't be available for finished apps");
     } catch (Exception e) {
-      assertTrue("resourceInfo shouldn't be available for finished apps",
-          true);
+      assertTrue(true, "resourceInfo shouldn't be available for finished apps");
     }
     rm.stop();
   }
@@ -198,10 +198,13 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
 
     // Verify apps resource
     JSONObject apps = json.getJSONObject("apps");
-    assertEquals("incorrect number of elements", 1, apps.length());
-    JSONObject jsonObject = apps.getJSONObject("app").getJSONObject("resourceInfo");
+    assertEquals(1, apps.length(), "incorrect number of elements");
+    JSONObject jsonObject = apps
+        .getJSONArray("app")
+        .getJSONObject(0)
+        .getJSONObject("resourceInfo");
     JSONArray jsonArray = jsonObject.getJSONArray("resourceUsagesByPartition");
-    assertEquals("Partition expected is 2", 2, jsonArray.length());
+    assertEquals(2, jsonArray.length(), "Partition expected is 2");
 
     // Default partition resource
     JSONObject defaultPartition = jsonArray.getJSONObject(0);
@@ -223,15 +226,13 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
     JSONObject amusedObject = (JSONObject) partition.get("amUsed");
     JSONObject usedObject = (JSONObject) partition.get("used");
     JSONObject reservedObject = (JSONObject) partition.get("reserved");
-    assertEquals("Partition expected", partitionName,
-        partition.get("partitionName"));
-    assertEquals("partition amused", amused, getResource(
-        (int) amusedObject.get("memory"), (int) amusedObject.get("vCores")));
-    assertEquals("partition used", used, getResource(
-        (int) usedObject.get("memory"), (int) usedObject.get("vCores")));
-    assertEquals("partition reserved", reserved,
-        getResource((int) reservedObject.get("memory"),
-            (int) reservedObject.get("vCores")));
+    assertEquals(partitionName, partition.get("partitionName"), "Partition expected");
+    assertEquals(amused, getResource((int) amusedObject.get("memory"),
+        (int) amusedObject.get("vCores")), "partition amused");
+    assertEquals(used, getResource((int) usedObject.get("memory"),
+        (int) usedObject.get("vCores")), "partition used");
+    assertEquals(reserved, getResource((int) reservedObject.get("memory"),
+        (int) reservedObject.get("vCores")), "partition reserved");
   }
 
   @SuppressWarnings("unchecked")

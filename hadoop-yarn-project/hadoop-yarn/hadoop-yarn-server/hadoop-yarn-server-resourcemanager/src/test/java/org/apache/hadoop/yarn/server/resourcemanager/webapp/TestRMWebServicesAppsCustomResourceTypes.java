@@ -19,7 +19,6 @@
 package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.TestProperties;
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +33,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.util.resource.CustomResourceTypesConfigurationProvider;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.helper.BufferedClientResponse;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.helper.JsonCustomResourceTypeTestcase;
@@ -44,7 +44,7 @@ import org.apache.hadoop.yarn.webapp.JerseyTestBase;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -60,7 +60,7 @@ import static org.apache.hadoop.yarn.server.resourcemanager.webapp
     .TestRMWebServicesCustomResourceTypesCommons.verifyAppInfoJson;
 import static org.apache.hadoop.yarn.server.resourcemanager.webapp
     .TestRMWebServicesCustomResourceTypesCommons.verifyAppsXML;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +79,7 @@ public class TestRMWebServicesAppsCustomResourceTypes extends JerseyTestBase {
     config.register(new JerseyBinder());
     config.register(RMWebServices.class);
     config.register(GenericExceptionHandler.class);
-    config.register(new JettisonFeature()).register(JAXBContextResolver.class);
+    config.register(JsonProviderFeature.class);
     forceSet(TestProperties.CONTAINER_PORT, JERSEY_RANDOM_PORT);
     return config;
   }
@@ -135,11 +135,11 @@ public class TestRMWebServicesAppsCustomResourceTypes extends JerseyTestBase {
                     new BufferedClientResponse(response));
     testCase.verify(document -> {
       NodeList apps = document.getElementsByTagName("apps");
-      assertEquals("incorrect number of apps elements", 1, apps.getLength());
+      assertEquals(1, apps.getLength(), "incorrect number of apps elements");
 
       NodeList appArray = ((Element)(apps.item(0)))
               .getElementsByTagName("app");
-      assertEquals("incorrect number of app elements", 1, appArray.getLength());
+      assertEquals(1, appArray.getLength(), "incorrect number of app elements");
 
       verifyAppsXML(appArray, app1, rm);
     });
@@ -171,13 +171,11 @@ public class TestRMWebServicesAppsCustomResourceTypes extends JerseyTestBase {
             new BufferedClientResponse(response));
     testCase.verify(json -> {
       try {
-        assertEquals("incorrect number of apps elements", 1, json.length());
+        assertEquals(1, json.length(), "incorrect number of apps elements");
         JSONObject apps = json.getJSONObject("apps");
-        assertEquals("incorrect number of app elements", 1, apps.length());
-        JSONObject app = apps.getJSONObject("app");
-        JSONArray array = new JSONArray();
-        array.put(app);
-        assertEquals("incorrect count of app", 1, array.length());
+        assertEquals(1, apps.length(), "incorrect number of app elements");
+        JSONArray array = apps.getJSONArray("app");
+        assertEquals(1, array.length(), "incorrect count of app");
 
         verifyAppInfoJson(array.getJSONObject(0), app1, rm);
       } catch (JSONException e) {

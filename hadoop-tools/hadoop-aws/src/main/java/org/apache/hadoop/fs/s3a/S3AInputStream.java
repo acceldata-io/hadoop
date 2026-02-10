@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.fs.s3a;
 
+import javax.annotation.Nullable;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -65,6 +67,8 @@ public class S3AInputStream extends FSInputStream implements CanSetReadahead {
 
   public static final String OPERATION_OPEN = "open";
   public static final String OPERATION_REOPEN = "re-open";
+  public static final String E_NEGATIVE_READAHEAD_VALUE
+      = "Negative readahead value";
 
   /**
    * This is the public position; the one set in {@link #seek(long)}
@@ -741,12 +745,7 @@ public class S3AInputStream extends FSInputStream implements CanSetReadahead {
 
   @Override
   public synchronized void setReadahead(Long readahead) {
-    if (readahead == null) {
-      this.readahead = Constants.DEFAULT_READAHEAD_RANGE;
-    } else {
-      Preconditions.checkArgument(readahead >= 0, "Negative readahead value");
-      this.readahead = readahead;
-    }
+    this.readahead = validateReadahead(readahead);
   }
 
   /**
@@ -799,4 +798,19 @@ public class S3AInputStream extends FSInputStream implements CanSetReadahead {
     return rangeLimit;
   }
 
+  /**
+   * from a possibly null Long value, return a valid
+   * readahead.
+   * @param readahead new readahead
+   * @return a natural number.
+   * @throws IllegalArgumentException if the range is invalid.
+   */
+  public static long validateReadahead(@Nullable Long readahead) {
+    if (readahead == null) {
+      return Constants.DEFAULT_READAHEAD_RANGE;
+    } else {
+      Preconditions.checkArgument(readahead >= 0, E_NEGATIVE_READAHEAD_VALUE);
+      return readahead;
+    }
+  }
 }

@@ -163,7 +163,7 @@ public class TestEditLogRace {
       int i = 0;
       while (!stopped) {
         try {
-          String dirname = "/thr-" + thr.getId() + "-dir-" + i; 
+          String dirname = "/thr-" + thr.getId() + "-dir-" + i;
           if (i % 2 == 0) {
             Path dirnamePath = new Path(dirname);
             fs.mkdirs(dirnamePath);
@@ -227,7 +227,7 @@ public class TestEditLogRace {
    */
   @Test
   public void testEditLogRolling() throws Exception {
-    // start a cluster 
+    // start a cluster
     Configuration conf = getConf();
     final MiniDFSCluster cluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(NUM_DATA_NODES).build();
@@ -253,7 +253,7 @@ public class TestEditLogRace {
 
         LOG.info("Starting roll " + i + ".");
         CheckpointSignature sig = nn.rollEditLog();
-        
+
         long nextLog = sig.curSegmentTxId;
         String logFileName = NNStorage.getFinalizedEditsFileName(
             previousLogTxId, nextLog - 1);
@@ -261,7 +261,7 @@ public class TestEditLogRace {
           logFileName, previousLogTxId);
 
         assertEquals(previousLogTxId, nextLog);
-        
+
         File expectedLog = NNStorage.getInProgressEditsFile(sd, previousLogTxId);
         assertTrue("Expect " + expectedLog + " to exist", expectedLog.exists());
       }
@@ -276,12 +276,12 @@ public class TestEditLogRace {
     }
   }
 
-  private long verifyEditLogs(FSNamesystem namesystem, FSImage fsimage, 
+  private long verifyEditLogs(FSNamesystem namesystem, FSImage fsimage,
                               String logFileName, long startTxId)
     throws IOException {
-    
+
     long numEdits = -1;
-    
+
     // Verify that we can read in all the transactions that we have written.
     // If there were any corruptions, it is likely that the reading in
     // of these transactions will throw an exception.
@@ -289,12 +289,12 @@ public class TestEditLogRace {
       fsimage.getStorage().dirIterable(NameNodeDirType.EDITS)) {
 
       File editFile = new File(sd.getCurrentDir(), logFileName);
-        
+
       LOG.info("Verifying file: " + editFile);
       FSEditLogLoader loader = new FSEditLogLoader(namesystem, startTxId);
       long numEditsThisLog = loader.loadFSEdits(
           new EditLogFileInputStream(editFile), startTxId);
-      
+
       LOG.info("Number of edits: " + numEditsThisLog);
       assertTrue(numEdits == -1 || numEditsThisLog == numEdits);
       numEdits = numEditsThisLog;
@@ -309,7 +309,7 @@ public class TestEditLogRace {
    */
   @Test
   public void testSaveNamespace() throws Exception {
-    // start a cluster 
+    // start a cluster
     Configuration conf = getConf();
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
@@ -337,7 +337,7 @@ public class TestEditLogRace {
 
         // Verify edit logs before the save
         // They should start with the first edit after the checkpoint
-        long logStartTxId = fsimage.getStorage().getMostRecentCheckpointTxId() + 1; 
+        long logStartTxId = fsimage.getStorage().getMostRecentCheckpointTxId() + 1;
         verifyEditLogs(namesystem, fsimage,
             NNStorage.getInProgressEditsFileName(logStartTxId),
             logStartTxId);
@@ -348,12 +348,12 @@ public class TestEditLogRace {
         LOG.info("Save " + i + ": leaving safemode");
 
         long savedImageTxId = fsimage.getStorage().getMostRecentCheckpointTxId();
-        
+
         // Verify that edit logs post save got finalized and aren't corrupt
         verifyEditLogs(namesystem, fsimage,
             NNStorage.getFinalizedEditsFileName(logStartTxId, savedImageTxId),
             logStartTxId);
-        
+
         // The checkpoint id should be 1 less than the last written ID, since
         // the log roll writes the "BEGIN" transaction to the new log.
         assertEquals(fsimage.getStorage().getMostRecentCheckpointTxId(),
@@ -371,7 +371,7 @@ public class TestEditLogRace {
       if(cluster != null) cluster.shutdown();
     }
   }
- 
+
   private Configuration getConf() {
     Configuration conf = new HdfsConfiguration();
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_EDITS_ASYNC_LOGGING,
@@ -390,7 +390,7 @@ public class TestEditLogRace {
    * so that other threads can concurrently enqueue edits while the prior
    * sync is ongoing. This test checks that the log is saved correctly
    * if the saveImage occurs while the syncing thread is in the unsynchronized middle section.
-   * 
+   *
    * This replicates the following manual test proposed by Konstantin:
    *   I start the name-node in debugger.
    *   I do -mkdir and stop the debugger in logSync() just before it does flush.
@@ -422,7 +422,7 @@ public class TestEditLogRace {
       final AtomicReference<Throwable> deferredException =
           new AtomicReference<Throwable>();
       final CountDownLatch waitToEnterFlush = new CountDownLatch(1);
-      
+
       final Thread doAnEditThread = new Thread() {
         @Override
         public void run() {
@@ -439,7 +439,7 @@ public class TestEditLogRace {
           }
         }
       };
-      
+
       Answer<Void> blockingFlush = new Answer<Void>() {
         @Override
         public Void answer(InvocationOnMock invocation) throws Throwable {
@@ -458,7 +458,7 @@ public class TestEditLogRace {
         }
       };
       doAnswer(blockingFlush).when(spyElos).flush();
-      
+
       doAnEditThread.start();
       // Wait for the edit thread to get to the logsync unsynchronized section
       LOG.info("Main thread: waiting to enter flush...");
@@ -467,7 +467,7 @@ public class TestEditLogRace {
       LOG.info("Main thread: detected that logSync is in unsynchronized section.");
       LOG.info("Trying to enter safe mode.");
       LOG.info("This should block for " + BLOCK_TIME + "sec, since flush will sleep that long");
-      
+
       long st = Time.now();
       namesystem.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
       long et = Time.now();
@@ -495,7 +495,7 @@ public class TestEditLogRace {
       if(namesystem != null) namesystem.close();
     }
   }
-  
+
   /**
    * Most of the FSNamesystem methods have a synchronized section where they
    * update the name system itself and write to the edit log, and then
@@ -585,20 +585,6 @@ public class TestEditLogRace {
         .setSource("/").setUser("u").setGroup(group);
   }
 
-  static class BlockingOpMatcher extends ArgumentMatcher<FSEditLogOp> {
-    @Override
-    public boolean matches(Object o) {
-      if(o instanceof FSEditLogOp.SetOwnerOp) {
-        FSEditLogOp.SetOwnerOp op = (FSEditLogOp.SetOwnerOp)o;
-        if("b".equals(op.groupname)) {
-          LOG.info("Blocking op: " + op);
-          return true;
-        }
-      }
-      return false;
-    }
-  }
-
   @Test(timeout=180000)
   public void testDeadlock() throws Throwable {
     GenericTestUtils.setLogLevel(FSEditLog.LOG, Level.DEBUG);
@@ -643,24 +629,6 @@ public class TestEditLogRace {
           }
         });
       }
-
-      // doEditTransaction is set while the edit log monitor is held, so this
-      // will effectively stall the async processing thread which will cause
-      // the edit queue to fill up.
-      doAnswer(
-        new Answer<Void>() {
-          @Override
-          public Void answer(InvocationOnMock invocation) throws Throwable {
-            // flip the latch to unleash the spamming threads to congest
-            // the queue.
-            startSpamLatch.countDown();
-            // wait until unblocked after a synchronized thread is started.
-            blockerSemaphore.acquire();
-            invocation.callRealMethod();
-            return null;
-          }
-        }
-      ).when(editLog).doEditTransaction(argThat(new BlockingOpMatcher()));
 
       // repeatedly overflow the queue and verify it doesn't deadlock.
       for (int i = 0; i < 8; i++) {

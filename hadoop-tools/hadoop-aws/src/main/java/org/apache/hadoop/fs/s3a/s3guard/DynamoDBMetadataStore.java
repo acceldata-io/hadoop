@@ -26,6 +26,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.amazonaws.waiters.WaiterTimedOutException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +92,9 @@ import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.fs.s3a.S3AInstrumentation;
 import org.apache.hadoop.fs.s3a.S3AUtils;
 import org.apache.hadoop.fs.s3a.Tristate;
+import org.apache.hadoop.fs.s3a.auth.RoleModel;
 import org.apache.hadoop.fs.s3a.auth.RolePolicies;
+import org.apache.hadoop.fs.s3a.auth.delegation.AWSPolicyProvider;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -98,6 +102,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.fs.s3a.Constants.*;
 import static org.apache.hadoop.fs.s3a.S3AUtils.*;
+import static org.apache.hadoop.fs.s3a.auth.RolePolicies.allowAllDynamoDBOperations;
+import static org.apache.hadoop.fs.s3a.auth.RolePolicies.allowS3GuardClientOperations;
 import static org.apache.hadoop.fs.s3a.s3guard.PathMetadataDynamoDBTranslation.*;
 import static org.apache.hadoop.fs.s3a.s3guard.S3Guard.*;
 
@@ -185,7 +191,8 @@ import static org.apache.hadoop.fs.s3a.s3guard.S3Guard.*;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class DynamoDBMetadataStore implements MetadataStore {
+public class DynamoDBMetadataStore implements MetadataStore,
+    AWSPolicyProvider {
   public static final Logger LOG = LoggerFactory.getLogger(
       DynamoDBMetadataStore.class);
 
@@ -231,6 +238,7 @@ public class DynamoDBMetadataStore implements MetadataStore {
   private String region;
   private Table table;
   private String tableName;
+  private String tableArn;
   private Configuration conf;
   private String username;
 
@@ -403,6 +411,8 @@ public class DynamoDBMetadataStore implements MetadataStore {
     region = conf.getTrimmed(S3GUARD_DDB_REGION_KEY);
     Preconditions.checkArgument(!StringUtils.isEmpty(region),
         "No DynamoDB region configured");
+    // there's no URI here, which complicates life: you cannot
+    // create AWS providers here which require one.
     credentials = createAWSCredentialProviderSet(null, conf);
     dynamoDB = createDynamoDB(conf, region, null, credentials);
 
@@ -576,12 +586,16 @@ public class DynamoDBMetadataStore implements MetadataStore {
             path.toString(),
             true,
             () -> table.query(spec).iterator().hasNext());
-        // When this class has support for authoritative
-        // (fully-cached) directory listings, we may also be able to answer
-        // TRUE here.  Until then, we don't know if we have full listing or
-        // not, thus the UNKNOWN here:
-        meta.setIsEmptyDirectory(
-            hasChildren ? Tristate.FALSE : Tristate.UNKNOWN);
+
+        // If directory is authoritative, we can set the empty directory flag
+        // to TRUE or FALSE. Otherwise FALSE, or UNKNOWN.
+        if(meta.isAuthoritativeDir()) {
+          meta.setIsEmptyDirectory(
+              hasChildren ? Tristate.FALSE : Tristate.TRUE);
+        } else {
+          meta.setIsEmptyDirectory(
+              hasChildren ? Tristate.FALSE : Tristate.UNKNOWN);
+        }
       }
     }
 
@@ -635,7 +649,8 @@ public class DynamoDBMetadataStore implements MetadataStore {
 
           return (metas.isEmpty() && dirPathMeta == null)
               ? null
-              : new DirListingMetadata(path, metas, isAuthoritative);
+              : new DirListingMetadata(path, metas, isAuthoritative,
+              dirPathMeta.getLastUpdated());
         });
   }
 
@@ -867,7 +882,7 @@ public class DynamoDBMetadataStore implements MetadataStore {
       if (!itemExists(item)) {
         final FileStatus status = makeDirStatus(path, username);
         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,
-            meta.isAuthoritativeDir()));
+            meta.isAuthoritativeDir(), meta.getLastUpdated()));
         path = path.getParent();
       } else {
         break;
@@ -910,7 +925,7 @@ public class DynamoDBMetadataStore implements MetadataStore {
     Path path = meta.getPath();
     DDBPathMetadata ddbPathMeta =
         new DDBPathMetadata(makeDirStatus(path, username), meta.isEmpty(),
-            false, meta.isAuthoritative());
+            false, meta.isAuthoritative(), meta.getLastUpdated());
 
     // First add any missing ancestors...
     final Collection<DDBPathMetadata> metasToPut = fullPathsToPut(ddbPathMeta);
@@ -1117,7 +1132,31 @@ public class DynamoDBMetadataStore implements MetadataStore {
     return getClass().getSimpleName() + '{'
         + "region=" + region
         + ", tableName=" + tableName
+        + ", tableArn=" + tableArn
         + '}';
+  }
+
+  /**
+   * The administrative policy includes all DDB table operations;
+   * application access is restricted to those operations S3Guard operations
+   * require when working with data in a guarded bucket.
+   * @param access access level desired.
+   * @return a possibly empty list of statements.
+   */
+  @Override
+  public List<RoleModel.Statement> listAWSPolicyRules(
+      final Set<AccessLevel> access) {
+    Preconditions.checkState(tableArn != null, "TableARN not known");
+    if (access.isEmpty()) {
+      return Collections.emptyList();
+    }
+    RoleModel.Statement stat;
+    if (access.contains(AccessLevel.ADMIN)) {
+      stat = allowAllDynamoDBOperations(tableArn);
+    } else {
+      stat = allowS3GuardClientOperations(tableArn);
+    }
+    return Lists.newArrayList(stat);
   }
 
   /**
@@ -1146,6 +1185,7 @@ public class DynamoDBMetadataStore implements MetadataStore {
         LOG.debug("Binding to table {}", tableName);
         TableDescription description = table.describe();
         LOG.debug("Table state: {}", description);
+        tableArn = description.getTableArn();
         final String status = description.getTableStatus();
         switch (status) {
         case "CREATING":

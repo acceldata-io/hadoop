@@ -19,11 +19,11 @@
   <parent>
     <artifactId>hadoop-yarn-server</artifactId>
     <groupId>org.apache.hadoop</groupId>
-    <version>3.2.3.3.2.3.4-SNAPSHOT</version>
+    <version>3.2.3.3.2.3.5-2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hadoop-yarn-server-web-proxy</artifactId>
-  <version>3.2.3.3.2.3.4-SNAPSHOT</version>
+  <version>3.2.3.3.2.3.5-2</version>
   <name>Apache Hadoop YARN Web Proxy</name>
 
   <properties>
@@ -66,7 +66,7 @@
 
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

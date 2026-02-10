@@ -111,7 +111,30 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.mockito.Matchers;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 @RunWith(value = Parameterized.class)
@@ -246,7 +269,7 @@ public class TestRMAppTransitions {
 
     ResourceScheduler resourceScheduler = mock(ResourceScheduler.class);
     doReturn(null).when(resourceScheduler)
-              .getAppResourceUsageReport((ApplicationAttemptId)Matchers.any());
+         .getAppResourceUsageReport(any());
     doReturn(resourceScheduler).when(rmContext).getScheduler();
 
     doReturn(mock(RMTimelineCollectorManager.class)).when(rmContext)

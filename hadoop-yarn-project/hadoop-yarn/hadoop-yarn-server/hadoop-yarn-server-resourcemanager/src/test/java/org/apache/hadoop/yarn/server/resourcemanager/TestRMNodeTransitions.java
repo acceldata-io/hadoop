@@ -19,7 +19,7 @@ package org.apache.hadoop.yarn.server.resourcemanager;
 
 import static org.apache.hadoop.yarn.server.resourcemanager.MockNM.createMockNodeStatus;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -242,7 +242,8 @@ public class TestRMNodeTransitions {
      * 1. RMNode status from new to Running, handle the add_node event
      * 2. handle the node update event
      */
-    verify(scheduler,times(2)).handle(any(NodeUpdateSchedulerEvent.class));     
+    verify(scheduler, times(1)).handle(any(NodeAddedSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeUpdateSchedulerEvent.class));
   }
 
   @Test
@@ -371,10 +372,10 @@ public class TestRMNodeTransitions {
     doReturn(Collections.singletonList(containerStatus2))
         .when(statusEvent2).getContainers();
 
-    verify(scheduler,times(1)).handle(any(NodeUpdateSchedulerEvent.class)); 
+    verify(scheduler, times(1)).handle(any(NodeAddedSchedulerEvent.class));
     node.handle(statusEvent1);
     node.handle(statusEvent2);
-    verify(scheduler,times(1)).handle(any(NodeUpdateSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeAddedSchedulerEvent.class));
     Assert.assertEquals(2, node.getQueueSize());
     node.handle(new RMNodeEvent(node.getNodeID(), RMNodeEventType.EXPIRE));
     Assert.assertEquals(0, node.getQueueSize());
@@ -466,9 +467,9 @@ public class TestRMNodeTransitions {
   @Test
   public void testUnhealthyExpireForSchedulerRemove() {
     RMNodeImpl node = getUnhealthyNode();
-    verify(scheduler,times(2)).handle(any(NodeRemovedSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeRemovedSchedulerEvent.class));
     node.handle(new RMNodeEvent(node.getNodeID(), RMNodeEventType.EXPIRE));
-    verify(scheduler,times(2)).handle(any(NodeRemovedSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeRemovedSchedulerEvent.class));
     Assert.assertEquals(NodeState.LOST, node.getState());
   }
 
@@ -1129,9 +1130,9 @@ public class TestRMNodeTransitions {
     doReturn(Collections.singletonList(containerStatus1)).when(statusEvent1)
         .getContainers();
 
-    verify(scheduler, times(1)).handle(any(NodeUpdateSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeAddedSchedulerEvent.class));
     node.handle(statusEvent1);
-    verify(scheduler, times(1)).handle(any(NodeUpdateSchedulerEvent.class));
+    verify(scheduler, times(1)).handle(any(NodeAddedSchedulerEvent.class));
     Assert.assertEquals(1, node.getQueueSize());
     Assert.assertEquals(1, node.getCompletedContainers().size());
 

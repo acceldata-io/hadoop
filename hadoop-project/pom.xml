@@ -1598,6 +1598,10 @@
             <artifactId>httpclient</artifactId>
           </exclusion>
           <exclusion>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
           </exclusion>

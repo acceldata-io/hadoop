@@ -194,7 +194,7 @@
     <assertj.version>3.12.2</assertj.version>
     <woodstox.version>5.4.0</woodstox.version>
     <json-smart.version>2.6.0</json-smart.version>
-    <nimbus-jose-jwt.version>9.37.2</nimbus-jose-jwt.version>
+    <nimbus-jose-jwt.version>9.37.4</nimbus-jose-jwt.version>
     <apache-ant.version>1.10.11</apache-ant.version>
   </properties>
 

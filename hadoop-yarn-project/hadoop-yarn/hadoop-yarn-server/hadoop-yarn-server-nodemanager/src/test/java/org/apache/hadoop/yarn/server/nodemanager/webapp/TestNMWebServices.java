@@ -19,8 +19,11 @@
 package org.apache.hadoop.yarn.server.nodemanager.webapp;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
+
+import org.apache.hadoop.yarn.server.nodemanager.api.deviceplugin.Device;
+import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.NMDeviceResourceInfo;
+import org.apache.hadoop.yarn.server.nodemanager.webapp.jsonprovider.NMJsonProvider;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.TestProperties;
 import org.apache.commons.io.FileUtils;
@@ -101,7 +104,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Iterator;
 
 import static org.apache.hadoop.yarn.webapp.WebServicesTestUtils.assertResponseStatusCode;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -136,11 +138,14 @@ public class TestNMWebServices extends JerseyTestBase {
 
   @Override
   protected Application configure() {
+    NMJsonProvider nmJsonProvider = new NMJsonProvider();
+
     ResourceConfig config = new ResourceConfig();
     config.register(new JerseyBinder());
     config.register(NMWebServices.class);
     config.register(GenericExceptionHandler.class);
-    config.register(new JettisonFeature()).register(JAXBContextResolver.class);
+    config.register(nmJsonProvider);
+    config.register(JAXBContextResolver.class);
     forceSet(TestProperties.CONTAINER_PORT, JERSEY_RANDOM_PORT);
     return config;
   }
@@ -168,17 +173,17 @@ public class TestNMWebServices extends JerseyTestBase {
         @Override
         public long getVmemAllocatedForContainers() {
           // 15.5G in bytes
-          return new Long("16642998272");
+          return Long.parseLong("16642998272");
         }
 
         @Override
         public long getPmemAllocatedForContainers() {
           // 16G in bytes
-          return new Long("17179869184");
+          return Long.parseLong("17179869184");
         }
         @Override
         public long getVCoresAllocatedForContainers() {
-          return new Long("4000");
+          return Long.parseLong("4000");
         }
         @Override
         public boolean isVmemCheckEnabled() {
@@ -207,7 +212,6 @@ public class TestNMWebServices extends JerseyTestBase {
   private void setupMockPluginsWithNmResourceInfo() throws YarnException {
     ResourcePlugin mockPlugin1 = mock(ResourcePlugin.class);
     NMResourceInfo nmResourceInfo1 = new NMResourceInfo();
-    nmResourceInfo1.setResourceValue(NM_RESOURCE_VALUE);
 
     when(mockPlugin1.getNMResourceInfo()).thenReturn(nmResourceInfo1);
 
@@ -233,16 +237,29 @@ public class TestNMWebServices extends JerseyTestBase {
     List<AssignedGpuDevice> assignedGpuDevices = Arrays.asList(
         new AssignedGpuDevice(2, 2, createContainerId(1)),
         new AssignedGpuDevice(3, 3, createContainerId(2)));
+
     NMResourceInfo nmResourceInfo1 = new NMGpuResourceInfo(gpuDeviceInformation,
         totalGpuDevices,
         assignedGpuDevices);
     when(mockPlugin1.getNMResourceInfo()).thenReturn(nmResourceInfo1);
+
+    NMDeviceResourceInfo nmDeviceResourceInfo = new NMDeviceResourceInfo();
+    nmDeviceResourceInfo.setTotalDevices(Collections.singletonList(
+        Device.Builder.newInstance()
+            .setId(42)
+            .build()
+    ));
+    ResourcePlugin mockPlugin2 = mock(ResourcePlugin.class);
+    when(mockPlugin2.getNMResourceInfo()).thenReturn(nmDeviceResourceInfo);
+
+
 
     ResourcePluginManager pluginManager = createResourceManagerWithPlugins(
         ImmutableMap.<String, ResourcePlugin>builder()
             .put("resource-1", mockPlugin1)
             .put("yarn.io/resource-1", mockPlugin1)
             .put("resource-2", mock(ResourcePlugin.class))
+            .put("resource-3", mockPlugin2)
             .build()
     );
 
@@ -256,14 +273,10 @@ public class TestNMWebServices extends JerseyTestBase {
     return pluginManager;
   }
 
-  private void assertNMResourceInfoResponse(Response response, long value)
-      throws JSONException {
+  private void assertNMResourceInfoResponse(Response response) {
     assertEquals("MediaType of the response is not the expected!",
         MediaType.APPLICATION_JSON + ";" + JettyUtils.UTF_8,
         response.getMediaType().toString());
-    JSONObject json = response.readEntity(JSONObject.class);
-    assertEquals("Unexpected value in the json response!", value,
-        json.getJSONObject("nmResourceInfo").getLong("resourceValue"));
   }
 
   private void assertEmptyNMResourceInfo(Response response) throws JSONException {
@@ -520,23 +533,23 @@ public class TestNMWebServices extends JerseyTestBase {
 
   @Test
   public void testGetNMResourceInfoSuccessful()
-      throws YarnException, JSONException {
+      throws YarnException{
     setupMockPluginsWithNmResourceInfo();
 
     WebTarget r = targetWithJsonObject();
     Response response = getNMResourceResponse(r, "resource-1");
-    assertNMResourceInfoResponse(response, NM_RESOURCE_VALUE);
+    assertNMResourceInfoResponse(response);
   }
 
   @Test
   public void testGetNMResourceInfoEncodedIsSuccessful()
-      throws YarnException, JSONException {
+      throws YarnException{
     setupMockPluginsWithNmResourceInfo();
 
     //test encoded yarn.io/resource-1 path
     WebTarget r = targetWithJsonObject();
     Response response = getNMResourceResponse(r, "yarn.io%2Fresource-1");
-    assertNMResourceInfoResponse(response, NM_RESOURCE_VALUE);
+    assertNMResourceInfoResponse(response);
   }
 
   @Test
@@ -568,22 +581,37 @@ public class TestNMWebServices extends JerseyTestBase {
 
   @Test
   public void testGetYarnGpuResourceInfo()
-      throws YarnException, JSONException {
+          throws YarnException, JSONException {
     setupMockPluginsWithGpuResourceInfo();
-
     WebTarget r = targetWithJsonObject();
     Response response = getNMResourceResponse(r, "resource-1");
     assertEquals("MediaType of the response is not the expected!",
         MediaType.APPLICATION_JSON + ";" + JettyUtils.UTF_8,
         response.getMediaType().toString());
-    JSONObject nmGpuResourceInfo = response.readEntity(JSONObject.class);
-    JSONObject json = nmGpuResourceInfo.getJSONObject("nmGpuResourceInfo");
+    JSONObject json = response.readEntity(JSONObject.class);
     assertEquals("Unexpected driverVersion in the json response!",
         "1.2.3", json.getJSONObject("gpuDeviceInformation").getString("driver_version"));
     assertEquals("Unexpected totalGpuDevices in the json response!",
         3, json.getJSONArray("totalGpuDevices").length());
     assertEquals("Unexpected assignedGpuDevices in the json response!",
         2, json.getJSONArray("assignedGpuDevices").length());
+  }
+
+  @Test
+  public void testGetDeviceResourceInfo()
+          throws YarnException, JSONException {
+    setupMockPluginsWithGpuResourceInfo();
+
+    WebTarget r = targetWithJsonObject();
+    Response response = getNMResourceResponse(r, "resource-3");
+    assertEquals("MediaType of the response is not the expected!",
+        MediaType.APPLICATION_JSON + ";" + JettyUtils.UTF_8,
+        response.getMediaType().toString());
+    JSONObject json = response.readEntity(JSONObject.class);
+    assertEquals("Check the first Device ID", 42,
+        json.getJSONArray("totalDevices")
+            .getJSONObject(0)
+            .get("id"));
   }
 
   @SuppressWarnings("checkstyle:methodlength")
@@ -604,17 +632,17 @@ public class TestNMWebServices extends JerseyTestBase {
     nmContext.getContainers().put(containerId, container);
     
     // write out log file
-    Path path = dirsHandler.getLogPathForWrite(
+    Path path1 = dirsHandler.getLogPathForWrite(
         ContainerLaunch.getRelativeContainerLogDir(
             appIdStr, containerIdStr) + "/" + filename, false);
-    
-    File logFile = new File(path.toUri().getPath());
-    logFile.deleteOnExit();
-    if (logFile.getParentFile().exists()) {
-      FileUtils.deleteDirectory(logFile.getParentFile());
+
+    File logFile1 = new File(path1.toUri().getPath());
+    logFile1.deleteOnExit();
+    if (logFile1.getParentFile().exists()) {
+      FileUtils.deleteDirectory(logFile1.getParentFile());
     }
-    assertTrue("Failed to create log dir", logFile.getParentFile().mkdirs());
-    PrintWriter pw = new PrintWriter(logFile);
+    assertTrue("Failed to create log dir", logFile1.getParentFile().mkdirs());
+    PrintWriter pw = new PrintWriter(logFile1);
     pw.print(logMessage);
     pw.close();
 
@@ -711,8 +739,9 @@ public class TestNMWebServices extends JerseyTestBase {
     assertEquals(1, responseList.size());
     assertEquals(responseList.get(0).getLogType(),
         ContainerLogAggregationType.LOCAL.toString());
+
     List<ContainerLogFileInfo> logMeta = responseList.get(0)
-        .getContainerLogsInfo();
+            .getContainerLogsInfo();
     assertEquals(1, logMeta.size());
     assertThat(logMeta.get(0).getFileName()).isEqualTo(filename);
 
@@ -898,53 +927,51 @@ public class TestNMWebServices extends JerseyTestBase {
 
   private List<ContainerLogsInfo> readEntity(Response response) throws JSONException {
     JSONObject jsonObject = response.readEntity(JSONObject.class);
-    Iterator<String> keys = jsonObject.keys();
     List<ContainerLogsInfo> list = new ArrayList<>();
 
-    while (keys.hasNext()) {
-      String key = keys.next();
-      JSONObject subJsonObject = jsonObject.getJSONObject(key);
-      Iterator<String> subKeys = subJsonObject.keys();
-      while (subKeys.hasNext()) {
-        String subKeyItem = subKeys.next();
-        Object object = subJsonObject.get(subKeyItem);
+    Object containerLogsTypeInfo = jsonObject.get("containerLogsInfo");
 
-        if (object instanceof JSONObject) {
-          JSONObject subKeyItemValue = subJsonObject.getJSONObject(subKeyItem);
-          ContainerLogsInfo containerLogsInfo = parseContainerLogsInfo(subKeyItemValue);
-          list.add(containerLogsInfo);
-        }
-
-        if(object instanceof JSONArray) {
-          JSONArray jsonArray = subJsonObject.getJSONArray(subKeyItem);
-          for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject subKeyItemValue = jsonArray.getJSONObject(i);
-            ContainerLogsInfo containerLogsInfo = parseContainerLogsInfo(subKeyItemValue);
-            list.add(containerLogsInfo);
-          }
-        }
+    if (containerLogsTypeInfo instanceof JSONArray) {
+      JSONArray containerLogsInfoArr = (JSONArray) containerLogsTypeInfo;
+      for (int i = 0; i < containerLogsInfoArr.length(); i++) {
+        list.add(parseContainerLogsInfo(containerLogsInfoArr.getJSONObject(i)));
       }
+    } else if (containerLogsTypeInfo instanceof JSONObject) {
+      list.add(parseContainerLogsInfo((JSONObject) containerLogsTypeInfo));
     }
 
     return list;
   }
 
-  private ContainerLogsInfo parseContainerLogsInfo(JSONObject subKeyItemValue)
+  private ContainerLogsInfo parseContainerLogsInfo(JSONObject jsonLogsInfo)
       throws JSONException {
 
-    String logAggregationType = subKeyItemValue.getString("logAggregationType");
-    String containerId = subKeyItemValue.getString("containerId");
-    String nodeId = subKeyItemValue.getString("nodeId");
-
-    JSONObject containerLogInfo = subKeyItemValue.getJSONObject("containerLogInfo");
-    String fileName = containerLogInfo.getString("fileName");
-    String fileSize = containerLogInfo.getString("fileSize");
-    String lastModifiedTime = containerLogInfo.getString("lastModifiedTime");
+    String logAggregationType = jsonLogsInfo.getString("logAggregationType");
+    String containerId = jsonLogsInfo.getString("containerId");
+    String nodeId = jsonLogsInfo.getString("nodeId");
 
     ContainerLogMeta containerLogMeta = new ContainerLogMeta(containerId, nodeId);
-    containerLogMeta.addLogMeta(fileName, fileSize, lastModifiedTime);
-    ContainerLogsInfo containerLogsInfo =
-        new ContainerLogsInfo(containerLogMeta, logAggregationType);
-    return containerLogsInfo;
+
+    Object containerLogTypeInfo = jsonLogsInfo.get("containerLogInfo");
+    if (containerLogTypeInfo instanceof JSONArray) {
+      JSONArray containerLogInfoArr = (JSONArray) containerLogTypeInfo;
+      for (int i = 0; i < containerLogInfoArr.length(); i++) {
+        JSONObject logEntry = containerLogInfoArr.getJSONObject(i);
+        containerLogMeta.addLogMeta(
+                logEntry.getString("fileName"),
+                logEntry.getString("fileSize"),
+                logEntry.getString("lastModifiedTime")
+        );
+      }
+    } else if (containerLogTypeInfo instanceof JSONObject) {
+      JSONObject containerLogInfoObj = jsonLogsInfo.getJSONObject("containerLogInfo");
+      containerLogMeta.addLogMeta(
+              containerLogInfoObj.getString("fileName"),
+              containerLogInfoObj.getString("fileSize"),
+              containerLogInfoObj.getString("lastModifiedTime")
+      );
+    }
+
+    return new ContainerLogsInfo(containerLogMeta, logAggregationType);
   }
 }

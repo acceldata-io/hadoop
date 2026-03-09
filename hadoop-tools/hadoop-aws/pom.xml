@@ -501,6 +501,7 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
       <scope>provided</scope>
+      <version>${aws-java-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
@@ -510,6 +511,7 @@
     <dependency>
       <groupId>software.amazon.awssdk.crt</groupId>
       <artifactId>aws-crt</artifactId>
+      <version>${aws.crt.version}</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.eventstream</groupId>

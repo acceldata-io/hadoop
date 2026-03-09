@@ -20,35 +20,28 @@ package org.apache.hadoop.fs.s3a.audit;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import software.amazon.awssdk.core.interceptor.Context;
-import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
-import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
+import com.amazonaws.AmazonWebServiceRequest;
+import com.amazonaws.handlers.RequestHandler2;
 
 /**
- * Simple AWS interceptor to verify dynamic loading of extra
- * execution interceptors during auditing setup.
+ * Simple AWS handler to verify dynamic loading of extra request
+ * handlers during auditing setup.
  * The invocation counter tracks the count of calls to
- * {@link #beforeExecution}.
+ * {@link #beforeExecution(AmazonWebServiceRequest)}.
  */
-public final class SimpleAWSExecutionInterceptor extends Configured
-    implements ExecutionInterceptor {
+public final class SimpleAWSRequestHandler extends RequestHandler2 {
 
   public static final String CLASS
-      = "org.apache.hadoop.fs.s3a.audit.SimpleAWSExecutionInterceptor";
-
-  private static Configuration staticConf;
+      = "org.apache.hadoop.fs.s3a.audit.SimpleAWSRequestHandler";
 
   /** Count of invocations. */
   private static final AtomicLong INVOCATIONS = new AtomicLong(0);
 
   @Override
-  public void beforeExecution(Context.BeforeExecution context,
-      ExecutionAttributes executionAttributes) {
+  public AmazonWebServiceRequest beforeExecution(
+      final AmazonWebServiceRequest request) {
     INVOCATIONS.incrementAndGet();
-    staticConf = getConf();
+    return request;
   }
 
   /**
@@ -57,15 +50,5 @@ public final class SimpleAWSExecutionInterceptor extends Configured
    */
   public static long getInvocationCount() {
     return INVOCATIONS.get();
-  }
-
-  /**
-   * get the static conf, which is set the config of the
-   * last executor invoked.
-   * @return the static configuration.
-   */
-
-  public static Configuration getStaticConf() {
-    return staticConf;
   }
 }

@@ -212,7 +212,7 @@ public class ITestDirectoryMarkerListing extends AbstractS3ATestBase {
   public void setup() throws Exception {
     super.setup();
     S3AFileSystem fs = getFileSystem();
-    s3client = getS3AInternals().getAmazonS3V2ClientForTesting("markers");
+    s3client = fs.getAmazonS3ClientForTesting("markers");
     bucket = fs.getBucket();
     Path base = new Path(methodPath(), "base");
 

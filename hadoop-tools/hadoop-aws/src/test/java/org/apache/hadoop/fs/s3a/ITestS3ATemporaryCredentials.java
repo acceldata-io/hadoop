@@ -117,7 +117,7 @@ public class ITestS3ATemporaryCredentials extends AbstractS3ATestBase {
   public void testSTS() throws IOException {
     Configuration conf = getContract().getConf();
     S3AFileSystem testFS = getFileSystem();
-    credentials = getS3AInternals().shareCredentials("testSTS");
+    credentials = testFS.shareCredentials("testSTS");
 
     String bucket = testFS.getBucket();
     AWSSecurityTokenServiceClientBuilder builder = STSClientFactory.builder(
@@ -367,7 +367,7 @@ public class ITestS3ATemporaryCredentials extends AbstractS3ATestBase {
       final String region,
       final String exceptionText) throws Exception {
     try(AWSCredentialProviderList parentCreds =
-            getS3AInternals().shareCredentials("test");
+            getFileSystem().shareCredentials("test");
         DurationInfo ignored = new DurationInfo(LOG, "requesting credentials")) {
       Configuration conf = new Configuration(getContract().getConf());
       ClientConfiguration awsConf =

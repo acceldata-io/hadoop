@@ -339,7 +339,7 @@ Here is the effective list of providers if none are declared:
   <value>
     org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider,
     org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,
-    software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider,
+    com.amazonaws.auth.EnvironmentVariableCredentialsProvider,
     org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider
   </value>
 </property>

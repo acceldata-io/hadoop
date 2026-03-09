@@ -26,18 +26,21 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
-import software.amazon.awssdk.services.sts.StsClient;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSSessionCredentials;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.s3a.AWSCredentialProviderList;
+import org.apache.hadoop.fs.s3a.Constants;
 import org.apache.hadoop.fs.s3a.Invoker;
 import org.apache.hadoop.fs.s3a.Retries;
 import org.apache.hadoop.fs.s3a.S3ARetryPolicy;
+import org.apache.hadoop.fs.s3a.S3AUtils;
 import org.apache.hadoop.fs.s3a.auth.MarshalledCredentialProvider;
 import org.apache.hadoop.fs.s3a.auth.MarshalledCredentials;
 import org.apache.hadoop.fs.s3a.auth.RoleModel;
@@ -47,8 +50,8 @@ import org.apache.hadoop.io.Text;
 
 import static org.apache.hadoop.fs.s3a.Constants.AWS_CREDENTIALS_PROVIDER;
 import static org.apache.hadoop.fs.s3a.Invoker.once;
-import static org.apache.hadoop.fs.s3a.auth.CredentialProviderListFactory.STANDARD_AWS_PROVIDERS;
-import static org.apache.hadoop.fs.s3a.auth.CredentialProviderListFactory.buildAWSProviderList;
+import static org.apache.hadoop.fs.s3a.S3AUtils.STANDARD_AWS_PROVIDERS;
+import static org.apache.hadoop.fs.s3a.S3AUtils.buildAWSProviderList;
 import static org.apache.hadoop.fs.s3a.auth.MarshalledCredentialBinding.fromAWSCredentials;
 import static org.apache.hadoop.fs.s3a.auth.MarshalledCredentialBinding.fromSTSCredentials;
 import static org.apache.hadoop.fs.s3a.auth.delegation.DelegationConstants.*;
@@ -102,8 +105,7 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
   private boolean hasSessionCreds;
 
   /**
-   * The parent authentication chain: that used to request
-   * session/role credentials when deployed unbonded.
+   * The auth chain for the parent options.
    */
   private AWSCredentialProviderList parentAuthChain;
 
@@ -162,14 +164,12 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
         DEFAULT_DELEGATION_TOKEN_REGION);
 
     // create the provider set for session credentials.
-    final AWSCredentialProviderList chain = buildAWSProviderList(
+    parentAuthChain = buildAWSProviderList(
         getCanonicalUri(),
         conf,
         AWS_CREDENTIALS_PROVIDER,
         STANDARD_AWS_PROVIDERS,
         new HashSet<>());
-    LOG.debug("Setting parent authentication chain to {}", chain);
-    setParentAuthChain(chain);
   }
 
   @Override
@@ -192,7 +192,7 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
   public AWSCredentialProviderList deployUnbonded()
       throws IOException {
     requireServiceStarted();
-    return getParentAuthChain();
+    return parentAuthChain;
   }
 
   /**
@@ -292,22 +292,23 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
     // chain.
     // As no codepath (session propagation, STS creation) will work,
     // throw this.
-    final AwsCredentials parentCredentials = once("get credentials",
+    final AWSCredentials parentCredentials = once("get credentials",
         "",
-        () -> getParentAuthChain().resolveCredentials());
-    hasSessionCreds = parentCredentials instanceof AwsSessionCredentials;
+        () -> parentAuthChain.getCredentials());
+    hasSessionCreds = parentCredentials instanceof AWSSessionCredentials;
 
     if (!hasSessionCreds) {
       LOG.debug("Creating STS client for {}", getDescription());
 
       invoker = new Invoker(new S3ARetryPolicy(conf), LOG_EVENT);
-
-      StsClient tokenService =
-          STSClientFactory.builder(getParentAuthChain(),
-              conf,
+      ClientConfiguration awsConf =
+          S3AUtils.createAwsConf(conf, uri.getHost(),
+              Constants.AWS_SERVICE_IDENTIFIER_STS);
+      AWSSecurityTokenService tokenService =
+          STSClientFactory.builder(parentAuthChain,
+              awsConf,
               endpoint,
-              region,
-              uri.getHost())
+              region)
               .build();
       stsClient = Optional.of(
           STSClientFactory.createClientConnection(tokenService, invoker));
@@ -373,11 +374,11 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
             + " -duration unknown", getCanonicalUri());
       }
       origin += " " + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;
-      final AwsCredentials awsCredentials
-          = getParentAuthChain().resolveCredentials();
-      if (awsCredentials instanceof AwsSessionCredentials) {
+      final AWSCredentials awsCredentials
+          = parentAuthChain.getCredentials();
+      if (awsCredentials instanceof AWSSessionCredentials) {
         marshalledCredentials = fromAWSCredentials(
-            (AwsSessionCredentials) awsCredentials);
+            (AWSSessionCredentials) awsCredentials);
       } else {
         throw new DelegationTokenIOException(
             "AWS Authentication chain is no longer supplying session secrets");
@@ -423,17 +424,5 @@ public class SessionTokenBinding extends AbstractDelegationTokenBinding {
   protected void setTokenIdentifier(Optional<SessionTokenIdentifier>
       tokenIdentifier) {
     this.tokenIdentifier = tokenIdentifier;
-  }
-
-  /**
-   * The auth chain for the parent options.
-   * @return the parent authentication chain.
-   */
-  protected AWSCredentialProviderList getParentAuthChain() {
-    return parentAuthChain;
-  }
-
-  protected void setParentAuthChain(AWSCredentialProviderList parentAuthChain) {
-    this.parentAuthChain = parentAuthChain;
   }
 }

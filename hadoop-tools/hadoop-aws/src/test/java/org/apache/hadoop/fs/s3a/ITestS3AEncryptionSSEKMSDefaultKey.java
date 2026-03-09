@@ -20,7 +20,7 @@ package org.apache.hadoop.fs.s3a;
 
 import java.io.IOException;
 
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -51,9 +51,9 @@ public class ITestS3AEncryptionSSEKMSDefaultKey
 
   @Override
   protected void assertEncrypted(Path path) throws IOException {
-    HeadObjectResponse md = getS3AInternals().getObjectMetadata(path);
+    ObjectMetadata md = getFileSystem().getObjectMetadata(path);
     assertEquals("SSE Algorithm", EncryptionTestUtils.AWS_KMS_SSE_ALGORITHM,
-            md.serverSideEncryptionAsString());
-    assertThat(md.ssekmsKeyId(), containsString("arn:aws:kms:"));
+            md.getSSEAlgorithm());
+    assertThat(md.getSSEAwsKmsKeyId(), containsString("arn:aws:kms:"));
   }
 }

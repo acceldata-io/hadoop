@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,46 +30,31 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3a.auth.AbstractSessionCredentialsProvider;
 import org.apache.hadoop.fs.s3a.auth.AssumedRoleCredentialProvider;
-import org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider;
 import org.apache.hadoop.fs.s3a.auth.NoAuthWithAWSException;
-import org.apache.hadoop.fs.s3a.impl.InstantiationIOException;
 import org.apache.hadoop.io.retry.RetryPolicy;
 
-import static org.apache.hadoop.fs.s3a.Constants.ASSUMED_ROLE_CREDENTIALS_PROVIDER;
-import static org.apache.hadoop.fs.s3a.Constants.AWS_CREDENTIALS_PROVIDER;
-import static org.apache.hadoop.fs.s3a.S3ATestConstants.DEFAULT_CSVTEST_FILE;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.authenticationContains;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.buildClassListString;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.getCSVTestPath;
-import static org.apache.hadoop.fs.s3a.auth.CredentialProviderListFactory.STANDARD_AWS_PROVIDERS;
-import static org.apache.hadoop.fs.s3a.auth.CredentialProviderListFactory.buildAWSProviderList;
-import static org.apache.hadoop.fs.s3a.auth.CredentialProviderListFactory.createAWSCredentialProviderList;
-import static org.apache.hadoop.fs.s3a.impl.InstantiationIOException.DOES_NOT_IMPLEMENT;
+import static org.apache.hadoop.fs.s3a.Constants.*;
+import static org.apache.hadoop.fs.s3a.S3ATestConstants.*;
+import static org.apache.hadoop.fs.s3a.S3ATestUtils.*;
+import static org.apache.hadoop.fs.s3a.S3AUtils.*;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 import static org.apache.hadoop.test.LambdaTestUtils.interceptFuture;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link Constants#AWS_CREDENTIALS_PROVIDER} logic.
@@ -82,18 +67,19 @@ public class TestS3AAWSCredentialsProvider {
   private static final URI TESTFILE_URI = new Path(
       DEFAULT_CSVTEST_FILE).toUri();
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestS3AAWSCredentialsProvider.class);
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Test
   public void testProviderWrongClass() throws Exception {
     expectProviderInstantiationFailure(this.getClass(),
-        DOES_NOT_IMPLEMENT + " software.amazon.awssdk.auth.credentials.AwsCredentialsProvider");
+        NOT_AWS_PROVIDER);
   }
 
   @Test
   public void testProviderAbstractClass() throws Exception {
     expectProviderInstantiationFailure(AbstractProvider.class,
-        InstantiationIOException.ABSTRACT_PROVIDER);
+        ABSTRACT_PROVIDER);
   }
 
   @Test
@@ -106,17 +92,18 @@ public class TestS3AAWSCredentialsProvider {
   public void testProviderConstructorError() throws Exception {
     expectProviderInstantiationFailure(
         ConstructorSignatureErrorProvider.class,
-        InstantiationIOException.CONSTRUCTOR_EXCEPTION);
+        CONSTRUCTOR_EXCEPTION);
   }
 
   @Test
   public void testProviderFailureError() throws Exception {
     expectProviderInstantiationFailure(
         ConstructorFailureProvider.class,
-        InstantiationIOException.INSTANTIATION_EXCEPTION);
+        INSTANTIATION_EXCEPTION);
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testInstantiationChain() throws Throwable {
     Configuration conf = new Configuration(false);
     conf.set(AWS_CREDENTIALS_PROVIDER,
@@ -125,7 +112,7 @@ public class TestS3AAWSCredentialsProvider {
             + " ,\n " + AnonymousAWSCredentialsProvider.NAME);
     Path testFile = getCSVTestPath(conf);
 
-    AWSCredentialProviderList list = createAWSCredentialProviderList(
+    AWSCredentialProviderList list = createAWSCredentialProviderSet(
         testFile.toUri(), conf);
     List<Class<?>> expectedClasses =
         Arrays.asList(
@@ -136,14 +123,15 @@ public class TestS3AAWSCredentialsProvider {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testDefaultChain() throws Exception {
     URI uri1 = new URI("s3a://bucket1"), uri2 = new URI("s3a://bucket2");
     Configuration conf = new Configuration(false);
     // use the default credential provider chain
     conf.unset(AWS_CREDENTIALS_PROVIDER);
-    AWSCredentialProviderList list1 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list1 = createAWSCredentialProviderSet(
         uri1, conf);
-    AWSCredentialProviderList list2 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list2 = createAWSCredentialProviderSet(
         uri2, conf);
     List<Class<?>> expectedClasses = STANDARD_AWS_PROVIDERS;
     assertCredentialProviders(expectedClasses, list1);
@@ -156,29 +144,30 @@ public class TestS3AAWSCredentialsProvider {
     // use the default credential provider chain
     conf.unset(AWS_CREDENTIALS_PROVIDER);
     assertCredentialProviders(STANDARD_AWS_PROVIDERS,
-        createAWSCredentialProviderList(null, conf));
+        createAWSCredentialProviderSet(null, conf));
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testConfiguredChain() throws Exception {
     URI uri1 = new URI("s3a://bucket1"), uri2 = new URI("s3a://bucket2");
     List<Class<?>> expectedClasses =
         Arrays.asList(
-            IAMInstanceCredentialsProvider.class,
-            AnonymousAWSCredentialsProvider.class,
-            EnvironmentVariableCredentialsProvider.class
-        );
+            EnvironmentVariableCredentialsProvider.class,
+            InstanceProfileCredentialsProvider.class,
+            AnonymousAWSCredentialsProvider.class);
     Configuration conf =
         createProviderConfiguration(buildClassListString(expectedClasses));
-    AWSCredentialProviderList list1 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list1 = createAWSCredentialProviderSet(
         uri1, conf);
-    AWSCredentialProviderList list2 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list2 = createAWSCredentialProviderSet(
         uri2, conf);
     assertCredentialProviders(expectedClasses, list1);
     assertCredentialProviders(expectedClasses, list2);
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testConfiguredChainUsesSharedInstanceProfile() throws Exception {
     URI uri1 = new URI("s3a://bucket1"), uri2 = new URI("s3a://bucket2");
     Configuration conf = new Configuration(false);
@@ -186,9 +175,9 @@ public class TestS3AAWSCredentialsProvider {
         Arrays.asList(
             InstanceProfileCredentialsProvider.class);
     conf.set(AWS_CREDENTIALS_PROVIDER, buildClassListString(expectedClasses));
-    AWSCredentialProviderList list1 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list1 = createAWSCredentialProviderSet(
         uri1, conf);
-    AWSCredentialProviderList list2 = createAWSCredentialProviderList(
+    AWSCredentialProviderList list2 = createAWSCredentialProviderSet(
         uri2, conf);
     assertCredentialProviders(expectedClasses, list1);
     assertCredentialProviders(expectedClasses, list2);
@@ -205,61 +194,32 @@ public class TestS3AAWSCredentialsProvider {
             EnvironmentVariableCredentialsProvider.class),
         Sets.newHashSet());
     assertTrue("empty credentials", credentials.size() > 0);
-  }
 
-  @Test
-  public void testProviderConstructor() throws Throwable {
-    final AWSCredentialProviderList list = new AWSCredentialProviderList("name",
-        new AnonymousAWSCredentialsProvider(),
-        new ErrorProvider(TESTFILE_URI, new Configuration()));
-    Assertions.assertThat(list.getProviders())
-        .describedAs("provider list in %s", list)
-        .hasSize(2);
-    final AwsCredentials credentials = list.resolveCredentials();
-    Assertions.assertThat(credentials)
-        .isInstanceOf(AwsBasicCredentials.class);
-    assertCredentialResolution(credentials, null, null);
-  }
-
-  public static void assertCredentialResolution(AwsCredentials creds, String key, String secret) {
-    Assertions.assertThat(creds.accessKeyId())
-        .describedAs("access key of %s", creds)
-        .isEqualTo(key);
-    Assertions.assertThat(creds.secretAccessKey())
-        .describedAs("secret key of %s", creds)
-        .isEqualTo(secret);
-  }
-
-  private String buildClassList(Class... classes) {
-    return Arrays.stream(classes)
-        .map(Class::getCanonicalName)
-        .collect(Collectors.joining(","));
-  }
-
-  private String buildClassList(String... classes) {
-    return Arrays.stream(classes)
-        .collect(Collectors.joining(","));
   }
 
   /**
    * A credential provider declared as abstract, so it cannot be instantiated.
    */
-  static abstract class AbstractProvider implements AwsCredentialsProvider {
-
-    @Override
-    public AwsCredentials resolveCredentials() {
-      return null;
-    }
+  static abstract class AbstractProvider implements AWSCredentialsProvider {
   }
 
   /**
    * A credential provider whose constructor signature doesn't match.
    */
   protected static class ConstructorSignatureErrorProvider
-      extends AbstractProvider {
+      implements AWSCredentialsProvider {
 
     @SuppressWarnings("unused")
     public ConstructorSignatureErrorProvider(String str) {
+    }
+
+    @Override
+    public AWSCredentials getCredentials() {
+      return null;
+    }
+
+    @Override
+    public void refresh() {
     }
   }
 
@@ -267,13 +227,21 @@ public class TestS3AAWSCredentialsProvider {
    * A credential provider whose constructor raises an NPE.
    */
   protected static class ConstructorFailureProvider
-      extends AbstractProvider {
+      implements AWSCredentialsProvider {
 
     @SuppressWarnings("unused")
     public ConstructorFailureProvider() {
       throw new NullPointerException("oops");
     }
 
+    @Override
+    public AWSCredentials getCredentials() {
+      return null;
+    }
+
+    @Override
+    public void refresh() {
+    }
   }
 
   @Test
@@ -286,12 +254,22 @@ public class TestS3AAWSCredentialsProvider {
     }
   }
 
-  protected static class AWSExceptionRaisingFactory extends AbstractProvider {
+  protected static class AWSExceptionRaisingFactory implements AWSCredentialsProvider {
 
     public static final String NO_AUTH = "No auth";
 
-    public static AwsCredentialsProvider create() {
+    public static AWSCredentialsProvider getInstance() {
       throw new NoAuthWithAWSException(NO_AUTH);
+    }
+
+    @Override
+    public AWSCredentials getCredentials() {
+      return null;
+    }
+
+    @Override
+    public void refresh() {
+
     }
   }
 
@@ -299,10 +277,10 @@ public class TestS3AAWSCredentialsProvider {
   public void testFactoryWrongType() throws Throwable {
     expectProviderInstantiationFailure(
         FactoryOfWrongType.class,
-        InstantiationIOException.CONSTRUCTOR_EXCEPTION);
+        CONSTRUCTOR_EXCEPTION);
   }
 
-  static class FactoryOfWrongType extends AbstractProvider {
+  static class FactoryOfWrongType implements AWSCredentialsProvider {
 
     public static final String NO_AUTH = "No auth";
 
@@ -311,10 +289,14 @@ public class TestS3AAWSCredentialsProvider {
     }
 
     @Override
-    public AwsCredentials resolveCredentials() {
+    public AWSCredentials getCredentials() {
       return null;
     }
 
+    @Override
+    public void refresh() {
+
+    }
   }
 
   /**
@@ -327,7 +309,7 @@ public class TestS3AAWSCredentialsProvider {
   private IOException expectProviderInstantiationFailure(String option,
       String expectedErrorText) throws Exception {
     return intercept(IOException.class, expectedErrorText,
-        () -> createAWSCredentialProviderList(
+        () -> createAWSCredentialProviderSet(
             TESTFILE_URI,
             createProviderConfiguration(option)));
   }
@@ -377,14 +359,12 @@ public class TestS3AAWSCredentialsProvider {
       List<Class<?>> expectedClasses,
       AWSCredentialProviderList list) {
     assertNotNull(list);
-    List<AwsCredentialsProvider> providers = list.getProviders();
-    Assertions.assertThat(providers)
-        .describedAs("providers")
-        .hasSize(expectedClasses.size());
+    List<AWSCredentialsProvider> providers = list.getProviders();
+    assertEquals(expectedClasses.size(), providers.size());
     for (int i = 0; i < expectedClasses.size(); ++i) {
       Class<?> expectedClass =
           expectedClasses.get(i);
-      AwsCredentialsProvider provider = providers.get(i);
+      AWSCredentialsProvider provider = providers.get(i);
       assertNotNull(
           String.format("At position %d, expected class is %s, but found null.",
               i, expectedClass), provider);
@@ -400,6 +380,7 @@ public class TestS3AAWSCredentialsProvider {
    * @see S3ATestUtils#authenticationContains(Configuration, String).
    */
   @Test
+  @SuppressWarnings("deprecation")
   public void testAuthenticationContainsProbes() {
     Configuration conf = new Configuration(false);
     assertFalse("found AssumedRoleCredentialProvider",
@@ -417,7 +398,7 @@ public class TestS3AAWSCredentialsProvider {
     // verify you can't get credentials from it
     NoAuthWithAWSException noAuth = intercept(NoAuthWithAWSException.class,
         AWSCredentialProviderList.NO_AWS_CREDENTIAL_PROVIDERS,
-        () -> providers.resolveCredentials());
+        () -> providers.getCredentials());
     // but that it closes safely
     providers.close();
 
@@ -466,10 +447,11 @@ public class TestS3AAWSCredentialsProvider {
     providers.close();
     assertEquals("Ref count after close() for " + providers,
         0, providers.getRefCount());
+    providers.refresh();
 
     intercept(NoAuthWithAWSException.class,
         AWSCredentialProviderList.CREDENTIALS_REQUESTED_WHEN_CLOSED,
-        () -> providers.resolveCredentials());
+        () -> providers.getCredentials());
   }
 
   /**
@@ -488,17 +470,35 @@ public class TestS3AAWSCredentialsProvider {
   /**
    * Credential provider which raises an IOE when constructed.
    */
-  protected static class IOERaisingProvider extends AbstractProvider {
+  protected static class IOERaisingProvider implements AWSCredentialsProvider {
 
     public IOERaisingProvider(URI uri, Configuration conf)
         throws IOException {
       throw new InterruptedIOException("expected");
     }
 
+    @Override
+    public AWSCredentials getCredentials() {
+      return null;
+    }
+
+    @Override
+    public void refresh() {
+
+    }
   }
 
-  private static final AwsCredentials EXPECTED_CREDENTIALS =
-      AwsBasicCredentials.create("expectedAccessKey", "expectedSecret");
+  private static final AWSCredentials EXPECTED_CREDENTIALS = new AWSCredentials() {
+    @Override
+    public String getAWSAccessKeyId() {
+      return "expectedAccessKey";
+    }
+
+    @Override
+    public String getAWSSecretKey() {
+      return "expectedSecret";
+    }
+  };
 
   /**
    * Credential provider that takes a long time.
@@ -510,7 +510,7 @@ public class TestS3AAWSCredentialsProvider {
     }
 
     @Override
-    protected AwsCredentials createCredentials(Configuration config) throws IOException {
+    protected AWSCredentials createCredentials(Configuration config) throws IOException {
       // yield to other callers to induce race condition
       Thread.yield();
       return EXPECTED_CREDENTIALS;
@@ -524,13 +524,13 @@ public class TestS3AAWSCredentialsProvider {
     Configuration conf = createProviderConfiguration(SlowProvider.class.getName());
     Path testFile = getCSVTestPath(conf);
 
-    AWSCredentialProviderList list = createAWSCredentialProviderList(testFile.toUri(), conf);
+    AWSCredentialProviderList list = createAWSCredentialProviderSet(testFile.toUri(), conf);
 
     SlowProvider provider = (SlowProvider) list.getProviders().get(0);
 
     ExecutorService pool = Executors.newFixedThreadPool(CONCURRENT_THREADS);
 
-    List<Future<AwsCredentials>> results = new ArrayList<>();
+    List<Future<AWSCredentials>> results = new ArrayList<>();
 
     try {
       assertFalse(
@@ -546,15 +546,15 @@ public class TestS3AAWSCredentialsProvider {
       }
 
       for (int i = 0; i < CONCURRENT_THREADS; i++) {
-        results.add(pool.submit(() -> list.resolveCredentials()));
+        results.add(pool.submit(() -> list.getCredentials()));
       }
 
-      for (Future<AwsCredentials> result : results) {
-        AwsCredentials credentials = result.get();
+      for (Future<AWSCredentials> result : results) {
+        AWSCredentials credentials = result.get();
         assertEquals("Access key from credential provider",
-            "expectedAccessKey", credentials.accessKeyId());
+                "expectedAccessKey", credentials.getAWSAccessKeyId());
         assertEquals("Secret key from credential provider",
-            "expectedSecret", credentials.secretAccessKey());
+                "expectedSecret", credentials.getAWSSecretKey());
       }
     } finally {
       pool.awaitTermination(10, TimeUnit.SECONDS);
@@ -563,7 +563,7 @@ public class TestS3AAWSCredentialsProvider {
 
     assertTrue(
         "Provider initialized without errors. isInitialized should be true",
-        provider.isInitialized());
+         provider.isInitialized());
     assertTrue(
         "Provider initialized without errors. hasCredentials should be true",
         provider.hasCredentials());
@@ -584,7 +584,7 @@ public class TestS3AAWSCredentialsProvider {
     }
 
     @Override
-    protected AwsCredentials createCredentials(Configuration config) throws IOException {
+    protected AWSCredentials createCredentials(Configuration config) throws IOException {
       throw new IOException("expected error");
     }
   }
@@ -594,12 +594,12 @@ public class TestS3AAWSCredentialsProvider {
     Configuration conf = createProviderConfiguration(ErrorProvider.class.getName());
     Path testFile = getCSVTestPath(conf);
 
-    AWSCredentialProviderList list = createAWSCredentialProviderList(testFile.toUri(), conf);
+    AWSCredentialProviderList list = createAWSCredentialProviderSet(testFile.toUri(), conf);
     ErrorProvider provider = (ErrorProvider) list.getProviders().get(0);
 
     ExecutorService pool = Executors.newFixedThreadPool(CONCURRENT_THREADS);
 
-    List<Future<AwsCredentials>> results = new ArrayList<>();
+    List<Future<AWSCredentials>> results = new ArrayList<>();
 
     try {
       assertFalse("Provider not initialized. isInitialized should be false",
@@ -613,10 +613,10 @@ public class TestS3AAWSCredentialsProvider {
       }
 
       for (int i = 0; i < CONCURRENT_THREADS; i++) {
-        results.add(pool.submit(() -> list.resolveCredentials()));
+        results.add(pool.submit(() -> list.getCredentials()));
       }
 
-      for (Future<AwsCredentials> result : results) {
+      for (Future<AWSCredentials> result : results) {
         interceptFuture(CredentialInitializationException.class,
             "expected error",
             result
@@ -637,39 +637,4 @@ public class TestS3AAWSCredentialsProvider {
         "Provider initialization failed. getInitializationException should contain the error",
         provider.getInitializationException().getMessage().contains("expected error"));
   }
-
-
-  /**
-   * V2 Credentials whose factory method raises ClassNotFoundException.
-   * This will fall back to an attempted v1 load which will fail because it
-   * is the wrong type.
-   * The exception raised will be from the v2 instantiation attempt,
-   * not the v1 attempt.
-   */
-  @Test
-  public void testV2ClassNotFound() throws Throwable {
-    InstantiationIOException expected = intercept(InstantiationIOException.class,
-        "simulated v2 CNFE",
-        () -> createAWSCredentialProviderList(
-            TESTFILE_URI,
-            createProviderConfiguration(V2CredentialProviderDoesNotInstantiate.class.getName())));
-    // print for the curious
-    LOG.info("{}", expected.toString());
-  }
-
-  /**
-   * V2 credentials which raises an instantiation exception in
-   * the factory method.
-   */
-  public static final class V2CredentialProviderDoesNotInstantiate
-      extends AbstractProvider {
-
-    private V2CredentialProviderDoesNotInstantiate() {
-    }
-
-    public static AwsCredentialsProvider create() throws ClassNotFoundException {
-      throw new ClassNotFoundException("simulated v2 CNFE");
-    }
-  }
-
 }

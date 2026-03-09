@@ -25,22 +25,19 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetBucketEncryptionRequest;
-import software.amazon.awssdk.services.s3.model.GetBucketEncryptionResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetBucketEncryptionResult;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.Assume;
 import org.junit.Test;
-
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonPathCapabilities;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.api.RequestFactory;
 import org.apache.hadoop.fs.s3a.impl.PutObjectOptions;
-import org.apache.hadoop.fs.s3a.impl.RequestFactoryImpl;
 import org.apache.hadoop.fs.store.audit.AuditSpan;
 import org.apache.hadoop.fs.store.EtagChecksum;
 import org.apache.hadoop.test.LambdaTestUtils;
@@ -109,15 +106,15 @@ public class ITestS3AMiscOperations extends AbstractS3ATestBase {
   public void testPutObjectDirect() throws Throwable {
     final S3AFileSystem fs = getFileSystem();
     try (AuditSpan span = span()) {
-      RequestFactory factory = RequestFactoryImpl.builder().withBucket(fs.getBucket()).build();
+      ObjectMetadata metadata = fs.newObjectMetadata(-1);
+      metadata.setContentLength(-1);
       Path path = path("putDirect");
-      PutObjectRequest.Builder putObjectRequestBuilder =
-          factory.newPutObjectRequestBuilder(path.toUri().getPath(), null, -1, false);
-      putObjectRequestBuilder.contentLength(-1L);
+      final PutObjectRequest put = new PutObjectRequest(fs.getBucket(),
+          path.toUri().getPath(),
+          new ByteArrayInputStream("PUT".getBytes()),
+          metadata);
       LambdaTestUtils.intercept(IllegalStateException.class,
-          () -> fs.putObjectDirect(putObjectRequestBuilder.build(), PutObjectOptions.keepingDirs(),
-              new S3ADataBlocks.BlockUploadData(new ByteArrayInputStream("PUT".getBytes())),
-              false, null));
+          () -> fs.putObjectDirect(put, PutObjectOptions.keepingDirs(), null));
       assertPathDoesNotExist("put object was created", path);
     }
   }
@@ -409,15 +406,13 @@ public class ITestS3AMiscOperations extends AbstractS3ATestBase {
    * Gets default encryption settings for the bucket or returns null if default
    * encryption is disabled.
    */
-  private GetBucketEncryptionResponse getDefaultEncryption() throws IOException {
+  private GetBucketEncryptionResult getDefaultEncryption() throws IOException {
     S3AFileSystem fs = getFileSystem();
-    S3Client s3 = getS3AInternals().getAmazonS3V2ClientForTesting("check default encryption");
-    try (AuditSpan s = span()){
+    AmazonS3 s3 = fs.getAmazonS3ClientForTesting("check default encryption");
+    try {
       return Invoker.once("getBucketEncryption()",
           fs.getBucket(),
-          () -> s3.getBucketEncryption(GetBucketEncryptionRequest.builder()
-              .bucket(fs.getBucket())
-              .build()));
+          () -> s3.getBucketEncryption(fs.getBucket()));
     } catch (FileNotFoundException e) {
       return null;
     }

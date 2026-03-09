@@ -20,13 +20,11 @@ package org.apache.hadoop.fs.s3a;
 
 import java.util.List;
 
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectAclRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectAclResponse;
-import software.amazon.awssdk.services.s3.model.Grant;
-import software.amazon.awssdk.services.s3.model.Grantee;
-import software.amazon.awssdk.services.s3.model.Permission;
-import software.amazon.awssdk.services.s3.model.Type;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.Permission;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -57,6 +55,7 @@ public class ITestS3ACannedACLs extends AbstractS3ATestBase {
     Configuration conf = super.createConfiguration();
     removeBaseAndBucketOverrides(conf,
         CANNED_ACL);
+
     conf.set(CANNED_ACL, LOG_DELIVERY_WRITE);
     // needed because of direct calls made
     conf.setBoolean(S3AAuditConstants.REJECT_OUT_OF_SPAN_OPERATIONS, false);
@@ -90,26 +89,18 @@ public class ITestS3ACannedACLs extends AbstractS3ATestBase {
     S3AFileSystem fs = getFileSystem();
 
     StoreContext storeContext = fs.createStoreContext();
-    S3Client s3 = getS3AInternals().getAmazonS3V2ClientForTesting("acls");
+    AmazonS3 s3 = fs.getAmazonS3ClientForTesting("acls");
     String key = storeContext.pathToKey(path);
     if (!isFile) {
       key = key + "/";
     }
-    GetObjectAclResponse acl = s3.getObjectAcl(GetObjectAclRequest.builder()
-        .bucket(storeContext.getBucket())
-        .key(key)
-        .build());
-    List<Grant> grants = acl.grants();
+    AccessControlList acl = s3.getObjectAcl(storeContext.getBucket(),
+        key);
+    List<Grant> grants = acl.getGrantsAsList();
     for (Grant grant : grants) {
       LOG.info("{}", grant.toString());
     }
-    Grant loggingGrant = Grant.builder()
-        .grantee(Grantee.builder()
-            .type(Type.GROUP)
-            .uri("http://acs.amazonaws.com/groups/s3/LogDelivery")
-            .build())
-        .permission(Permission.WRITE)
-        .build();
+    Grant loggingGrant = new Grant(GroupGrantee.LogDelivery, Permission.Write);
     Assertions.assertThat(grants)
         .describedAs("ACL grants of object %s", path)
         .contains(loggingGrant);

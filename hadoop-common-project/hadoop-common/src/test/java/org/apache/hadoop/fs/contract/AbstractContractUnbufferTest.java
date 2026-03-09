@@ -26,10 +26,10 @@ import java.util.Arrays;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.createFile;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.dataset;
-import static org.apache.hadoop.fs.contract.ContractTestUtils.readNBytes;
 
 /**
  * Contract tests for {@link org.apache.hadoop.fs.CanUnbuffer#unbuffer}.
@@ -138,7 +138,8 @@ public abstract class AbstractContractUnbufferTest extends AbstractFSContractTes
                                       int startIndex)
           throws IOException {
     byte[] streamData = new byte[length];
-    final int read = readNBytes(stream, streamData, 0, length);
+    IOUtils.readFully(stream, streamData, 0, length);
+    final int read = length;
     Assertions.assertThat(read)
         .describedAs("failed to read expected number of bytes from stream. %s", stream)
         .isEqualTo(length);

@@ -511,7 +511,7 @@
     <dependency>
       <groupId>software.amazon.awssdk.crt</groupId>
       <artifactId>aws-crt</artifactId>
-      <version>${awscrt.version}</version>
+      <version>${aws.crt.version}</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.eventstream</groupId>

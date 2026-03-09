@@ -182,9 +182,4 @@ public final class InternalConstants {
       Collections.unmodifiableSet(
           new HashSet<>(Arrays.asList(Constants.FS_S3A_CREATE_PERFORMANCE)));
 
-  /**
-   * AWS Error code for conditional put failure on s3 express buckets: {@value}.
-   */
-  public static final String PRECONDITION_FAILED = "PreconditionFailed";
-
 }

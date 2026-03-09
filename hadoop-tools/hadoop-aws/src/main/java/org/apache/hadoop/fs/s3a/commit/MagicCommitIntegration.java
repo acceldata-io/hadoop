@@ -62,7 +62,7 @@ public class MagicCommitIntegration extends AbstractStoreOperation {
       boolean magicCommitEnabled) {
     super(owner.createStoreContext());
     this.owner = owner;
-    this.magicCommitEnabled = magicCommitEnabled && owner.isMultipartUploadEnabled();
+    this.magicCommitEnabled = magicCommitEnabled;
   }
 
   /**

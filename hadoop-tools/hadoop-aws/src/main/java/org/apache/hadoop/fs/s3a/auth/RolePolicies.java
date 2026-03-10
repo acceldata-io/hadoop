@@ -84,6 +84,12 @@ public final class RolePolicies {
       statement(true, KMS_ALL_KEYS, KMS_ALL_OPERATIONS);
 
   /**
+   * KMS R/W access for all keys: {@value}.
+   */
+  public static final Statement STATEMENT_ALLOW_KMS_RW =
+      STATEMENT_ALLOW_SSE_KMS_RW;
+
+  /**
    * Statement to allow read access to KMS keys, so the ability
    * to read SSE-KMS data,, but not decrypt it.
    */

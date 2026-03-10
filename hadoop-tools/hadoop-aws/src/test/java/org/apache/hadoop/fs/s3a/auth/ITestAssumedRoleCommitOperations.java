@@ -30,7 +30,6 @@ import org.apache.hadoop.fs.s3a.commit.ITestCommitOperations;
 
 import static org.apache.hadoop.fs.s3a.Constants.ASSUMED_ROLE_ARN;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.assume;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.disableCreateSession;
 import static org.apache.hadoop.fs.s3a.auth.RoleModel.*;
 import static org.apache.hadoop.fs.s3a.auth.RolePolicies.*;
 import static org.apache.hadoop.fs.s3a.auth.RoleTestUtils.*;
@@ -55,11 +54,6 @@ public class ITestAssumedRoleCommitOperations extends ITestCommitOperations {
   private S3AFileSystem roleFS;
 
   @Override
-  protected Configuration createConfiguration() {
-    return disableCreateSession(super.createConfiguration());
-  }
-
-  @Override
   public void setup() throws Exception {
     super.setup();
     assumeRoleTests();
@@ -68,8 +62,7 @@ public class ITestAssumedRoleCommitOperations extends ITestCommitOperations {
     Configuration conf = newAssumedRoleConfig(getConfiguration(),
         getAssumedRoleARN());
     bindRolePolicyStatements(conf,
-        STATEMENT_ALLOW_KMS_RW,
-        STATEMENT_S3EXPRESS,
+        STATEMENT_ALLOW_SSE_KMS_RW,
         statement(true, S3_ALL_BUCKETS, S3_BUCKET_READ_OPERATIONS),
         new RoleModel.Statement(RoleModel.Effects.Allow)
             .addActions(S3_PATH_RW_OPERATIONS)

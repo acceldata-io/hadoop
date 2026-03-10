@@ -19,26 +19,28 @@
 package org.apache.hadoop.fs.s3a;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.MultipartUpload;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.UploadPartRequest;
-import software.amazon.awssdk.services.s3.model.UploadPartResponse;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
+import com.amazonaws.services.s3.model.MultipartUpload;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.SelectObjectContentRequest;
+import com.amazonaws.services.s3.model.SelectObjectContentResult;
+import com.amazonaws.services.s3.model.UploadPartRequest;
+import com.amazonaws.services.s3.model.UploadPartResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -49,12 +51,15 @@ import org.apache.hadoop.fs.s3a.api.RequestFactory;
 import org.apache.hadoop.fs.s3a.impl.PutObjectOptions;
 import org.apache.hadoop.fs.s3a.impl.StoreContext;
 import org.apache.hadoop.fs.s3a.statistics.S3AStatisticsContext;
+import org.apache.hadoop.fs.s3a.select.SelectBinding;
 import org.apache.hadoop.fs.statistics.DurationTrackerFactory;
 import org.apache.hadoop.fs.store.audit.AuditSpan;
 import org.apache.hadoop.fs.store.audit.AuditSpanSource;
+import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.functional.CallableRaisingIOE;
+import org.apache.hadoop.util.Preconditions;
 
-import static org.apache.hadoop.util.Preconditions.checkNotNull;
+import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.hadoop.fs.s3a.Invoker.*;
 import static org.apache.hadoop.fs.store.audit.AuditingFunctions.withinAuditSpan;
 
@@ -76,6 +81,7 @@ import static org.apache.hadoop.fs.store.audit.AuditingFunctions.withinAuditSpan
  *   <li>Other low-level access to S3 functions, for private use.</li>
  *   <li>Failure handling, including converting exceptions to IOEs.</li>
  *   <li>Integration with instrumentation.</li>
+ *   <li>Evolution to add more low-level operations, such as S3 select.</li>
  * </ul>
  *
  * This API is for internal use only.
@@ -233,22 +239,48 @@ public class WriteOperationHelper implements WriteOperations {
   /**
    * Create a {@link PutObjectRequest} request against the specific key.
    * @param destKey destination key
+   * @param inputStream source data.
    * @param length size, if known. Use -1 for not known
    * @param options options for the request
    * @return the request
    */
   @Retries.OnceRaw
   public PutObjectRequest createPutObjectRequest(String destKey,
+      InputStream inputStream,
       long length,
       final PutObjectOptions options) {
-
     activateAuditSpan();
-
-    return getRequestFactory()
-        .newPutObjectRequestBuilder(destKey, options, length, false)
-        .build();
+    ObjectMetadata objectMetadata = newObjectMetadata(length);
+    return getRequestFactory().newPutObjectRequest(
+        destKey,
+        objectMetadata,
+        options,
+        inputStream);
   }
 
+  /**
+   * Create a {@link PutObjectRequest} request to upload a file.
+   * @param dest key to PUT to.
+   * @param sourceFile source file
+   * @param options options for the request
+   * @return the request
+   */
+  @Retries.OnceRaw
+  public PutObjectRequest createPutObjectRequest(
+      String dest,
+      File sourceFile,
+      final PutObjectOptions options) {
+    activateAuditSpan();
+    final ObjectMetadata objectMetadata =
+        newObjectMetadata((int) sourceFile.length());
+
+    PutObjectRequest putObjectRequest = getRequestFactory().
+        newPutObjectRequest(dest,
+            objectMetadata,
+            options,
+            sourceFile);
+    return putObjectRequest;
+  }
 
   /**
    * Callback on a successful write.
@@ -266,6 +298,17 @@ public class WriteOperationHelper implements WriteOperations {
   }
 
   /**
+   * Create a new object metadata instance.
+   * Any standard metadata headers are added here, for example:
+   * encryption.
+   * @param length size, if known. Use -1 for not known
+   * @return a new metadata instance
+   */
+  public ObjectMetadata newObjectMetadata(long length) {
+    return getRequestFactory().newObjectMetadata(length);
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Retries.RetryTranslated
@@ -277,11 +320,11 @@ public class WriteOperationHelper implements WriteOperations {
     try (AuditSpan span = activateAuditSpan()) {
       return retry("initiate MultiPartUpload", destKey, true,
           () -> {
-            final CreateMultipartUploadRequest.Builder initiateMPURequestBuilder =
-                getRequestFactory().newMultipartUploadRequestBuilder(
+            final InitiateMultipartUploadRequest initiateMPURequest =
+                getRequestFactory().newMultipartUploadRequest(
                     destKey, options);
-            return owner.initiateMultipartUpload(initiateMPURequestBuilder.build())
-                .uploadId();
+            return owner.initiateMultipartUpload(initiateMPURequest)
+                .getUploadId();
           });
     }
   }
@@ -289,7 +332,7 @@ public class WriteOperationHelper implements WriteOperations {
   /**
    * Finalize a multipart PUT operation.
    * This completes the upload, and, if that works, calls
-   * {@link WriteOperationHelperCallbacks#finishedWrite(String, long, PutObjectOptions)}
+   * {@link S3AFileSystem#finishedWrite(String, long, String, String, org.apache.hadoop.fs.s3a.impl.PutObjectOptions)}
    * to update the filesystem.
    * Retry policy: retrying, translated.
    * @param destKey destination of the commit
@@ -302,10 +345,10 @@ public class WriteOperationHelper implements WriteOperations {
    * @throws IOException on problems.
    */
   @Retries.RetryTranslated
-  private CompleteMultipartUploadResponse finalizeMultipartUpload(
+  private CompleteMultipartUploadResult finalizeMultipartUpload(
       String destKey,
       String uploadId,
-      List<CompletedPart> partETags,
+      List<PartETag> partETags,
       long length,
       PutObjectOptions putOptions,
       Retried retrying) throws IOException {
@@ -314,17 +357,18 @@ public class WriteOperationHelper implements WriteOperations {
           "No upload parts in multipart upload");
     }
     try (AuditSpan span = activateAuditSpan()) {
-      CompleteMultipartUploadResponse uploadResult;
-      uploadResult = invoker.retry("Completing multipart upload id " + uploadId,
-          destKey,
+      CompleteMultipartUploadResult uploadResult;
+      uploadResult = invoker.retry("Completing multipart upload", destKey,
           true,
           retrying,
           () -> {
-            final CompleteMultipartUploadRequest.Builder requestBuilder =
-                getRequestFactory().newCompleteMultipartUploadRequestBuilder(destKey, uploadId, partETags, putOptions);
-            return writeOperationHelperCallbacks.completeMultipartUpload(requestBuilder.build());
+            final CompleteMultipartUploadRequest request =
+                getRequestFactory().newCompleteMultipartUploadRequest(
+                    destKey, uploadId, partETags);
+            return writeOperationHelperCallbacks.completeMultipartUpload(request);
           });
-      writeOperationHelperCallbacks.finishedWrite(destKey, length,
+      owner.finishedWrite(destKey, length, uploadResult.getETag(),
+          uploadResult.getVersionId(),
           putOptions);
       return uploadResult;
     }
@@ -347,10 +391,10 @@ public class WriteOperationHelper implements WriteOperations {
    * the retry count was exceeded
    */
   @Retries.RetryTranslated
-  public CompleteMultipartUploadResponse completeMPUwithRetries(
+  public CompleteMultipartUploadResult completeMPUwithRetries(
       String destKey,
       String uploadId,
-      List<CompletedPart> partETags,
+      List<PartETag> partETags,
       long length,
       AtomicInteger errorCount,
       PutObjectOptions putOptions)
@@ -403,13 +447,12 @@ public class WriteOperationHelper implements WriteOperations {
   /**
    * Abort a multipart commit operation.
    * @param upload upload to abort.
-   * @throws FileNotFoundException if the upload is unknown
    * @throws IOException on problems.
    */
   @Retries.RetryTranslated
   public void abortMultipartUpload(MultipartUpload upload)
-      throws FileNotFoundException, IOException {
-    invoker.retry("Aborting multipart commit", upload.key(), true,
+      throws IOException {
+    invoker.retry("Aborting multipart commit", upload.getKey(), true,
         withinAuditSpan(getAuditSpan(),
             () -> owner.abortMultipartUpload(upload)));
   }
@@ -434,7 +477,7 @@ public class WriteOperationHelper implements WriteOperations {
         abortMultipartUpload(upload);
         count++;
       } catch (FileNotFoundException e) {
-        LOG.debug("Already aborted: {}", upload.key(), e);
+        LOG.debug("Already aborted: {}", upload.getKey(), e);
       }
     }
     return count;
@@ -463,34 +506,45 @@ public class WriteOperationHelper implements WriteOperations {
   }
 
   /**
-   * Create and initialize a part request builder of a multipart upload.
+   * Create and initialize a part request of a multipart upload.
+   * Exactly one of: {@code uploadStream} or {@code sourceFile}
+   * must be specified.
+   * A subset of the file may be posted, by providing the starting point
+   * in {@code offset} and a length of block in {@code size} equal to
+   * or less than the remaining bytes.
    * The part number must be less than 10000.
    * Retry policy is once-translated; to much effort
    * @param destKey destination key of ongoing operation
    * @param uploadId ID of ongoing upload
    * @param partNumber current part number of the upload
-   * @param isLastPart is this the last part?
    * @param size amount of data
-   * @return the request builder.
+   * @param uploadStream source of data to upload
+   * @param sourceFile optional source file.
+   * @param offset offset in file to start reading.
+   * @return the request.
    * @throws IllegalArgumentException if the parameters are invalid.
    * @throws PathIOException if the part number is out of range.
    */
   @Override
   @Retries.OnceTranslated
-  public UploadPartRequest.Builder newUploadPartRequestBuilder(
+  public UploadPartRequest newUploadPartRequest(
       String destKey,
       String uploadId,
       int partNumber,
-      boolean isLastPart,
-      long size) throws IOException {
+      long size,
+      InputStream uploadStream,
+      File sourceFile,
+      Long offset) throws IOException {
     return once("upload part request", destKey,
         withinAuditSpan(getAuditSpan(), () ->
-            getRequestFactory().newUploadPartRequestBuilder(
+            getRequestFactory().newUploadPartRequest(
                 destKey,
                 uploadId,
                 partNumber,
-                isLastPart,
-                size)));
+                size,
+                uploadStream,
+                sourceFile,
+                offset)));
   }
 
   /**
@@ -511,20 +565,19 @@ public class WriteOperationHelper implements WriteOperations {
    * file, from the content length of the header.
    * @param putObjectRequest the request
    * @param putOptions put object options
-   * @param uploadData data to be uploaded
    * @param durationTrackerFactory factory for duration tracking
    * @return the upload initiated
    * @throws IOException on problems
    */
   @Retries.RetryTranslated
-  public PutObjectResponse putObject(PutObjectRequest putObjectRequest,
+  public PutObjectResult putObject(PutObjectRequest putObjectRequest,
       PutObjectOptions putOptions,
-      S3ADataBlocks.BlockUploadData uploadData,
       DurationTrackerFactory durationTrackerFactory)
       throws IOException {
-    return retry("Writing Object", putObjectRequest.key(), true, withinAuditSpan(getAuditSpan(),
-        () -> owner.putObjectDirect(putObjectRequest, putOptions, uploadData,
-            durationTrackerFactory)));
+    return retry("Writing Object",
+        putObjectRequest.getKey(), true,
+        withinAuditSpan(getAuditSpan(), () ->
+            owner.putObjectDirect(putObjectRequest, putOptions, durationTrackerFactory)));
   }
 
   /**
@@ -560,10 +613,10 @@ public class WriteOperationHelper implements WriteOperations {
    * the retry count was exceeded
    */
   @Retries.RetryTranslated
-  public CompleteMultipartUploadResponse commitUpload(
+  public CompleteMultipartUploadResult commitUpload(
       String destKey,
       String uploadId,
-      List<CompletedPart> partETags,
+      List<PartETag> partETags,
       long length)
       throws IOException {
     checkNotNull(uploadId);
@@ -580,24 +633,21 @@ public class WriteOperationHelper implements WriteOperations {
 
   /**
    * Upload part of a multi-partition file.
+   * @param request request
    * @param durationTrackerFactory duration tracker factory for operation
-   * @param request the upload part request.
-   * @param body the request body.
    * @return the result of the operation.
    * @throws IOException on problems
    */
   @Retries.RetryTranslated
-  public UploadPartResponse uploadPart(UploadPartRequest request, RequestBody body,
+  public UploadPartResult uploadPart(UploadPartRequest request,
       final DurationTrackerFactory durationTrackerFactory)
       throws IOException {
-    return retry("upload part #" + request.partNumber()
-            + " upload ID " + request.uploadId(),
-        request.key(),
+    return retry("upload part #" + request.getPartNumber()
+            + " upload ID " + request.getUploadId(),
+        request.getKey(),
         true,
         withinAuditSpan(getAuditSpan(),
-            () -> writeOperationHelperCallbacks.uploadPart(request,
-                body,
-                durationTrackerFactory)));
+            () -> owner.uploadPart(request, durationTrackerFactory)));
   }
 
   /**
@@ -607,6 +657,67 @@ public class WriteOperationHelper implements WriteOperations {
    */
   public Configuration getConf() {
     return conf;
+  }
+
+  /**
+   * Create a S3 Select request for the destination path.
+   * This does not build the query.
+   * @param path pre-qualified path for query
+   * @return the request
+   */
+  public SelectObjectContentRequest newSelectRequest(Path path) {
+    try (AuditSpan span = getAuditSpan()) {
+      return getRequestFactory().newSelectRequest(
+          storeContext.pathToKey(path));
+    }
+  }
+
+  /**
+   * Execute an S3 Select operation.
+   * On a failure, the request is only logged at debug to avoid the
+   * select exception being printed.
+   * @param source source for selection
+   * @param request Select request to issue.
+   * @param action the action for use in exception creation
+   * @return response
+   * @throws IOException failure
+   */
+  @Retries.RetryTranslated
+  public SelectObjectContentResult select(
+      final Path source,
+      final SelectObjectContentRequest request,
+      final String action)
+      throws IOException {
+    // no setting of span here as the select binding is (statically) created
+    // without any span.
+    String bucketName = request.getBucketName();
+    Preconditions.checkArgument(bucket.equals(bucketName),
+        "wrong bucket: %s", bucketName);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Initiating select call {} {}",
+          source, request.getExpression());
+      LOG.debug(SelectBinding.toString(request));
+    }
+    return invoker.retry(
+        action,
+        source.toString(),
+        true,
+        withinAuditSpan(getAuditSpan(), () -> {
+          try (DurationInfo ignored =
+                   new DurationInfo(LOG, "S3 Select operation")) {
+            try {
+              return writeOperationHelperCallbacks.selectObjectContent(request);
+            } catch (AmazonS3Exception e) {
+              LOG.error("Failure of S3 Select request against {}",
+                  source);
+              LOG.debug("S3 Select request against {}:\n{}",
+                  source,
+                  SelectBinding.toString(request),
+                  e);
+              throw e;
+            }
+          }
+        }));
   }
 
   @Override
@@ -643,48 +754,19 @@ public class WriteOperationHelper implements WriteOperations {
   public interface WriteOperationHelperCallbacks {
 
     /**
+     * Initiates a select request.
+     * @param request selectObjectContent request
+     * @return selectObjectContentResult
+     */
+    SelectObjectContentResult selectObjectContent(SelectObjectContentRequest request);
+
+    /**
      * Initiates a complete multi-part upload request.
      * @param request Complete multi-part upload request
      * @return completeMultipartUploadResult
      */
-    @Retries.OnceRaw
-    CompleteMultipartUploadResponse completeMultipartUpload(
-        CompleteMultipartUploadRequest request);
+    CompleteMultipartUploadResult completeMultipartUpload(CompleteMultipartUploadRequest request);
 
-    /**
-     * Upload part of a multi-partition file.
-     * Increments the write and put counters.
-     * <i>Important: this call does not close any input stream in the body.</i>
-     * <p>
-     * Retry Policy: none.
-     * @param durationTrackerFactory duration tracker factory for operation
-     * @param request the upload part request.
-     * @param body the request body.
-     * @return the result of the operation.
-     * @throws AwsServiceException on problems
-     * @throws UncheckedIOException failure to instantiate the s3 client
-     */
-    @Retries.OnceRaw
-    UploadPartResponse uploadPart(
-        UploadPartRequest request,
-        RequestBody body,
-        DurationTrackerFactory durationTrackerFactory)
-        throws AwsServiceException, UncheckedIOException;
-
-    /**
-     * Perform post-write actions.
-     * <p>
-     * This operation MUST be called after any PUT/multipart PUT completes
-     * successfully.
-     * @param key key written to
-     * @param length total length of file written
-     * @param putOptions put object options
-     */
-    @Retries.RetryExceptionsSwallowed
-    void finishedWrite(
-        String key,
-        long length,
-        PutObjectOptions putOptions);
   }
 
 }

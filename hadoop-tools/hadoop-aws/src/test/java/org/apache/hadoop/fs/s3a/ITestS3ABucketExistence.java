@@ -19,7 +19,6 @@
 package org.apache.hadoop.fs.s3a;
 
 import java.net.URI;
-import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -34,20 +33,11 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.test.LambdaTestUtils;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.dataset;
-import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.writeDataset;
 import static org.apache.hadoop.fs.s3a.Constants.AWS_REGION;
 import static org.apache.hadoop.fs.s3a.Constants.AWS_S3_ACCESSPOINT_REQUIRED;
-import static org.apache.hadoop.fs.s3a.Constants.ENDPOINT;
-import static org.apache.hadoop.fs.s3a.Constants.FIPS_ENDPOINT;
 import static org.apache.hadoop.fs.s3a.Constants.FS_S3A;
-import static org.apache.hadoop.fs.s3a.Constants.PATH_STYLE_ACCESS;
 import static org.apache.hadoop.fs.s3a.Constants.S3A_BUCKET_PROBE;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.assume;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.getTestBucketName;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.removeBaseAndBucketOverrides;
-import static org.apache.hadoop.fs.s3a.S3AUtils.propagateBucketOptions;
-import static org.apache.hadoop.fs.s3a.impl.NetworkBinding.isAwsEndpoint;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 
 /**
@@ -61,15 +51,6 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
           "random-bucket-" + UUID.randomUUID();
 
   private final URI uri = URI.create(FS_S3A + "://" + randomBucket + "/");
-
-  @Override
-  protected Configuration createConfiguration() {
-    final Configuration conf = super.createConfiguration();
-    String endpoint = propagateBucketOptions(conf, getTestBucketName(conf)).get(ENDPOINT, "");
-    assume("Skipping existence probes",
-        isAwsEndpoint(endpoint));
-    return conf;
-  }
 
   @SuppressWarnings("deprecation")
   @Test
@@ -86,14 +67,8 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
     assertTrue("getFileStatus on root should always return a directory",
             fs.getFileStatus(root).isDirectory());
 
-    try {
-      expectUnknownStore(
-          () -> fs.listStatus(root));
-    } catch (AccessDeniedException e) {
-      // this is a sign that there's tests with a third-party bucket and
-      // interacting with aws is not going to authenticate
-      skip("no aws credentials");
-    }
+    expectUnknownStore(
+        () -> fs.listStatus(root));
 
     Path src = new Path(root, "testfile");
     Path dest = new Path(root, "dst");
@@ -149,19 +124,12 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
   private Configuration createConfigurationWithProbe(final int probe) {
     Configuration conf = new Configuration(getFileSystem().getConf());
     S3ATestUtils.disableFilesystemCaching(conf);
-    removeBaseAndBucketOverrides(conf,
-        S3A_BUCKET_PROBE,
-        ENDPOINT,
-        FIPS_ENDPOINT,
-        AWS_REGION,
-        PATH_STYLE_ACCESS);
     conf.setInt(S3A_BUCKET_PROBE, probe);
-    conf.set(AWS_REGION, EU_WEST_1);
     return conf;
   }
 
   @Test
-  public void testBucketProbing() throws Exception {
+  public void testBucketProbingV1() throws Exception {
     describe("Test the V1 bucket probe");
     Configuration configuration = createConfigurationWithProbe(1);
     expectUnknownStore(
@@ -169,24 +137,18 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
   }
 
   @Test
-  public void testBucketProbing2() throws Exception {
-    describe("Test the bucket probe with probe value set to 2");
+  public void testBucketProbingV2() throws Exception {
+    describe("Test the V2 bucket probe");
     Configuration configuration = createConfigurationWithProbe(2);
-
     expectUnknownStore(
         () -> FileSystem.get(uri, configuration));
-  }
-
-  @Test
-  public void testBucketProbing3() throws Exception {
-    describe("Test the bucket probe with probe value set to 3");
-    Configuration configuration = createConfigurationWithProbe(3);
-    fs = FileSystem.get(uri, configuration);
-    Path root = new Path(uri);
-
-    assertTrue("root path should always exist", fs.exists(root));
-    assertTrue("getFileStatus on root should always return a directory",
-        fs.getFileStatus(root).isDirectory());
+    /*
+     * Bucket probing should also be done when value of
+     * S3A_BUCKET_PROBE is greater than 2.
+     */
+    configuration.setInt(S3A_BUCKET_PROBE, 3);
+    expectUnknownStore(
+            () -> FileSystem.get(uri, configuration));
   }
 
   @Test
@@ -200,8 +162,8 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
   }
 
   @Test
-  public void testAccessPointProbing2() throws Exception {
-    describe("Test bucket probing using probe value 2, and an AccessPoint ARN");
+  public void testAccessPointProbingV2() throws Exception {
+    describe("Test V2 bucket probing using an AccessPoint ARN");
     Configuration configuration = createArnConfiguration();
     String accessPointArn = "arn:aws:s3:eu-west-1:123456789012:accesspoint/" + randomBucket;
     configuration.set(String.format(InternalConstants.ARN_BUCKET_OPTION, randomBucket),
@@ -213,7 +175,7 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
 
   @Test
   public void testAccessPointRequired() throws Exception {
-    describe("Test bucket probing with 'fs.s3a.accesspoint.required' property.");
+    describe("Test V2 bucket probing with 'fs.s3a.accesspoint.required' property.");
     Configuration configuration = createArnConfiguration();
     configuration.set(AWS_S3_ACCESSPOINT_REQUIRED, "true");
     intercept(PathIOException.class,
@@ -235,7 +197,7 @@ public class ITestS3ABucketExistence extends AbstractS3ATestBase {
    */
   private Configuration createArnConfiguration() {
     Configuration configuration = createConfigurationWithProbe(2);
-    configuration.set(AWS_REGION, EU_WEST_1);
+    configuration.set(AWS_REGION, "eu-west-1");
     return configuration;
   }
 

@@ -39,7 +39,7 @@ import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 
 public class TestCommonNodeLabelsManager extends NodeLabelTestBase {
   DummyCommonNodeLabelsManager mgr = null;

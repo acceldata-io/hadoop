@@ -105,7 +105,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 

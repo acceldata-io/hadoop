@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.s3a.Constants;
@@ -110,11 +110,58 @@ public final class InternalConstants {
     S3A_OPENFILE_KEYS = Collections.unmodifiableSet(keys);
   }
 
+  /** 200 status code: OK. */
+  public static final int SC_200_OK = 200;
+
+  /** 301 status code: Moved Permanently. */
+  public static final int SC_301_MOVED_PERMANENTLY = 301;
+
+  /** 307 status code: Temporary Redirect. */
+  public static final int SC_307_TEMPORARY_REDIRECT = 307;
+
+  /** 400 status code: Bad Request. */
+  public static final int SC_400_BAD_REQUEST = 400;
+
+  /** 401 status code: Unauthorized. */
+  public static final int SC_401_UNAUTHORIZED = 401;
+
+  /** 403 status code: Forbidden. */
+  public static final int SC_403_FORBIDDEN = 403;
+
   /** 403 error code. */
-  public static final int SC_403 = 403;
+  @Deprecated
+  public static final int SC_403 = SC_403_FORBIDDEN;
+
+  /** 404 status code: Not Found. */
+  public static final int SC_404_NOT_FOUND = 404;
 
   /** 404 error code. */
-  public static final int SC_404 = 404;
+  @Deprecated
+  public static final int SC_404 = SC_404_NOT_FOUND;
+
+  /** 405 status code: Method Not Allowed. */
+  public static final int SC_405_METHOD_NOT_ALLOWED = 405;
+
+  /** 410 status code: Gone. */
+  public static final int SC_410_GONE = 410;
+
+  /** 412 status code: Precondition Failed. */
+  public static final int SC_412_PRECONDITION_FAILED = 412;
+
+  /** 416 status code: Range Not Satisfiable. */
+  public static final int SC_416_RANGE_NOT_SATISFIABLE = 416;
+
+  /** 443 status code: No Response (unofficial). */
+  public static final int SC_443_NO_RESPONSE = 443;
+
+  /** 444 status code: No Response (unofficial). */
+  public static final int SC_444_NO_RESPONSE = 444;
+
+  /** 500 status code: Internal Server Error. */
+  public static final int SC_500_INTERNAL_SERVER_ERROR = 500;
+
+  /** 503 status code: Service Unavailable. */
+  public static final int SC_503_SERVICE_UNAVAILABLE = 503;
 
   /** Name of the log for throttling events. Value: {@value}. */
   public static final String THROTTLE_LOG_NAME =
@@ -181,10 +228,5 @@ public final class InternalConstants {
   public static final Set<String> CREATE_FILE_KEYS =
       Collections.unmodifiableSet(
           new HashSet<>(Arrays.asList(Constants.FS_S3A_CREATE_PERFORMANCE)));
-
-  /**
-   * AWS Error code for conditional put failure on s3 express buckets: {@value}.
-   */
-  public static final String PRECONDITION_FAILED = "PreconditionFailed";
 
 }

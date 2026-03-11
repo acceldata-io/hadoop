@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -79,7 +79,7 @@ public final class Util {
   }
 
   /**
-   * Interprets the passed string as a URI. In case of error it 
+   * Interprets the passed string as a URI. In case of error it
    * assumes the specified string is a file.
    *
    * @param s the string to interpret
@@ -107,13 +107,13 @@ public final class Util {
    * Converts the passed File to a URI. This method trims the trailing slash if
    * one is appended because the underlying file is in fact a directory that
    * exists.
-   * 
+   *
    * @param f the file to convert
    * @return the resulting URI
    */
   public static URI fileAsURI(File f) throws IOException {
     URI u = f.getCanonicalFile().toURI();
-    
+
     // trim the trailing slash, if it's present
     if (u.getPath().endsWith("/")) {
       String uriAsString = u.toString();
@@ -123,7 +123,7 @@ public final class Util {
         throw new IOException(e);
       }
     }
-    
+
     return u;
   }
 

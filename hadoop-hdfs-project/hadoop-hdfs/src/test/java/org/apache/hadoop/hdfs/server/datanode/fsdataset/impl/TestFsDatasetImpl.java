@@ -20,7 +20,7 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import org.apache.hadoop.hdfs.server.datanode.LocalReplica;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -134,7 +134,7 @@ public class TestFsDatasetImpl {
   private DataNode datanode;
   private DataStorage storage;
   private FsDatasetImpl dataset;
-  
+
   private final static String BLOCKPOOL = "BP-TEST";
 
   private static Storage.StorageDirectory createStorageDirectory(File root,
@@ -589,7 +589,7 @@ public class TestFsDatasetImpl {
 
     FsDatasetTestUtil.assertFileLockReleased(badDir.toString());
   }
-  
+
   @Test
   public void testDeletingBlocks() throws IOException {
     HdfsConfiguration conf = new HdfsConfiguration();
@@ -597,7 +597,7 @@ public class TestFsDatasetImpl {
     try {
       cluster.waitActive();
       DataNode dn = cluster.getDataNodes().get(0);
-      
+
       FsDatasetSpi<?> ds = DataNodeTestUtils.getFSDataset(dn);
       ds.addBlockPool(BLOCKPOOL, conf);
       FsVolumeImpl vol;

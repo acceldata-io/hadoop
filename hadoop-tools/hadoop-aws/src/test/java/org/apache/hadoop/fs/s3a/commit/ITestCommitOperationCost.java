@@ -40,8 +40,6 @@ import org.apache.hadoop.fs.s3a.commit.impl.CommitOperations;
 import org.apache.hadoop.fs.s3a.performance.AbstractS3ACostTest;
 import org.apache.hadoop.fs.statistics.IOStatisticsLogging;
 
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.assumeMultipartUploads;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.skipIfAnalyticsAcceleratorEnabled;
 import static org.apache.hadoop.fs.s3a.Statistic.ACTION_HTTP_GET_REQUEST;
 import static org.apache.hadoop.fs.s3a.Statistic.COMMITTER_MAGIC_FILES_CREATED;
 import static org.apache.hadoop.fs.s3a.Statistic.COMMITTER_MAGIC_MARKER_PUT;
@@ -53,8 +51,7 @@ import static org.apache.hadoop.fs.s3a.Statistic.OBJECT_LIST_REQUEST;
 import static org.apache.hadoop.fs.s3a.Statistic.OBJECT_METADATA_REQUESTS;
 import static org.apache.hadoop.fs.s3a.Statistic.OBJECT_MULTIPART_UPLOAD_INITIATED;
 import static org.apache.hadoop.fs.s3a.Statistic.OBJECT_PUT_REQUESTS;
-import static org.apache.hadoop.fs.s3a.commit.CommitConstants.MAGIC_PATH_PREFIX;
-import static org.apache.hadoop.fs.s3a.commit.CommitterTestHelper.JOB_ID;
+import static org.apache.hadoop.fs.s3a.commit.CommitConstants.MAGIC;
 import static org.apache.hadoop.fs.s3a.commit.CommitterTestHelper.assertIsMagicStream;
 import static org.apache.hadoop.fs.s3a.commit.CommitterTestHelper.makeMagic;
 import static org.apache.hadoop.fs.s3a.performance.OperationCost.LIST_FILES_LIST_OP;
@@ -92,7 +89,6 @@ public class ITestCommitOperationCost extends AbstractS3ACostTest {
   @Override
   public void setup() throws Exception {
     super.setup();
-    assumeMultipartUploads(getFileSystem().getConf());
     testHelper = new CommitterTestHelper(getFileSystem());
   }
 
@@ -127,12 +123,12 @@ public class ITestCommitOperationCost extends AbstractS3ACostTest {
 
   @Test
   public void testMagicMkdir() throws Throwable {
-    describe("Mkdirs 'MAGIC PATH' always skips dir marker deletion");
+    describe("Mkdirs __magic always skips dir marker deletion");
     S3AFileSystem fs = getFileSystem();
     Path baseDir = methodPath();
     // create dest dir marker, always
     fs.mkdirs(baseDir);
-    Path magicDir = new Path(baseDir, MAGIC_PATH_PREFIX + JOB_ID);
+    Path magicDir = new Path(baseDir, MAGIC);
     verifyMetrics(() -> {
       fs.mkdirs(magicDir);
       return fileSystemIOStats();
@@ -155,10 +151,10 @@ public class ITestCommitOperationCost extends AbstractS3ACostTest {
    */
   @Test
   public void testMagicMkdirs() throws Throwable {
-    describe("Mkdirs __magic_job-<jobId>/subdir always skips dir marker deletion");
+    describe("Mkdirs __magic/subdir always skips dir marker deletion");
     S3AFileSystem fs = getFileSystem();
     Path baseDir = methodPath();
-    Path magicDir = new Path(baseDir, MAGIC_PATH_PREFIX + JOB_ID);
+    Path magicDir = new Path(baseDir, MAGIC);
     fs.delete(baseDir, true);
 
     Path magicSubdir = new Path(magicDir, "subdir");
@@ -206,10 +202,6 @@ public class ITestCommitOperationCost extends AbstractS3ACostTest {
   @Test
   public void testCostOfCreatingMagicFile() throws Throwable {
     describe("Files created under magic paths skip existence checks and marker deletes");
-    // Analytics accelerator currently does not support IOStatistics, this will be added as
-    // part of https://issues.apache.org/jira/browse/HADOOP-19364
-    skipIfAnalyticsAcceleratorEnabled(getConfiguration(),
-        "Analytics Accelerator currently does not support stream statistics");
     S3AFileSystem fs = getFileSystem();
     Path destFile = methodSubPath("file.txt");
     fs.delete(destFile.getParent(), true);
@@ -289,10 +281,6 @@ public class ITestCommitOperationCost extends AbstractS3ACostTest {
   public void testCostOfSavingLoadingPendingFile() throws Throwable {
     describe("Verify costs of saving .pending file under a magic path");
 
-    // Analytics accelerator currently does not support IOStatistics, this will be added as
-    // part of https://issues.apache.org/jira/browse/HADOOP-19364
-    skipIfAnalyticsAcceleratorEnabled(getConfiguration(),
-        "Analytics Accelerator currently does not support stream statistics");
     S3AFileSystem fs = getFileSystem();
     Path partDir = methodSubPath("file.pending");
     Path destFile = new Path(partDir, "file.pending");

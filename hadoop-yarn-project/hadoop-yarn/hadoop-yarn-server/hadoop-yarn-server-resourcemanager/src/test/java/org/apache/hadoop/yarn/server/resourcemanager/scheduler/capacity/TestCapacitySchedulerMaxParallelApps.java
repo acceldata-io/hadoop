@@ -49,7 +49,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 
 public class TestCapacitySchedulerMaxParallelApps {
   private CapacitySchedulerConfiguration conf;

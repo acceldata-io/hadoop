@@ -136,7 +136,7 @@ import org.mockito.Mockito;
 
 import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 
 public class TestRMRestart extends ParameterizedSchedulerTestBase {
   private static final Logger LOG =

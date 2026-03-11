@@ -50,7 +50,7 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
 /**
@@ -64,7 +64,7 @@ public class DelegationTokenSecretManager
 
   private static final Logger LOG = LoggerFactory
       .getLogger(DelegationTokenSecretManager.class);
-  
+
   private final FSNamesystem namesystem;
   private final SerializerCompat serializerCompat = new SerializerCompat();
 
@@ -102,7 +102,7 @@ public class DelegationTokenSecretManager
   public DelegationTokenIdentifier createIdentifier() {
     return new DelegationTokenIdentifier();
   }
-  
+
   @Override
   public byte[] retrievePassword(
       DelegationTokenIdentifier identifier) throws InvalidToken {
@@ -124,7 +124,7 @@ public class DelegationTokenSecretManager
     }
     return super.retrievePassword(identifier);
   }
-  
+
   @Override
   public byte[] retriableRetrievePassword(DelegationTokenIdentifier identifier)
       throws InvalidToken, StandbyException, RetriableException, IOException {
@@ -133,8 +133,8 @@ public class DelegationTokenSecretManager
       return super.retrievePassword(identifier);
     } catch (InvalidToken it) {
       if (namesystem.inTransitionToActive()) {
-        // if the namesystem is currently in the middle of transition to 
-        // active state, let client retry since the corresponding editlog may 
+        // if the namesystem is currently in the middle of transition to
+        // active state, let client retry since the corresponding editlog may
         // have not been applied yet
         throw new RetriableException(it);
       } else {
@@ -142,10 +142,10 @@ public class DelegationTokenSecretManager
       }
     }
   }
-  
+
   /**
    * Returns expiry time of a token given its identifier.
-   * 
+   *
    * @param dtId DelegationTokenIdentifier of a token
    * @return Expiry time of the token
    * @throws IOException
@@ -162,7 +162,7 @@ public class DelegationTokenSecretManager
 
   /**
    * Load SecretManager state from fsimage.
-   * 
+   *
    * @param in input stream to read fsimage
    * @throws IOException
    */
@@ -265,10 +265,10 @@ public class DelegationTokenSecretManager
 
   /**
    * This method is intended to be used only while reading edit logs.
-   * 
+   *
    * @param identifier DelegationTokenIdentifier read from the edit logs or
    * fsimage
-   * 
+   *
    * @param expiryTime token expiry time
    * @throws IOException
    */
@@ -302,7 +302,7 @@ public class DelegationTokenSecretManager
 
   /**
    * Add a MasterKey to the list of keys.
-   * 
+   *
    * @param key DelegationKey
    * @throws IOException
    */
@@ -310,10 +310,10 @@ public class DelegationTokenSecretManager
       throws IOException {
     addKey(key);
   }
-  
+
   /**
    * Update the token cache with renewal record in edit logs.
-   * 
+   *
    * @param identifier DelegationTokenIdentifier of the renewed token
    * @param expiryTime expirty time in milliseconds
    * @throws IOException
@@ -338,7 +338,7 @@ public class DelegationTokenSecretManager
 
   /**
    *  Update the token cache with the cancel record in edit logs
-   *  
+   *
    *  @param identifier DelegationTokenIdentifier of the canceled token
    *  @throws IOException
    */
@@ -351,7 +351,7 @@ public class DelegationTokenSecretManager
     }
     currentTokens.remove(identifier);
   }
-  
+
   /**
    * Returns the number of delegation keys currently stored.
    * @return number of delegation keys
@@ -391,7 +391,7 @@ public class DelegationTokenSecretManager
       Thread.currentThread().interrupt();
     }
   }
-  
+
   @Override //AbstractDelegationTokenManager
   protected void logExpireToken(final DelegationTokenIdentifier dtId)
       throws IOException {

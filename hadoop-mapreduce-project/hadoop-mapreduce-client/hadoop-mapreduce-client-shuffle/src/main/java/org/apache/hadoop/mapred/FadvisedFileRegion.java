@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.POSIX_FADV_DONTNEED;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 
 public class FadvisedFileRegion extends DefaultFileRegion {
 

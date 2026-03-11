@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.fs.s3a;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class FailureInjectionPolicy {
   public static final String DEFAULT_DELAY_KEY_SUBSTRING = "DELAY_LISTING_ME";
 
   private static final Logger LOG =
-      LoggerFactory.getLogger(InconsistentAmazonS3Client.class);
+      LoggerFactory.getLogger(FailureInjectionPolicy.class);
 
   /**
    * Probability of throttling a request.

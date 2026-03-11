@@ -19,7 +19,7 @@ package org.apache.hadoop.hdfs.server.namenode.ha;
 
 import static org.apache.hadoop.util.Time.monotonicNow;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -48,7 +48,7 @@ import org.apache.hadoop.io.MultipleIOException;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
@@ -83,12 +83,12 @@ public class StandbyCheckpointer {
 
   // A map from NN url to the most recent image upload time.
   private final HashMap<String, CheckpointReceiverEntry> checkpointReceivers;
-  
+
   public StandbyCheckpointer(Configuration conf, FSNamesystem ns)
       throws IOException {
     this.namesystem = ns;
     this.conf = conf;
-    this.checkpointConf = new CheckpointConf(conf); 
+    this.checkpointConf = new CheckpointConf(conf);
     this.thread = new CheckpointerThread();
     this.uploadThreadFactory = new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat("TransferFsImageUpload-%d").build();
@@ -129,7 +129,7 @@ public class StandbyCheckpointer {
   /**
    * Determine the address of the NN we are checkpointing
    * as well as our own HTTP address from the configuration.
-   * @throws IOException 
+   * @throws IOException
    */
   private void setNameNodeAddresses(Configuration conf) throws IOException {
     // Look up our own address.
@@ -152,14 +152,14 @@ public class StandbyCheckpointer {
     Preconditions.checkArgument(checkAddress(myNNAddress), "Bad address for standby NN: %s",
         myNNAddress);
   }
-  
+
   private URL getHttpAddress(Configuration conf) throws IOException {
     final String scheme = DFSUtil.getHttpClientScheme(conf);
     String defaultHost = NameNode.getServiceAddress(conf, true).getHostName();
     URI addr = DFSUtil.getInfoServerWithDefaultHost(defaultHost, conf, scheme);
     return addr.toURL();
   }
-  
+
   /**
    * Ensure that the given address is valid and has a port
    * specified.
@@ -174,7 +174,7 @@ public class StandbyCheckpointer {
         "Serving checkpoints at {}", activeNNAddresses, myNNAddress);
     thread.start();
   }
-  
+
   public void stop() throws IOException {
     cancelAndPreventCheckpoints("Stopping checkpointer");
     thread.setShouldRun(false);
@@ -345,7 +345,7 @@ public class StandbyCheckpointer {
       throw MultipleIOException.createIOException(ioes);
     }
   }
-  
+
   /**
    * Cancel any checkpoint that's currently being made,
    * and prevent any new checkpoints from starting for the next
@@ -354,7 +354,7 @@ public class StandbyCheckpointer {
   public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {
     synchronized (cancelLock) {
       // The checkpointer thread takes this lock and checks if checkpointing is
-      // postponed. 
+      // postponed.
       thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);
 
       // Before beginning a checkpoint, the checkpointer thread
@@ -368,7 +368,7 @@ public class StandbyCheckpointer {
       }
     }
   }
-  
+
   @VisibleForTesting
   static int getCanceledCount() {
     return canceledCount;
@@ -387,7 +387,7 @@ public class StandbyCheckpointer {
     private CheckpointerThread() {
       super("Standby State Checkpointer");
     }
-    
+
     private void setShouldRun(boolean shouldRun) {
       this.shouldRun = shouldRun;
     }
@@ -412,7 +412,7 @@ public class StandbyCheckpointer {
      * mode. We need to not only cancel any concurrent checkpoint,
      * but also prevent any checkpoints from racing to start just
      * after the cancel call.
-     * 
+     *
      * @param delayMs the number of MS for which checkpoints will be
      * prevented
      */
@@ -441,7 +441,7 @@ public class StandbyCheckpointer {
           if (UserGroupInformation.isSecurityEnabled()) {
             UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
           }
-          
+
           final long now = monotonicNow();
           final long uncheckpointed = countUncheckpointedTxns();
           final long secsSinceLast = (now - lastCheckpointTime) / 1000;

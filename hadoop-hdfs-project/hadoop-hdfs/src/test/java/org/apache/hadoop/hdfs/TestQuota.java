@@ -66,7 +66,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
 public class TestQuota {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestQuota.class);
-  
+
   private static Configuration conf = null;
   private static final ByteArrayOutputStream OUT_STREAM = new ByteArrayOutputStream();
   private static final ByteArrayOutputStream ERR_STREAM = new ByteArrayOutputStream();
@@ -165,7 +165,7 @@ public class TestQuota {
       assertTrue(val>=0);
     }
   }
-  
+
   /**
    * Tests to make sure we're getting human readable Quota exception messages
    * Test for @link{ NSQuotaExceededException, DSQuotaExceededException}
@@ -177,14 +177,14 @@ public class TestQuota {
     try {
       throw new DSQuotaExceededException(bytes, bytes);
     } catch(DSQuotaExceededException e) {
-      
+
       assertEquals("The DiskSpace quota is exceeded: quota = 1024 B = 1 KB"
           + " but diskspace consumed = 1024 B = 1 KB", e.getMessage());
     }
   }
-  
-  /** Test quota related commands: 
-   *    setQuota, clrQuota, setSpaceQuota, clrSpaceQuota, and count 
+
+  /** Test quota related commands:
+   *    setQuota, clrQuota, setSpaceQuota, clrSpaceQuota, and count
    */
   @Test
   public void testQuotaCommands() throws Exception {
@@ -228,7 +228,7 @@ public class TestQuota {
     // 3: create a file /test/datafile0
     final Path childFile0 = new Path(parent, "datafile0");
     DFSTestUtil.createFile(dfs, childFile0, fileLen, replication, 0);
-    
+
     // 4: count -q /test
     ContentSummary c = dfs.getContentSummary(parent);
     compareQuotaUsage(c, dfs, parent);
@@ -481,7 +481,7 @@ public class TestQuota {
      */
     runCommand(admin, false, "-clrSpaceQuota", "/");
   }
-  
+
   /** Test commands that change the size of the name space:
    *  mkdirs, rename, and delete */
   @Test
@@ -585,7 +585,7 @@ public class TestQuota {
     assertTrue(hasException);
     assertTrue(dfs.exists(tempPath));
     assertFalse(dfs.exists(new Path(quotaDir3, "nqdir30")));
-    
+
     // 10.a: Rename nqdir0/qdir1/qdir20/nqdir30 to nqdir0/qdir1/qdir21/nqdir32
     hasException = false;
     try {
@@ -658,11 +658,11 @@ public class TestQuota {
     assertEquals(c.getDirectoryCount(), 6);
     assertEquals(c.getQuota(), 6);
   }
-  
+
   /**
    * Test HDFS operations that change disk space consumed by a directory tree.
    * namely create, rename, delete, append, and setReplication.
-   * 
+   *
    * This is based on testNamespaceCommands() above.
    */
   @Test
@@ -1001,7 +1001,7 @@ public class TestQuota {
       final ContentSummary computed) {
     assertEquals(expected.toString(), computed.toString());
   }
- 
+
   /**
    * Test limit cases for setting space quotas.
    */
@@ -1068,7 +1068,7 @@ public class TestQuota {
    * space of the block is used.
    */
   @Test
-  public void testBlockAllocationAdjustsUsageConservatively() 
+  public void testBlockAllocationAdjustsUsageConservatively()
       throws Exception {
     final Path parent = new Path(
         PathUtils.getTestDir(getClass()).getPath(),
@@ -1115,7 +1115,7 @@ public class TestQuota {
 
  /**
   * Like the previous test but create many files. This covers bugs where
-  * the quota adjustment is incorrect but it takes many files to accrue 
+  * the quota adjustment is incorrect but it takes many files to accrue
   * a big enough accounting error to violate the quota.
   */
   @Test
@@ -1141,16 +1141,16 @@ public class TestQuota {
     final String webhdfsuri = WebHdfsConstants.WEBHDFS_SCHEME + "://" + nnAddr;
     System.out.println("webhdfsuri=" + webhdfsuri);
     final FileSystem webHDFS = new Path(webhdfsuri).getFileSystem(dfsConf);
-    
+
     try {
-      
+
       //Test for deafult NameSpace Quota
       long nsQuota = FSImageTestUtil.getNSQuota(dfsCluster.getNameNode()
           .getNamesystem());
       assertTrue(
           "Default namespace quota expected as long max. But the value is :"
               + nsQuota, nsQuota == Long.MAX_VALUE);
-      
+
       Path dir = new Path(parent, "test");
       boolean exceededQuota = false;
       ContentSummary c;

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.yarn.webapp;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import com.google.inject.servlet.RequestScoped;
 
 import java.util.Iterator;

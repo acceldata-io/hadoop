@@ -57,8 +57,8 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.util.Time;
 import org.apache.http.client.utils.URIBuilder;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.classification.VisibleForTesting;
+import org.apache.hadoop.util.Lists;
 import org.eclipse.jetty.io.EofException;
 
 import static org.apache.hadoop.hdfs.server.common.Util.IO_FILE_BUFFER_SIZE;
@@ -99,7 +99,7 @@ public class TransferFsImage {
   static int timeout = 0;
   private static final Logger LOG =
       LoggerFactory.getLogger(TransferFsImage.class);
-  
+
   public static void downloadMostRecentImageToDirectory(URL infoServer,
       File dir) throws IOException {
     String fileId = ImageServlet.getParamStringForMostRecentImage();
@@ -113,13 +113,13 @@ public class TransferFsImage {
     String fileid = ImageServlet.getParamStringForImage(null,
         imageTxId, dstStorage, isBootstrapStandby);
     String fileName = NNStorage.getCheckpointImageFileName(imageTxId);
-    
+
     List<File> dstFiles = dstStorage.getFiles(
         NameNodeDirType.IMAGE, fileName);
     if (dstFiles.isEmpty()) {
       throw new IOException("No targets in destination storage!");
     }
-    
+
     MD5Hash hash = getFileClient(fsName, fileid, dstFiles, dstStorage, needDigest);
     LOG.info("Downloaded file " + dstFiles.get(0).getName() + " size " +
         dstFiles.get(0).length() + " bytes.");
@@ -157,7 +157,7 @@ public class TransferFsImage {
     List<File> finalFiles = dstStorage.getFiles(NameNodeDirType.EDITS,
         finalFileName);
     assert !finalFiles.isEmpty() : "No checkpoint targets.";
-    
+
     for (File f : finalFiles) {
       if (f.exists() && FileUtil.canRead(f)) {
         LOG.info("Skipping download of remote edit log " +
@@ -293,7 +293,7 @@ public class TransferFsImage {
       connection.setRequestMethod("PUT");
       connection.setDoOutput(true);
 
-      
+
       int chunkSize = (int) conf.getLongBytes(
           DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,
           DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);
@@ -425,7 +425,7 @@ public class TransferFsImage {
    * Client-side Method to fetch file from a server
    * Copies the response from the URL to a list of local files.
    * @param dstStorage if an error occurs writing to one of the files,
-   *                   this storage object will be notified. 
+   *                   this storage object will be notified.
    * @return a digest of the received file if getChecksum is true
    */
   static MD5Hash getFileClient(URL infoServer,
@@ -435,7 +435,7 @@ public class TransferFsImage {
     LOG.info("Opening connection to " + url);
     return doGetUrl(url, localPaths, dstStorage, getChecksum);
   }
-  
+
   public static MD5Hash doGetUrl(URL url, List<File> localPaths,
       Storage dstStorage, boolean getChecksum) throws IOException {
     return Util.doGetUrl(url, localPaths, dstStorage, getChecksum, timeout,

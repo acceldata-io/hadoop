@@ -113,9 +113,9 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import com.sun.jersey.spi.container.ResourceFilters;
 
 /** Web-hdfs NameNode implementation. */
@@ -279,7 +279,7 @@ public class NamenodeWebHdfsMethods {
       throw new IOException("Namesystem has not been initialized yet.");
     }
     final BlockManager bm = fsn.getBlockManager();
-    
+
     HashSet<Node> excludes = new HashSet<Node>();
     if (excludeDatanodes != null) {
       for (String host : StringUtils
@@ -303,7 +303,7 @@ public class NamenodeWebHdfsMethods {
     }
 
     if (op == PutOpParam.Op.CREATE) {
-      //choose a datanode near to client 
+      //choose a datanode near to client
       final DatanodeDescriptor clientNode = bm.getDatanodeManager(
           ).getDatanodeByHost(remoteAddr);
       if (clientNode != null) {
@@ -316,7 +316,7 @@ public class NamenodeWebHdfsMethods {
     } else if (op == GetOpParam.Op.OPEN
         || op == GetOpParam.Op.GETFILECHECKSUM
         || op == PostOpParam.Op.APPEND) {
-      //choose a datanode containing a replica 
+      //choose a datanode containing a replica
       final NamenodeProtocols np = getRPCServer(namenode);
       if (status == null) {
         throw new FileNotFoundException("File " + path + " not found.");
@@ -599,13 +599,13 @@ public class NamenodeWebHdfsMethods {
           final CreateParentParam createParent,
       @QueryParam(TokenArgumentParam.NAME) @DefaultValue(TokenArgumentParam.DEFAULT)
           final TokenArgumentParam delegationTokenArgument,
-      @QueryParam(AclPermissionParam.NAME) @DefaultValue(AclPermissionParam.DEFAULT) 
+      @QueryParam(AclPermissionParam.NAME) @DefaultValue(AclPermissionParam.DEFAULT)
           final AclPermissionParam aclPermission,
-      @QueryParam(XAttrNameParam.NAME) @DefaultValue(XAttrNameParam.DEFAULT) 
+      @QueryParam(XAttrNameParam.NAME) @DefaultValue(XAttrNameParam.DEFAULT)
           final XAttrNameParam xattrName,
-      @QueryParam(XAttrValueParam.NAME) @DefaultValue(XAttrValueParam.DEFAULT) 
+      @QueryParam(XAttrValueParam.NAME) @DefaultValue(XAttrValueParam.DEFAULT)
           final XAttrValueParam xattrValue,
-      @QueryParam(XAttrSetFlagParam.NAME) @DefaultValue(XAttrSetFlagParam.DEFAULT) 
+      @QueryParam(XAttrSetFlagParam.NAME) @DefaultValue(XAttrSetFlagParam.DEFAULT)
           final XAttrSetFlagParam xattrSetFlag,
       @QueryParam(SnapshotNameParam.NAME) @DefaultValue(SnapshotNameParam.DEFAULT)
           final SnapshotNameParam snapshotName,
@@ -1085,9 +1085,9 @@ public class NamenodeWebHdfsMethods {
           final RenewerParam renewer,
       @QueryParam(BufferSizeParam.NAME) @DefaultValue(BufferSizeParam.DEFAULT)
           final BufferSizeParam bufferSize,
-      @QueryParam(XAttrNameParam.NAME) @DefaultValue(XAttrNameParam.DEFAULT) 
+      @QueryParam(XAttrNameParam.NAME) @DefaultValue(XAttrNameParam.DEFAULT)
           final List<XAttrNameParam> xattrNames,
-      @QueryParam(XAttrEncodingParam.NAME) @DefaultValue(XAttrEncodingParam.DEFAULT) 
+      @QueryParam(XAttrEncodingParam.NAME) @DefaultValue(XAttrEncodingParam.DEFAULT)
           final XAttrEncodingParam xattrEncoding,
       @QueryParam(ExcludeDatanodesParam.NAME) @DefaultValue(ExcludeDatanodesParam.DEFAULT)
           final ExcludeDatanodesParam excludeDatanodes,
@@ -1398,7 +1398,7 @@ public class NamenodeWebHdfsMethods {
     }
     return listing;
   }
-  
+
   private static StreamingOutput getListingStream(final ClientProtocol cp,
       final String p) throws IOException {
     // allows exceptions like FNF or ACE to prevent http response of 200 for
@@ -1445,7 +1445,7 @@ public class NamenodeWebHdfsMethods {
         } catch (InterruptedException e) {
           throw new IOException(e);
         }
-        
+
         out.println();
         out.println("]}}");
         out.flush();

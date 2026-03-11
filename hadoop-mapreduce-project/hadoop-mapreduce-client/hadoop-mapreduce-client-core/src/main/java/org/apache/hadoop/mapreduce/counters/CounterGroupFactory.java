@@ -21,7 +21,7 @@ package org.apache.hadoop.mapreduce.counters;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 
 import org.apache.hadoop.classification.InterfaceAudience;

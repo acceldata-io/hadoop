@@ -47,7 +47,7 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Test;
 
 import java.util.function.Supplier;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Test when RBW block is removed. Invalidation of the corrupted block happens
@@ -56,7 +56,7 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 public class TestRBWBlockInvalidation {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestRBWBlockInvalidation.class);
-  
+
   private static NumberReplicas countReplicas(final FSNamesystem namesystem,
       ExtendedBlock block) {
     final BlockManager blockManager = namesystem.getBlockManager();
@@ -102,7 +102,7 @@ public class TestRBWBlockInvalidation {
       replica.deleteMeta();
 
       out.close();
-      
+
       int liveReplicas = 0;
       while (true) {
         if ((liveReplicas = countReplicas(namesystem, blk).liveReplicas()) < 2) {
@@ -114,7 +114,7 @@ public class TestRBWBlockInvalidation {
       }
       assertEquals("There should be less than 2 replicas in the "
           + "liveReplicasMap", 1, liveReplicas);
-      
+
       while (true) {
         if ((liveReplicas =
               countReplicas(namesystem, blk).liveReplicas()) > 1) {
@@ -140,7 +140,7 @@ public class TestRBWBlockInvalidation {
       cluster.shutdown();
     }
   }
-  
+
   /**
    * Regression test for HDFS-4799, a case where, upon restart, if there
    * were RWR replicas with out-of-date genstamps, the NN could accidentally
@@ -156,7 +156,7 @@ public class TestRBWBlockInvalidation {
     // to what is seen in real clusters (nodes have random amounts of free
     // space)
     conf.setClass(DFSConfigKeys.DFS_BLOCK_REPLICATOR_CLASSNAME_KEY,
-        RandomDeleterPolicy.class, BlockPlacementPolicy.class); 
+        RandomDeleterPolicy.class, BlockPlacementPolicy.class);
 
     // Speed up the test a bit with faster heartbeats.
     conf.setInt(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
@@ -168,7 +168,7 @@ public class TestRBWBlockInvalidation {
     for (int i = 0; i < numFiles; i++) {
       testPaths.add(new Path("/test" + i));
     }
-    
+
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2)
         .build();
     try {
@@ -216,7 +216,7 @@ public class TestRBWBlockInvalidation {
         LOG.info("=========================== restarting cluster");
         DataNodeProperties otherNode = cluster.stopDataNode(0);
         cluster.restartNameNode();
-        
+
         // Restart the datanode with the corrupt replica first.
         cluster.restartDataNode(oldGenstampNode);
         cluster.waitActive();
@@ -224,7 +224,7 @@ public class TestRBWBlockInvalidation {
         // Then the other node
         cluster.restartDataNode(otherNode);
         cluster.waitActive();
-        
+
         // Compute and send invalidations, waiting until they're fully processed.
         cluster.getNameNode().getNamesystem().getBlockManager()
           .computeInvalidateWork(2);

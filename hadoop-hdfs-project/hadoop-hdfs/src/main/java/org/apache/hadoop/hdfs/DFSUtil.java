@@ -105,20 +105,20 @@ import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.ToolRunner;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Sets;
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 
 @InterfaceAudience.Private
 public class DFSUtil {
   public static final Logger LOG =
       LoggerFactory.getLogger(DFSUtil.class.getName());
-  
+
   private DFSUtil() { /* Hidden constructor */ }
-  
+
   private static final ThreadLocal<SecureRandom> SECURE_RANDOM = new ThreadLocal<SecureRandom>() {
     @Override
     protected SecureRandom initialValue() {
@@ -162,7 +162,7 @@ public class DFSUtil {
    * Order: live {@literal ->} slow {@literal ->} stale {@literal ->}
    * entering_maintenance {@literal ->} decommissioned
    */
-  @InterfaceAudience.Private 
+  @InterfaceAudience.Private
   public static class StaleAndSlowComparator extends ServiceComparator {
     private final boolean avoidStaleDataNodesForRead;
     private final long staleInterval;
@@ -215,8 +215,8 @@ public class DFSUtil {
       }
       return ret;
     }
-  }    
-    
+  }
+
   /**
    * Address matcher for matching an address to local address
    */
@@ -226,9 +226,9 @@ public class DFSUtil {
       return NetUtils.isLocalAddress(s.getAddress());
     };
   };
-  
+
   /**
-   * Whether the pathname is valid.  Currently prohibits relative paths, 
+   * Whether the pathname is valid.  Currently prohibits relative paths,
    * names which contain a ":" or "//", or other non-canonical paths.
    */
   public static boolean isValidName(String src) {
@@ -243,7 +243,7 @@ public class DFSUtil {
    * The primary use of this method is for validating paths when loading the
    * FSImage. During normal NN operation, paths are sometimes allowed to
    * contain reserved components.
-   * 
+   *
    * @return If component is valid
    */
   public static boolean isValidNameForComponent(String component) {
@@ -259,7 +259,7 @@ public class DFSUtil {
 
   /**
    * Returns if the component is reserved.
-   * 
+   *
    * <p>
    * Note that some components are only reserved under certain directories, e.g.
    * "/.reserved" is reserved, while "/hadoop/.reserved" is not.
@@ -280,11 +280,11 @@ public class DFSUtil {
   public static String bytes2String(byte[] bytes) {
     return bytes2String(bytes, 0, bytes.length);
   }
-  
+
   /**
    * Decode a specific range of bytes of the given byte array to a string
    * using UTF8.
-   * 
+   *
    * @param bytes The bytes to be decoded into characters
    * @param offset The index of the first byte to decode
    * @param length The number of bytes to decode
@@ -346,7 +346,7 @@ public class DFSUtil {
 
   /**
    * Converts a list of path components into a path using Path.SEPARATOR.
-   * 
+   *
    * @param components Path components
    * @return Combined path as a UTF-8 string
    */
@@ -412,7 +412,7 @@ public class DFSUtil {
 
   /**
    * Get all of the RPC addresses of the individual NNs in a given nameservice.
-   * 
+   *
    * @param conf Configuration
    * @param nsId the nameservice whose NNs addresses we want.
    * @param defaultValue default address to return in case key is not found.
@@ -533,9 +533,9 @@ public class DFSUtil {
   }
 
   /**
-   * Returns list of InetSocketAddress corresponding to  backup node rpc 
+   * Returns list of InetSocketAddress corresponding to  backup node rpc
    * addresses from the configuration.
-   * 
+   *
    * @param conf configuration
    * @return list of InetSocketAddresses
    * @throws IOException on error
@@ -554,7 +554,7 @@ public class DFSUtil {
   /**
    * Returns list of InetSocketAddresses of corresponding to secondary namenode
    * http addresses from the configuration.
-   * 
+   *
    * @param conf configuration
    * @return list of InetSocketAddresses
    * @throws IOException on error
@@ -573,11 +573,11 @@ public class DFSUtil {
   /**
    * Returns list of InetSocketAddresses corresponding to namenodes from the
    * configuration.
-   * 
+   *
    * Returns namenode address specifically configured for datanodes (using
    * service ports), if found. If not, regular RPC address configured for other
    * clients is returned.
-   * 
+   *
    * @param conf configuration
    * @return list of InetSocketAddress
    * @throws IOException on error
@@ -592,14 +592,14 @@ public class DFSUtil {
     } catch (IllegalArgumentException e) {
       defaultAddress = null;
     }
-    
+
     Map<String, Map<String, InetSocketAddress>> addressList =
       DFSUtilClient.getAddresses(conf, defaultAddress,
                                  DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,
                                  DFS_NAMENODE_RPC_ADDRESS_KEY);
     if (addressList.isEmpty()) {
       throw new IOException("Incorrect configuration: namenode address "
-          + DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY + " or "  
+          + DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY + " or "
           + DFS_NAMENODE_RPC_ADDRESS_KEY
           + " is not configured.");
     }
@@ -726,7 +726,7 @@ public class DFSUtil {
   public static List<ConfiguredNNAddress> flattenAddressMap(
       Map<String, Map<String, InetSocketAddress>> map) {
     List<ConfiguredNNAddress> ret = Lists.newArrayList();
-    
+
     for (Map.Entry<String, Map<String, InetSocketAddress>> entry :
       map.entrySet()) {
       String nsId = entry.getKey();
@@ -734,7 +734,7 @@ public class DFSUtil {
       for (Map.Entry<String, InetSocketAddress> e2 : nnMap.entrySet()) {
         String nnId = e2.getKey();
         InetSocketAddress addr = e2.getValue();
-        
+
         ret.add(new ConfiguredNNAddress(nsId, nnId, addr));
       }
     }
@@ -761,7 +761,7 @@ public class DFSUtil {
     }
     return b.toString();
   }
-  
+
   public static String nnAddressesAsString(Configuration conf) {
     Map<String, Map<String, InetSocketAddress>> addresses =
         DFSUtilClient.getHaNnRpcAddresses(conf);
@@ -794,7 +794,7 @@ public class DFSUtil {
     public InetSocketAddress getAddress() {
       return addr;
     }
-    
+
     @Override
     public String toString() {
       return "ConfiguredNNAddress[nsId=" + nameserviceId + ";" +
@@ -816,7 +816,7 @@ public class DFSUtil {
    * Otherwise, a URI corresponding to an RPC address of the single NN for that
    * nameservice is returned, preferring the service RPC address over the
    * client RPC address.
-   * 
+   *
    * @param conf configuration
    * @return a collection of all configured NN URIs, preferring service
    *         addresses
@@ -833,7 +833,7 @@ public class DFSUtil {
    * URIs, then the logical URI of the nameservice is returned.
    * Otherwise, a URI corresponding to the address of the single NN for that
    * nameservice is returned.
-   * 
+   *
    * @param conf configuration
    * @param keys configuration keys to try in order to get the URI for non-HA
    *        nameservices
@@ -842,14 +842,14 @@ public class DFSUtil {
   static Collection<URI> getNameServiceUris(Configuration conf,
       Collection<String> nameServices, String... keys) {
     Set<URI> ret = new HashSet<URI>();
-    
+
     // We're passed multiple possible configuration keys for any given NN or HA
     // nameservice, and search the config in order of these keys. In order to
     // make sure that a later config lookup (e.g. fs.defaultFS) doesn't add a
     // URI for a config key for which we've already found a preferred entry, we
     // keep track of non-preferred keys here.
     Set<URI> nonPreferredUris = new HashSet<URI>();
-    
+
     for (String nsId : nameServices) {
       URI nsUri = createUri(HdfsConstants.HDFS_URI_SCHEME, nsId, -1);
       /**
@@ -885,7 +885,7 @@ public class DFSUtil {
         }
       }
     }
-    
+
     // Add the generic configuration keys.
     boolean uriFound = false;
     for (String key : keys) {
@@ -927,18 +927,18 @@ public class DFSUtil {
         }
       }
     }
-    
+
     return ret;
   }
 
   /**
    * Given the InetSocketAddress this method returns the nameservice Id
-   * corresponding to the key with matching address, by doing a reverse 
+   * corresponding to the key with matching address, by doing a reverse
    * lookup on the list of nameservices until it finds a match.
-   * 
+   *
    * Since the process of resolving URIs to Addresses is slightly expensive,
    * this utility method should not be used in performance-critical routines.
-   * 
+   *
    * @param conf - configuration
    * @param address - InetSocketAddress for configured communication with NN.
    *     Configured addresses are typically given as URIs, but we may have to
@@ -952,13 +952,13 @@ public class DFSUtil {
    *     not the NameServiceId-suffixed keys.
    * @return nameserviceId, or null if no match found
    */
-  public static String getNameServiceIdFromAddress(final Configuration conf, 
+  public static String getNameServiceIdFromAddress(final Configuration conf,
       final InetSocketAddress address, String... keys) {
     // Configuration with a single namenode and no nameserviceId
     String[] ids = getSuffixIDs(conf, address, keys);
     return (ids != null) ? ids[0] : null;
   }
-  
+
   /**
    * return server http or https address from the configuration for a
    * given namenode rpc address.
@@ -966,13 +966,13 @@ public class DFSUtil {
    * @param conf configuration
    * @param scheme - the scheme (http / https)
    * @return server http or https address
-   * @throws IOException 
+   * @throws IOException
    */
   public static URI getInfoServer(InetSocketAddress namenodeAddr,
       Configuration conf, String scheme) throws IOException {
     String[] suffixes = null;
     if (namenodeAddr != null) {
-      // if non-default namenode, try reverse look up 
+      // if non-default namenode, try reverse look up
       // the nameServiceID if it is available
       suffixes = getSuffixIDs(conf, namenodeAddr,
           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,
@@ -1053,7 +1053,7 @@ public class DFSUtil {
       return configuredAddress;
     }
   }
-  
+
   private static String getSuffixedConf(Configuration conf,
       String key, String defaultVal, String[] suffixes) {
     String ret = conf.get(DFSUtil.addKeySuffixes(key, suffixes));
@@ -1062,15 +1062,15 @@ public class DFSUtil {
     }
     return conf.get(key, defaultVal);
   }
-  
+
   /**
    * Sets the node specific setting into generic configuration key. Looks up
-   * value of "key.nameserviceId.namenodeId" and if found sets that value into 
+   * value of "key.nameserviceId.namenodeId" and if found sets that value into
    * generic key in the conf. If this is not found, falls back to
    * "key.nameserviceId" and then the unmodified key.
    *
    * Note that this only modifies the runtime conf.
-   * 
+   *
    * @param conf
    *          Configuration object to lookup specific key and to set the value
    *          to the key passed. Note the conf object is modified.
@@ -1114,7 +1114,7 @@ public class DFSUtil {
   public static String getNamenodeNameServiceId(Configuration conf) {
     return getNameServiceId(conf, DFS_NAMENODE_RPC_ADDRESS_KEY);
   }
-  
+
   /**
    * Get nameservice Id for the BackupNode based on backup node RPC address
    * matching the local node address.
@@ -1122,7 +1122,7 @@ public class DFSUtil {
   public static String getBackupNameServiceId(Configuration conf) {
     return getNameServiceId(conf, DFS_NAMENODE_BACKUP_ADDRESS_KEY);
   }
-  
+
   /**
    * Get nameservice Id for the secondary node based on secondary http address
    * matching the local node address.
@@ -1130,17 +1130,17 @@ public class DFSUtil {
   public static String getSecondaryNameServiceId(Configuration conf) {
     return getNameServiceId(conf, DFS_NAMENODE_SECONDARY_HTTP_ADDRESS_KEY);
   }
-  
+
   /**
    * Get the nameservice Id by matching the {@code addressKey} with the
-   * the address of the local node. 
-   * 
+   * the address of the local node.
+   *
    * If {@link DFSConfigKeys#DFS_NAMESERVICE_ID} is not specifically
-   * configured, and more than one nameservice Id is configured, this method 
+   * configured, and more than one nameservice Id is configured, this method
    * determines the nameservice Id by matching the local node's address with the
    * configured addresses. When a match is found, it returns the nameservice Id
    * from the corresponding configuration key.
-   * 
+   *
    * @param conf Configuration
    * @param addressKey configuration key to get the address.
    * @return nameservice Id on success, null if federation is not configured.
@@ -1156,7 +1156,7 @@ public class DFSUtil {
       return nsIds.toArray(new String[1])[0];
     }
     String nnId = conf.get(DFS_HA_NAMENODE_ID_KEY);
-    
+
     return getSuffixIDs(conf, addressKey, null, nnId, LOCAL_ADDRESS_MATCHER)[0];
   }
 
@@ -1198,7 +1198,7 @@ public class DFSUtil {
   /**
    * Returns nameservice Id and namenode Id when the local host matches the
    * configuration parameter {@code addressKey}.<nameservice Id>.<namenode Id>
-   * 
+   *
    * @param conf Configuration
    * @param addressKey configuration key corresponding to the address.
    * @param knownNsId only look at configs for the given nameservice, if not-null
@@ -1216,13 +1216,13 @@ public class DFSUtil {
     String nameserviceId = null;
     String namenodeId = null;
     int found = 0;
-    
+
     Collection<String> nsIds = DFSUtilClient.getNameServiceIds(conf);
     for (String nsId : DFSUtilClient.emptyAsSingletonNull(nsIds)) {
       if (knownNsId != null && !knownNsId.equals(nsId)) {
         continue;
       }
-      
+
       Collection<String> nnIds = DFSUtilClient.getNameNodeIds(conf, nsId);
       for (String nnId : DFSUtilClient.emptyAsSingletonNull(nnIds)) {
         if (LOG.isTraceEnabled()) {
@@ -1260,7 +1260,7 @@ public class DFSUtil {
     }
     return new String[] { nameserviceId, namenodeId };
   }
-  
+
   /**
    * For given set of {@code keys} adds nameservice Id and or namenode Id
    * and returns {nameserviceId, namenodeId} when address match is found.
@@ -1272,9 +1272,9 @@ public class DFSUtil {
      @Override
       public boolean match(InetSocketAddress s) {
         return address.equals(s);
-      } 
+      }
     };
-    
+
     for (String key : keys) {
       String[] ids = getSuffixIDs(conf, key, null, null, matcher);
       if (ids != null && (ids [0] != null || ids[1] != null)) {
@@ -1283,7 +1283,7 @@ public class DFSUtil {
     }
     return null;
   }
-  
+
   private interface AddressMatcher {
     public boolean match(InetSocketAddress s);
   }
@@ -1456,7 +1456,7 @@ public class DFSUtil {
       return null;
     }
   }
-  
+
   public static final Options helpOptions = new Options();
   public static final Option helpOpt = new Option("h", "help", false,
       "get help information");
@@ -1467,11 +1467,11 @@ public class DFSUtil {
 
   /**
    * Parse the arguments for commands
-   * 
+   *
    * @param args the argument to be parsed
    * @param helpDescription help information to be printed out
    * @param out Printer
-   * @param printGenericCommandUsage whether to print the 
+   * @param printGenericCommandUsage whether to print the
    *              generic command usage defined in ToolRunner
    * @return true when the argument matches help option, false if not
    */
@@ -1496,10 +1496,10 @@ public class DFSUtil {
     }
     return false;
   }
-  
+
   /**
    * Get DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION from configuration.
-   * 
+   *
    * @param conf Configuration
    * @return Value of DFS_NAMENODE_INVALIDATE_WORK_PCT_PER_ITERATION
    */
@@ -1519,7 +1519,7 @@ public class DFSUtil {
   /**
    * Get DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION from
    * configuration.
-   * 
+   *
    * @param conf Configuration
    * @return Value of DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION
    */
@@ -1537,14 +1537,14 @@ public class DFSUtil {
 
   /**
    * Get SPNEGO keytab Key from configuration
-   * 
+   *
    * @param conf Configuration
    * @param defaultKey default key to be used for config lookup
    * @return DFS_WEB_AUTHENTICATION_KERBEROS_KEYTAB_KEY if the key is not empty
    *         else return defaultKey
    */
   public static String getSpnegoKeytabKey(Configuration conf, String defaultKey) {
-    String value = 
+    String value =
         conf.get(DFSConfigKeys.DFS_WEB_AUTHENTICATION_KERBEROS_KEYTAB_KEY);
     return (value == null || value.isEmpty()) ?
         defaultKey : DFSConfigKeys.DFS_WEB_AUTHENTICATION_KERBEROS_KEYTAB_KEY;
@@ -1760,14 +1760,14 @@ public class DFSUtil {
    * Assert that all objects in the collection are equal. Returns silently if
    * so, throws an AssertionError if any object is not equal. All null values
    * are considered equal.
-   * 
+   *
    * @param objects the collection of objects to check for equality.
    */
   public static void assertAllResultsEqual(Collection<?> objects)
       throws AssertionError {
     if (objects.size() == 0 || objects.size() == 1)
       return;
-    
+
     Object[] resultsArray = objects.toArray();
     for (int i = 1; i < resultsArray.length; i++) {
       Object currElement = resultsArray[i];

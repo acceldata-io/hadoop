@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.thirdparty.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -589,7 +589,7 @@ public class EncryptionZoneManager {
     int count = 0;
     for (EncryptionZoneInt ezi : tailMap.values()) {
       /*
-       Skip EZs that are only present in snapshots. Re-resolve the path to 
+       Skip EZs that are only present in snapshots. Re-resolve the path to
        see if the path's current inode ID matches EZ map's INode ID.
 
        INode#getFullPathName simply calls getParent recursively, so will return

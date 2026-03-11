@@ -18,8 +18,8 @@
 package org.apache.hadoop.yarn.service.webapp;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

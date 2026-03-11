@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Throwables;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;

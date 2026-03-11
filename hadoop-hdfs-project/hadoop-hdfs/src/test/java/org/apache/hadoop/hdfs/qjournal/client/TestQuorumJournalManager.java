@@ -69,7 +69,7 @@ import org.junit.rules.TestName;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Stubber;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Functional tests for QuorumJournalManager.
@@ -78,14 +78,14 @@ import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 public class TestQuorumJournalManager {
   private static final Logger LOG = LoggerFactory.getLogger(
       TestQuorumJournalManager.class);
-  
+
   private MiniJournalCluster cluster;
   private Configuration conf;
   private QuorumJournalManager qjm;
   private List<AsyncLogger> spies;
 
   private final List<QuorumJournalManager> toClose = Lists.newLinkedList();
-  
+
   static {
     GenericTestUtils.setLogLevel(ProtobufRpcEngine2.LOG, Level.ALL);
   }
@@ -105,12 +105,12 @@ public class TestQuorumJournalManager {
     conf.setInt(
         CommonConfigurationKeysPublic.IPC_CLIENT_CONNECTION_MAXIDLETIME_KEY, 0);
     conf.setBoolean(DFSConfigKeys.DFS_HA_TAILEDITS_INPROGRESS_KEY, true);
-    
+
     cluster = new MiniJournalCluster.Builder(conf)
         .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath())
         .build();
     cluster.waitActive();
-    
+
     qjm = createSpyingQJM();
     spies = qjm.getLoggerSetForTests().getLoggersForTests();
 
@@ -128,7 +128,7 @@ public class TestQuorumJournalManager {
     // (See HDFS-4643)
     // Wait for IPC clients to terminate to avoid flaky tests
     GenericTestUtils.waitForThreadTermination(".*IPC Client.*", 100, 1000);
-    
+
     if (cluster != null) {
       cluster.shutdown();
       cluster = null;
@@ -143,21 +143,21 @@ public class TestQuorumJournalManager {
     toClose.add(qjm);
     return qjm;
   }
-  
+
   @Test
   public void testSingleWriter() throws Exception {
     writeSegment(cluster, qjm, 1, 3, true);
-    
+
     // Should be finalized
     checkRecovery(cluster, 1, 3);
-    
+
     // Start a new segment
     writeSegment(cluster, qjm, 4, 1, true);
 
     // Should be finalized
     checkRecovery(cluster, 4, 4);
   }
-  
+
   @Test
   public void testFormat() throws Exception {
     QuorumJournalManager qjm = closeLater(new QuorumJournalManager(
@@ -166,7 +166,7 @@ public class TestQuorumJournalManager {
     qjm.format(FAKE_NSINFO, false);
     assertTrue(qjm.hasSomeData());
   }
-  
+
   @Test
   public void testReaderWhileAnotherWrites() throws Exception {
     QuorumJournalManager readerQjm = closeLater(createSpyingQJM());
@@ -182,14 +182,14 @@ public class TestQuorumJournalManager {
       EditLogInputStream stream = streams.get(0);
       assertEquals(1, stream.getFirstTxId());
       assertEquals(3, stream.getLastTxId());
-      
+
       verifyEdits(streams, 1, 3);
       assertNull(stream.readOp());
     } finally {
       IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       streams.clear();
     }
-    
+
     // Ensure correct results when there is a stream in-progress, but we don't
     // ask for in-progress.
     writeSegment(cluster, qjm, 4, 3, false);
@@ -204,12 +204,12 @@ public class TestQuorumJournalManager {
       IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       streams.clear();
     }
-    
+
     // TODO: check results for selectInputStreams with inProgressOK = true.
     // This doesn't currently work, due to a bug where RedundantEditInputStream
     // throws an exception if there are any unvalidated in-progress edits in the list!
     // But, it shouldn't be necessary for current use cases.
-    
+
     qjm.finalizeLogSegment(4, 6);
     readerQjm.selectInputStreams(streams, 0, false);
     try {
@@ -223,7 +223,7 @@ public class TestQuorumJournalManager {
       streams.clear();
     }
   }
-  
+
   /**
    * Regression test for HDFS-3725. One of the journal nodes is down
    * during the writing of one segment, then comes back up later to
@@ -241,7 +241,7 @@ public class TestQuorumJournalManager {
     writeSegment(cluster, qjm, 7, 3, true);
     waitForAllPendingCalls(qjm.getLoggerSetForTests());
     cluster.getJournalNode(1).stopAndJoin(0);
-    
+
     QuorumJournalManager readerQjm = createSpyingQJM();
     List<EditLogInputStream> streams = Lists.newArrayList();
     try {
@@ -252,7 +252,7 @@ public class TestQuorumJournalManager {
       readerQjm.close();
     }
   }
-  
+
   /**
    * Regression test for HDFS-3891: selectInputStreams should throw
    * an exception when a majority of journalnodes have crashed.
@@ -272,7 +272,7 @@ public class TestQuorumJournalManager {
       assertTrue(streams.isEmpty());
     }
   }
-  
+
   /**
    * Test the case where the NN crashes after starting a new segment
    * on all nodes, but before writing the first transaction to it.
@@ -281,7 +281,7 @@ public class TestQuorumJournalManager {
   public void testCrashAtBeginningOfSegment() throws Exception {
     writeSegment(cluster, qjm, 1, 3, true);
     waitForAllPendingCalls(qjm.getLoggerSetForTests());
-    
+
     EditLogOutputStream stm = qjm.startLogSegment(4,
         NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
     try {
@@ -289,8 +289,8 @@ public class TestQuorumJournalManager {
     } finally {
       stm.abort();
     }
-    
-    
+
+
     // Make a new QJM
     qjm = closeLater(new QuorumJournalManager(
         conf, cluster.getQuorumJournalURI(JID), FAKE_NSINFO));
@@ -299,12 +299,12 @@ public class TestQuorumJournalManager {
 
     writeSegment(cluster, qjm, 4, 3, true);
   }
-  
+
   @Test
   public void testOutOfSyncAtBeginningOfSegment0() throws Exception {
     doTestOutOfSyncAtBeginningOfSegment(0);
   }
-  
+
   @Test
   public void testOutOfSyncAtBeginningOfSegment1() throws Exception {
     doTestOutOfSyncAtBeginningOfSegment(1);
@@ -314,27 +314,27 @@ public class TestQuorumJournalManager {
   public void testOutOfSyncAtBeginningOfSegment2() throws Exception {
     doTestOutOfSyncAtBeginningOfSegment(2);
   }
-  
+
   /**
    * Test the case where, at the beginning of a segment, transactions
    * have been written to one JN but not others.
    */
   public void doTestOutOfSyncAtBeginningOfSegment(int nodeWithOneTxn)
       throws Exception {
-    
+
     int nodeWithEmptySegment = (nodeWithOneTxn + 1) % 3;
     int nodeMissingSegment = (nodeWithOneTxn + 2) % 3;
-    
+
     writeSegment(cluster, qjm, 1, 3, true);
     waitForAllPendingCalls(qjm.getLoggerSetForTests());
     cluster.getJournalNode(nodeMissingSegment).stopAndJoin(0);
-    
+
     // Open segment on 2/3 nodes
     EditLogOutputStream stm = qjm.startLogSegment(4,
         NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
     try {
       waitForAllPendingCalls(qjm.getLoggerSetForTests());
-      
+
       // Write transactions to only 1/3 nodes
       failLoggerAtTxn(spies.get(nodeWithEmptySegment), 4);
       try {
@@ -346,12 +346,12 @@ public class TestQuorumJournalManager {
     } finally {
       stm.abort();
     }
-    
+
     // Bring back the down JN.
     cluster.restartJournalNode(nodeMissingSegment);
-    
+
     // Make a new QJM. At this point, the state is as follows:
-    // A: nodeWithEmptySegment: 1-3 finalized, 4_inprogress (empty)    
+    // A: nodeWithEmptySegment: 1-3 finalized, 4_inprogress (empty)
     // B: nodeWithOneTxn:       1-3 finalized, 4_inprogress (1 txn)
     // C: nodeMissingSegment:   1-3 finalized
     GenericTestUtils.assertGlobEquals(
@@ -368,16 +368,16 @@ public class TestQuorumJournalManager {
         cluster.getCurrentDir(nodeMissingSegment, JID),
         "edits_.*",
         NNStorage.getFinalizedEditsFileName(1, 3));
-    
+
 
     // Stop one of the nodes. Since we run this test three
     // times, rotating the roles of the nodes, we'll test
     // all the permutations.
     cluster.getJournalNode(2).stopAndJoin(0);
-  
+
     qjm = createSpyingQJM();
     qjm.recoverUnfinalizedSegments();
-    
+
     if (nodeWithOneTxn == 0 ||
         nodeWithOneTxn == 1) {
       // If the node that had the transaction committed was one of the nodes
@@ -393,7 +393,7 @@ public class TestQuorumJournalManager {
     }
   }
 
-  
+
   /**
    * Test case where a new writer picks up from an old one with no failures
    * and the previous unfinalized segment entirely consistent -- i.e. all
@@ -411,7 +411,7 @@ public class TestQuorumJournalManager {
     qjm.recoverUnfinalizedSegments();
     checkRecovery(cluster, 1, 3);
   }
-  
+
   /**
    * Test case where a new writer picks up from an old one which crashed
    * with the three loggers at different txnids
@@ -440,11 +440,11 @@ public class TestQuorumJournalManager {
     doOutOfSyncTest(2, 4L);
   }
 
-  
+
   private void doOutOfSyncTest(int missingOnRecoveryIdx,
       long expectedRecoveryTxnId) throws Exception {
     setupLoggers345();
-    
+
     QJMTestUtil.assertExistsInQuorum(cluster,
         NNStorage.getInProgressEditsFileName(1));
 
@@ -453,40 +453,40 @@ public class TestQuorumJournalManager {
 
     // Make a new QJM
     qjm = createSpyingQJM();
-    
+
     qjm.recoverUnfinalizedSegments();
     checkRecovery(cluster, 1, expectedRecoveryTxnId);
   }
-  
-  
+
+
   private void failLoggerAtTxn(AsyncLogger spy, long txid) {
     TestQuorumJournalManagerUnit.futureThrows(new IOException("mock failure"))
       .when(spy).sendEdits(Mockito.anyLong(),
         Mockito.eq(txid), Mockito.eq(1), Mockito.<byte[]>any());
   }
-  
+
   /**
    * Test the case where one of the loggers misses a finalizeLogSegment()
    * call, and then misses the next startLogSegment() call before coming
    * back to life.
-   * 
+   *
    * Previously, this caused it to keep on writing to the old log segment,
    * such that one logger had eg edits_1-10 while the others had edits_1-5 and
    * edits_6-10. This caused recovery to fail in certain cases.
    */
   @Test
   public void testMissFinalizeAndNextStart() throws Exception {
-    
+
     // Logger 0: miss finalize(1-3) and start(4)
     futureThrows(new IOException("injected")).when(spies.get(0))
       .finalizeLogSegment(Mockito.eq(1L), Mockito.eq(3L));
     futureThrows(new IOException("injected")).when(spies.get(0))
         .startLogSegment(Mockito.eq(4L),
             Mockito.eq(NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION));
-    
+
     // Logger 1: fail at txn id 4
     failLoggerAtTxn(spies.get(1), 4L);
-    
+
     writeSegment(cluster, qjm, 1, 3, true);
     EditLogOutputStream stm = qjm.startLogSegment(4,
         NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
@@ -502,20 +502,20 @@ public class TestQuorumJournalManager {
       stm.abort();
       qjm.close();
     }
-    
+
     // State:
     // Logger 0: 1-3 in-progress (since it missed finalize)
     // Logger 1: 1-3 finalized
     // Logger 2: 1-3 finalized, 4 in-progress with one txn
-    
+
     // Shut down logger 2 so it doesn't participate in recovery
     cluster.getJournalNode(2).stopAndJoin(0);
-    
+
     qjm = createSpyingQJM();
     long recovered = QJMTestUtil.recoverAndReturnLastTxn(qjm);
     assertEquals(3L, recovered);
   }
-  
+
   /**
    * edit lengths [3,4,5]
    * first recovery:
@@ -550,38 +550,38 @@ public class TestQuorumJournalManager {
     } catch (IOException ioe) {
       GenericTestUtils.assertExceptionContains("injected", ioe);
     }
-    
+
     // Now bring back the logger that had 5, and run recovery again.
     // We should recover to 4, even though there's a longer log.
     cluster.getJournalNode(0).stopAndJoin(0);
     cluster.restartJournalNode(2);
-    
+
     qjm = createSpyingQJM();
     spies = qjm.getLoggerSetForTests().getLoggersForTests();
     qjm.recoverUnfinalizedSegments();
     checkRecovery(cluster, 1, 4);
   }
-  
+
   /**
    * Set up the loggers into the following state:
    * - JN0: edits 1-3 in progress
    * - JN1: edits 1-4 in progress
    * - JN2: edits 1-5 in progress
-   * 
+   *
    * None of the loggers have any associated paxos info.
    */
   private void setupLoggers345() throws Exception {
     EditLogOutputStream stm = qjm.startLogSegment(1,
         NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION);
-    
+
     failLoggerAtTxn(spies.get(0), 4);
     failLoggerAtTxn(spies.get(1), 5);
-    
+
     writeTxns(stm, 1, 3);
-    
+
     // This should succeed to 2/3 loggers
     writeTxns(stm, 4, 1);
-    
+
     // This should only succeed to 1 logger (index 2). Hence it should
     // fail
     try {
@@ -597,35 +597,35 @@ public class TestQuorumJournalManager {
   /**
    * Set up the following tricky edge case state which is used by
    * multiple tests:
-   * 
+   *
    * Initial writer:
    * - Writing to 3 JNs: JN0, JN1, JN2:
    * - A log segment with txnid 1 through 100 succeeds.
    * - The first transaction in the next segment only goes to JN0
    *   before the writer crashes (eg it is partitioned)
-   *   
+   *
    * Recovery by another writer:
    * - The new NN starts recovery and talks to all three. Thus, it sees
    *   that the newest log segment which needs recovery is 101.
    * - It sends the prepareRecovery(101) call, and decides that the
    *   recovery length for 101 is only the 1 transaction.
    * - It sends acceptRecovery(101-101) to only JN0, before crashing
-   * 
+   *
    * This yields the following state:
    * - JN0: 1-100 finalized, 101_inprogress, accepted recovery: 101-101
    * - JN1: 1-100 finalized, 101_inprogress.empty
    * - JN2: 1-100 finalized, 101_inprogress.empty
    *  (the .empty files got moved aside during recovery)
-   * @throws Exception 
+   * @throws Exception
    */
   private void setupEdgeCaseOneJnHasSegmentWithAcceptedRecovery() throws Exception {
-    // Log segment with txns 1-100 succeeds 
+    // Log segment with txns 1-100 succeeds
     writeSegment(cluster, qjm, 1, 100, true);
 
     // startLogSegment only makes it to one of the three nodes
     failLoggerAtTxn(spies.get(1), 101);
     failLoggerAtTxn(spies.get(2), 101);
-    
+
     try {
       writeSegment(cluster, qjm, 101, 1, true);
       fail("Should have failed");
@@ -634,7 +634,7 @@ public class TestQuorumJournalManager {
     } finally {
       qjm.close();
     }
-    
+
     // Recovery 1:
     // make acceptRecovery() only make it to the node which has txid 101
     // this should fail because only 1/3 accepted the recovery
@@ -644,7 +644,7 @@ public class TestQuorumJournalManager {
       .acceptRecovery(Mockito.<SegmentStateProto>any(), Mockito.<URL>any());
     futureThrows(new IOException("mock failure")).when(spies.get(2))
       .acceptRecovery(Mockito.<SegmentStateProto>any(), Mockito.<URL>any());
-    
+
     try {
       qjm.recoverUnfinalizedSegments();
       fail("Should have failed to recover");
@@ -653,7 +653,7 @@ public class TestQuorumJournalManager {
     } finally {
       qjm.close();
     }
-    
+
     // Check that we have entered the expected state as described in the
     // method javadoc.
     GenericTestUtils.assertGlobEquals(cluster.getCurrentDir(0, JID),
@@ -672,18 +672,18 @@ public class TestQuorumJournalManager {
     File paxos0 = new File(cluster.getCurrentDir(0, JID), "paxos");
     File paxos1 = new File(cluster.getCurrentDir(1, JID), "paxos");
     File paxos2 = new File(cluster.getCurrentDir(2, JID), "paxos");
-    
+
     GenericTestUtils.assertGlobEquals(paxos0, ".*", "101");
     GenericTestUtils.assertGlobEquals(paxos1, ".*");
     GenericTestUtils.assertGlobEquals(paxos2, ".*");
   }
-  
+
   /**
    * Test an edge case discovered by randomized testing.
-   * 
+   *
    * Starts with the edge case state set up by
    * {@link #setupEdgeCaseOneJnHasSegmentWithAcceptedRecovery()}
-   * 
+   *
    * Recovery 2:
    * - New NN starts recovery and only talks to JN1 and JN2. JN0 has
    *   crashed. Since they have no logs open, they say they don't need
@@ -698,7 +698,7 @@ public class TestQuorumJournalManager {
    *   "you should recover 101-101"
    * - Former incorrect behavior: NN truncates logs to txid 101 even though
    *   it should have recovered through 150.
-   *   
+   *
    * In this case, even though there is an accepted recovery decision,
    * the newer log segments should take precedence, since they were written
    * in a newer epoch than the recorded decision.
@@ -706,20 +706,20 @@ public class TestQuorumJournalManager {
   @Test
   public void testNewerVersionOfSegmentWins() throws Exception {
     setupEdgeCaseOneJnHasSegmentWithAcceptedRecovery();
-    
+
     // Now start writing again without JN0 present:
     cluster.getJournalNode(0).stopAndJoin(0);
-    
+
     qjm = createSpyingQJM();
     try {
       assertEquals(100, QJMTestUtil.recoverAndReturnLastTxn(qjm));
-      
+
       // Write segment but do not finalize
       writeSegment(cluster, qjm, 101, 50, false);
     } finally {
       qjm.close();
     }
-    
+
     // Now try to recover a new writer, with JN0 present,
     // and ensure that all of the above-written transactions are recovered.
     cluster.restartJournalNode(0);
@@ -730,13 +730,13 @@ public class TestQuorumJournalManager {
       qjm.close();
     }
   }
-  
+
   /**
    * Test another edge case discovered by randomized testing.
-   * 
+   *
    * Starts with the edge case state set up by
    * {@link #setupEdgeCaseOneJnHasSegmentWithAcceptedRecovery()}
-   * 
+   *
    * Recovery 2:
    * - New NN starts recovery and only talks to JN1 and JN2. JN0 has
    *   crashed. Since they have no logs open, they say they don't need
@@ -753,7 +753,7 @@ public class TestQuorumJournalManager {
    *   "you should recover 101-101"
    * - Former incorrect behavior: NN truncates logs to txid 101 even though
    *   it should have recovered through 150.
-   *   
+   *
    * In this case, even though there is an accepted recovery decision,
    * the newer log segments should take precedence, since they were written
    * in a newer epoch than the recorded decision.
@@ -764,7 +764,7 @@ public class TestQuorumJournalManager {
 
     // Recover without JN0 present.
     cluster.getJournalNode(0).stopAndJoin(0);
-    
+
     qjm = createSpyingQJM();
     try {
       assertEquals(100, QJMTestUtil.recoverAndReturnLastTxn(qjm));
@@ -772,20 +772,20 @@ public class TestQuorumJournalManager {
       // After recovery, JN0 comes back to life and JN1 crashes.
       cluster.restartJournalNode(0);
       cluster.getJournalNode(1).stopAndJoin(0);
-      
+
       // Write segment but do not finalize
       writeSegment(cluster, qjm, 101, 50, false);
     } finally {
       qjm.close();
     }
-    
+
     // State:
     // JN0: 1-100 finalized, 101_inprogress (txns up to 150)
     // Previously, JN0 had an accepted recovery 101-101 from an earlier recovery
     // attempt.
     // JN1: 1-100 finalized
     // JN2: 1-100 finalized, 101_inprogress (txns up to 150)
-    
+
     // We need to test that the accepted recovery 101-101 on JN0 doesn't
     // end up truncating the log back to 101.
 
@@ -799,7 +799,7 @@ public class TestQuorumJournalManager {
       qjm.close();
     }
   }
-  
+
   @Test(timeout=20000)
   public void testCrashBetweenSyncLogAndPersistPaxosData() throws Exception {
     JournalFaultInjector faultInjector =
@@ -811,34 +811,34 @@ public class TestQuorumJournalManager {
     // decides that the correct length is through txid 4.
     // Only allow it to call acceptRecovery() on JN0.
     qjm = createSpyingQJM();
-    spies = qjm.getLoggerSetForTests().getLoggersForTests();    
+    spies = qjm.getLoggerSetForTests().getLoggersForTests();
     cluster.getJournalNode(2).stopAndJoin(0);
     injectIOE().when(spies.get(1)).acceptRecovery(
         Mockito.<SegmentStateProto>any(), Mockito.<URL>any());
-    
+
     tryRecoveryExpectingFailure();
 
     cluster.restartJournalNode(2);
-    
+
     // State at this point:
     // JN0: edit log for 1-4, paxos recovery data for txid 4
     // JN1: edit log for 1-4,
     // JN2: edit log for 1-5
-    
+
     // Run recovery again, but don't allow JN0 to respond to the
     // prepareRecovery() call. This will cause recovery to decide
     // on txid 5.
     // Additionally, crash all of the nodes before they persist
     // any new paxos data.
     qjm = createSpyingQJM();
-    spies = qjm.getLoggerSetForTests().getLoggersForTests();    
+    spies = qjm.getLoggerSetForTests().getLoggersForTests();
     injectIOE().when(spies.get(0)).prepareRecovery(Mockito.eq(1L));
 
     Mockito.doThrow(new IOException("Injected")).when(faultInjector)
       .beforePersistPaxosData();
     tryRecoveryExpectingFailure();
     Mockito.reset(faultInjector);
-    
+
     // State at this point:
     // JN0: edit log for 1-5, paxos recovery data for txid 4
     // !!!   This is the interesting bit, above. The on-disk data and the
@@ -851,7 +851,7 @@ public class TestQuorumJournalManager {
     // than its accepted Paxos state.
 
     cluster.getJournalNode(2).stopAndJoin(0);
-    
+
     qjm = createSpyingQJM();
     try {
       long recovered = QJMTestUtil.recoverAndReturnLastTxn(qjm);
@@ -860,7 +860,7 @@ public class TestQuorumJournalManager {
       qjm.close();
     }
   }
-  
+
   private void tryRecoveryExpectingFailure() throws IOException {
     try {
       QJMTestUtil.recoverAndReturnLastTxn(qjm);
@@ -872,7 +872,7 @@ public class TestQuorumJournalManager {
     }
 
   }
-  
+
   private Stubber injectIOE() {
     return futureThrows(new IOException("Injected"));
   }
@@ -895,43 +895,43 @@ public class TestQuorumJournalManager {
     // Create new files in the paxos directory, which should get purged too.
     assertTrue(new File(paxosDir, "1").createNewFile());
     assertTrue(new File(paxosDir, "3").createNewFile());
-    
+
     GenericTestUtils.assertGlobEquals(paxosDir, "\\d+",
         "1", "3");
-    
+
     // Create some temporary files of the sort that are used during recovery.
     assertTrue(new File(curDir,
         "edits_inprogress_0000000000000000001.epoch=140").createNewFile());
     assertTrue(new File(curDir,
         "edits_inprogress_0000000000000000002.empty").createNewFile());
-    
+
     qjm.purgeLogsOlderThan(3);
-    
+
     // Log purging is asynchronous, so we have to wait for the calls
     // to be sent and respond before verifying.
     waitForAllPendingCalls(qjm.getLoggerSetForTests());
-    
+
     // Older edits should be purged
     GenericTestUtils.assertGlobEquals(curDir, "edits_.*",
         NNStorage.getFinalizedEditsFileName(3, 3),
         NNStorage.getFinalizedEditsFileName(4, 4),
         NNStorage.getFinalizedEditsFileName(5, 5));
-   
+
     // Older paxos files should be purged
     GenericTestUtils.assertGlobEquals(paxosDir, "\\d+",
         "3");
   }
-  
+
   @Test
   public void testToString() throws Exception {
     GenericTestUtils.assertMatches(
         qjm.toString(),
         "QJM to \\[127.0.0.1:\\d+, 127.0.0.1:\\d+, 127.0.0.1:\\d+\\]");
   }
-  
+
   @Test
   public void testSelectInputStreamsNotOnBoundary() throws Exception {
-    final int txIdsPerSegment = 10; 
+    final int txIdsPerSegment = 10;
     for (int txid = 1; txid <= 5 * txIdsPerSegment; txid += txIdsPerSegment) {
       writeSegment(cluster, qjm, txid, txIdsPerSegment, true);
     }
@@ -942,10 +942,10 @@ public class TestQuorumJournalManager {
         NNStorage.getFinalizedEditsFileName(21, 30),
         NNStorage.getFinalizedEditsFileName(31, 40),
         NNStorage.getFinalizedEditsFileName(41, 50));
-    
+
     ArrayList<EditLogInputStream> streams = new ArrayList<EditLogInputStream>();
     qjm.selectInputStreams(streams, 25, false);
-    
+
     verifyEdits(streams, 25, 50);
   }
 
@@ -1123,7 +1123,7 @@ public class TestQuorumJournalManager {
       Mockito.verify(logger, Mockito.times(1)).getEditLogManifest(1, true);
     }
   }
-  
+
   private QuorumJournalManager createSpyingQJM()
       throws IOException, URISyntaxException {
     AsyncLogger.Factory spyFactory = new AsyncLogger.Factory() {
@@ -1138,7 +1138,7 @@ public class TestQuorumJournalManager {
             return new DirectExecutorService();
           }
         };
-        
+
         return Mockito.spy(logger);
       }
     };
@@ -1170,9 +1170,9 @@ public class TestQuorumJournalManager {
           fail("File " + elf + " finalized to wrong txid, expected " +
               expectedEndTxId);
         }
-      }      
+      }
     }
-    
+
     if (numFinalized < cluster.getQuorumSize()) {
       fail("Did not find a quorum of finalized logs starting at " +
           segmentTxId);

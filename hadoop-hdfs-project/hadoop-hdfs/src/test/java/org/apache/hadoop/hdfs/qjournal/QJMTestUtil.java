@@ -42,7 +42,7 @@ import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.IOUtils;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 public abstract class QJMTestUtil {
   public static final NamespaceInfo FAKE_NSINFO = new NamespaceInfo(
@@ -52,13 +52,13 @@ public abstract class QJMTestUtil {
   public static byte[] createTxnData(int startTxn, int numTxns) throws Exception {
     DataOutputBuffer buf = new DataOutputBuffer();
     FSEditLogOp.Writer writer = new FSEditLogOp.Writer(buf);
-    
+
     for (long txid = startTxn; txid < startTxn + numTxns; txid++) {
       FSEditLogOp op = NameNodeAdapter.createMkdirOp("tx " + txid);
       op.setTransactionId(txid);
       writer.writeOp(op, FAKE_NSINFO.getLayoutVersion());
     }
-    
+
     return Arrays.copyOf(buf.getData(), buf.getLength());
   }
 
@@ -86,7 +86,7 @@ public abstract class QJMTestUtil {
     // Should create in-progress
     assertExistsInQuorum(cluster,
         NNStorage.getInProgressEditsFileName(startTxId));
-    
+
     writeTxns(stm, startTxId, numTxns);
     if (finalize) {
       stm.close();
@@ -111,22 +111,22 @@ public abstract class QJMTestUtil {
     stm.setReadyToFlush();
     stm.flush();
   }
-  
+
   /**
    * Verify that the given list of streams contains exactly the range of
    * transactions specified, inclusive.
    */
   public static void verifyEdits(List<EditLogInputStream> streams,
       int firstTxnId, int lastTxnId) throws IOException {
-    
+
     Iterator<EditLogInputStream> iter = streams.iterator();
     assertTrue(iter.hasNext());
     EditLogInputStream stream = iter.next();
-    
+
     for (int expected = firstTxnId;
         expected <= lastTxnId;
         expected++) {
-      
+
       FSEditLogOp op = stream.readOp();
       while (op == null) {
         assertTrue("Expected to find txid " + expected + ", " +
@@ -135,16 +135,16 @@ public abstract class QJMTestUtil {
         stream = iter.next();
         op = stream.readOp();
       }
-      
+
       assertEquals(FSEditLogOpCodes.OP_MKDIR, op.opCode);
       assertEquals(expected, op.getTransactionId());
     }
-    
+
     assertNull(stream.readOp());
     assertFalse("Expected no more txns after " + lastTxnId +
         " but more streams are available", iter.hasNext());
   }
-  
+
 
   public static void assertExistsInQuorum(MiniJournalCluster cluster,
       String fname) {
@@ -167,7 +167,7 @@ public abstract class QJMTestUtil {
     List<EditLogInputStream> streams = Lists.newArrayList();
     try {
       qjm.selectInputStreams(streams, 0, false);
-      
+
       for (EditLogInputStream elis : streams) {
         assertTrue(elis.getFirstTxId() > lastRecoveredTxn);
         lastRecoveredTxn = elis.getLastTxId();

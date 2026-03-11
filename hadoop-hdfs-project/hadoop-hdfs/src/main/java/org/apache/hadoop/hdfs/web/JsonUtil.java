@@ -40,7 +40,7 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import java.io.IOException;
 import java.util.*;

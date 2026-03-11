@@ -38,8 +38,6 @@ import org.apache.hadoop.fs.Path;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.touch;
 import static org.apache.hadoop.fs.s3a.Constants.*;
-import static org.apache.hadoop.fs.s3a.Constants.S3EXPRESS_CREATE_SESSION;
-import static org.apache.hadoop.fs.s3a.S3ATestUtils.disableCreateSession;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.disableFilesystemCaching;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.removeBaseAndBucketOverrides;
 import static org.apache.hadoop.fs.s3a.auth.RoleModel.*;
@@ -157,16 +155,13 @@ public final class RoleTestUtils {
         DELEGATION_TOKEN_BINDING,
         ASSUMED_ROLE_ARN,
         AWS_CREDENTIALS_PROVIDER,
-        ASSUMED_ROLE_SESSION_DURATION,
-        S3EXPRESS_CREATE_SESSION);
-
+        ASSUMED_ROLE_SESSION_DURATION);
     conf.set(AWS_CREDENTIALS_PROVIDER, AssumedRoleCredentialProvider.NAME);
     conf.set(ASSUMED_ROLE_ARN, roleARN);
     conf.set(ASSUMED_ROLE_SESSION_NAME, "test");
     conf.set(ASSUMED_ROLE_SESSION_DURATION, "15m");
-    // disable bucket resolution during startup as s3 express doesn't like it
-    conf.setInt(S3A_BUCKET_PROBE, 0);
-    disableCreateSession(conf);
+    // force in bucket resolution during startup
+    conf.setInt(S3A_BUCKET_PROBE, 1);
     disableFilesystemCaching(conf);
     return conf;
   }

@@ -30,7 +30,7 @@ import org.apache.hadoop.yarn.api.records.NodeLabel;
 import org.junit.Assert;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 
 public class NodeLabelTestBase {
   public static void assertMapEquals(Map<NodeId, Set<String>> expected,

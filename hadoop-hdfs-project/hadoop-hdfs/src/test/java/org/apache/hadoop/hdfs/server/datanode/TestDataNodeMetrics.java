@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 
 import java.util.function.Supplier;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
@@ -79,7 +79,7 @@ public class TestDataNodeMetrics {
     MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build();
     try {
       FileSystem fs = cluster.getFileSystem();
-      final long LONG_FILE_LEN = Integer.MAX_VALUE+1L; 
+      final long LONG_FILE_LEN = Integer.MAX_VALUE+1L;
       DFSTestUtil.createFile(fs, new Path("/tmp.txt"),
           LONG_FILE_LEN, (short)1, 1L);
       List<DataNode> datanodes = cluster.getDataNodes();
@@ -144,7 +144,7 @@ public class TestDataNodeMetrics {
       List<DataNode> datanodes = cluster.getDataNodes();
       DataNode datanode = datanodes.get(0);
       MetricsRecordBuilder dnMetrics = getMetrics(datanode.getMetrics().name());
-      // Expect two flushes, 1 for the flush that occurs after writing, 
+      // Expect two flushes, 1 for the flush that occurs after writing,
       // 1 that occurs on closing the data and metadata files.
       assertCounter("FlushNanosNumOps", 2L, dnMetrics);
       // Expect two syncs, one from the hsync, one on close.
@@ -161,8 +161,8 @@ public class TestDataNodeMetrics {
   }
 
   /**
-   * Tests that round-trip acks in a datanode write pipeline are correctly 
-   * measured. 
+   * Tests that round-trip acks in a datanode write pipeline are correctly
+   * measured.
    */
   @Test
   public void testRoundTripAckMetric() throws Exception {
@@ -200,14 +200,14 @@ public class TestDataNodeMetrics {
           break;
         }
       }
-      assertNotNull("Could not find the head of the datanode write pipeline", 
+      assertNotNull("Could not find the head of the datanode write pipeline",
           headNode);
       // Close the file and wait for the metrics to rollover
       Thread.sleep((interval + 1) * 1000);
       // Check the ack was received
       MetricsRecordBuilder dnMetrics = getMetrics(headNode.getMetrics()
           .name());
-      assertTrue("Expected non-zero number of acks", 
+      assertTrue("Expected non-zero number of acks",
           getLongCounter("PacketAckRoundTripTimeNanosNumOps", dnMetrics) > 0);
       assertQuantileGauges("PacketAckRoundTripTimeNanos" + interval
           + "s", dnMetrics);

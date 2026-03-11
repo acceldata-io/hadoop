@@ -118,7 +118,7 @@ import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 
 /**
@@ -193,7 +193,7 @@ public class TestPBHelper {
     DatanodeID dn2 = PBHelperClient.convert(dnProto);
     compare(dn, dn2);
   }
-  
+
   void compare(DatanodeID dn, DatanodeID dn2) {
     assertEquals(dn.getIpAddr(), dn2.getIpAddr());
     assertEquals(dn.getHostName(), dn2.getHostName());
@@ -313,7 +313,7 @@ public class TestPBHelper {
     ExportedBlockKeys expKeys1 = PBHelper.convert(expKeysProto);
     compare(expKeys, expKeys1);
   }
-  
+
   void compare(ExportedBlockKeys expKeys, ExportedBlockKeys expKeys1) {
     BlockKey[] allKeys = expKeys.getAllKeys();
     BlockKey[] allKeys1 = expKeys1.getAllKeys();
@@ -342,12 +342,12 @@ public class TestPBHelper {
         s1.getMostRecentCheckpointTxId());
     assertEquals(s.getNamespaceID(), s1.getNamespaceID());
   }
-  
+
   private static void compare(RemoteEditLog l1, RemoteEditLog l2) {
     assertEquals(l1.getEndTxId(), l2.getEndTxId());
     assertEquals(l1.getStartTxId(), l2.getStartTxId());
   }
-  
+
   @Test
   public void testConvertRemoteEditLog() {
     RemoteEditLog l = new RemoteEditLog(1, 100);
@@ -389,11 +389,11 @@ public class TestPBHelper {
   public ExtendedBlock getExtendedBlock(long blkid) {
     return new ExtendedBlock("bpid", blkid, 100, 2);
   }
-  
+
   private void compare(DatanodeInfo dn1, DatanodeInfo dn2) {
       assertEquals(dn1.getAdminState(), dn2.getAdminState());
       assertEquals(dn1.getBlockPoolUsed(), dn2.getBlockPoolUsed());
-      assertEquals(dn1.getBlockPoolUsedPercent(), 
+      assertEquals(dn1.getBlockPoolUsedPercent(),
           dn2.getBlockPoolUsedPercent(), DELTA);
       assertEquals(dn1.getCapacity(), dn2.getCapacity());
       assertEquals(dn1.getDatanodeReport(), dn2.getDatanodeReport());
@@ -407,20 +407,20 @@ public class TestPBHelper {
       assertEquals(dn1.getLevel(), dn2.getLevel());
       assertEquals(dn1.getNetworkLocation(), dn2.getNetworkLocation());
   }
-  
+
   @Test
   public void testConvertExtendedBlock() {
     ExtendedBlock b = getExtendedBlock();
     ExtendedBlockProto bProto = PBHelperClient.convert(b);
     ExtendedBlock b1 = PBHelperClient.convert(bProto);
     assertEquals(b, b1);
-    
+
     b.setBlockId(-1);
     bProto = PBHelperClient.convert(b);
     b1 = PBHelperClient.convert(bProto);
     assertEquals(b, b1);
   }
-  
+
   @Test
   public void testConvertRecoveringBlock() {
     DatanodeInfo di1 = DFSTestUtil.getLocalDatanodeInfo();
@@ -436,7 +436,7 @@ public class TestPBHelper {
       compare(dnInfo[0], dnInfo1[0]);
     }
   }
-  
+
   @Test
   public void testConvertBlockRecoveryCommand() {
     DatanodeInfo di1 = DFSTestUtil.getLocalDatanodeInfo();
@@ -447,14 +447,14 @@ public class TestPBHelper {
       new RecoveringBlock(getExtendedBlock(1), dnInfo, 3),
       new RecoveringBlock(getExtendedBlock(2), dnInfo, 3)
     );
-    
+
     BlockRecoveryCommand cmd = new BlockRecoveryCommand(blks);
     BlockRecoveryCommandProto proto = PBHelper.convert(cmd);
     assertEquals(1, proto.getBlocks(0).getBlock().getB().getBlockId());
     assertEquals(2, proto.getBlocks(1).getBlock().getB().getBlockId());
-    
+
     BlockRecoveryCommand cmd2 = PBHelper.convert(proto);
-    
+
     List<RecoveringBlock> cmd2Blks = Lists.newArrayList(
         cmd2.getRecoveringBlocks());
     assertEquals(blks.get(0).getBlock(), cmd2Blks.get(0).getBlock());
@@ -462,8 +462,8 @@ public class TestPBHelper {
     assertEquals(Joiner.on(",").join(blks), Joiner.on(",").join(cmd2Blks));
     assertEquals(cmd.toString(), cmd2.toString());
   }
-  
-  
+
+
   @Test
   public void testConvertText() {
     Text t = new Text("abc".getBytes());
@@ -471,7 +471,7 @@ public class TestPBHelper {
     Text t1 = new Text(s);
     assertEquals(t, t1);
   }
-  
+
   @Test
   public void testConvertBlockToken() {
     Token<BlockTokenIdentifier> token = new Token<BlockTokenIdentifier>(
@@ -481,7 +481,7 @@ public class TestPBHelper {
     Token<BlockTokenIdentifier> token2 = PBHelperClient.convert(tokenProto);
     compare(token, token2);
   }
-  
+
   @Test
   public void testConvertNamespaceInfo() {
     NamespaceInfo info = new NamespaceInfo(37, "clusterID", "bpID", 2300);
@@ -526,7 +526,7 @@ public class TestPBHelper {
             AdminStates.DECOMMISSION_INPROGRESS),
         DFSTestUtil.getLocalDatanodeInfo("127.0.0.1", "h2",
             AdminStates.DECOMMISSIONED),
-        DFSTestUtil.getLocalDatanodeInfo("127.0.0.1", "h3", 
+        DFSTestUtil.getLocalDatanodeInfo("127.0.0.1", "h3",
             AdminStates.NORMAL),
         DFSTestUtil.getLocalDatanodeInfo("127.0.0.1", "h4",
             AdminStates.NORMAL),
@@ -594,7 +594,7 @@ public class TestPBHelper {
       compare(lbl.get(i), lbl2.get(2));
     }
   }
-  
+
   @Test
   public void testConvertLocatedBlockArray() {
     LocatedBlock [] lbl = new LocatedBlock[3];
@@ -634,7 +634,7 @@ public class TestPBHelper {
     DatanodeStorage dns2 = PBHelperClient.convert(proto);
     compare(dns1, dns2);
   }
-  
+
   @Test
   public void testConvertBlockCommand() {
     Block[] blocks = new Block[] { new Block(21), new Block(22) };
@@ -667,7 +667,7 @@ public class TestPBHelper {
       }
     }
   }
-  
+
   @Test
   public void testChecksumTypeProto() {
     assertEquals(DataChecksum.Type.NULL,
@@ -731,7 +731,7 @@ public class TestPBHelper {
         .build();
     Assert.assertEquals(s, PBHelperClient.convert(PBHelperClient.convert(s)));
   }
-  
+
   @Test
   public void testBlockECRecoveryCommand() {
     DatanodeInfo[] dnInfos0 = new DatanodeInfo[] {
@@ -879,7 +879,7 @@ public class TestPBHelper {
     for (int i = 0; i < liveBlockIndices1.length; i++) {
       assertEquals(liveBlockIndices1[i], liveBlockIndices2[i]);
     }
-    
+
     ErasureCodingPolicy ecPolicy1 = blkECRecoveryInfo1.getErasureCodingPolicy();
     ErasureCodingPolicy ecPolicy2 = blkECRecoveryInfo2.getErasureCodingPolicy();
     // Compare ECPolicies same as default ECPolicy as we used system default

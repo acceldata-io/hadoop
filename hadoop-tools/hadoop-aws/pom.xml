@@ -435,39 +435,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>banned-illegal-imports</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <restrictImports>
-                  <includeTestCode>false</includeTestCode>
-                  <reason>Restrict mapreduce imports to committer code</reason>
-                  <exclusions>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.AbstractS3ACommitter</exclusion>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.AbstractS3ACommitterFactory</exclusion>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory</exclusion>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.impl.*</exclusion>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.magic.*</exclusion>
-                    <exclusion>org.apache.hadoop.fs.s3a.commit.staging.*</exclusion>
-                  </exclusions>
-                  <bannedImports>
-                    <bannedImport>org.apache.hadoop.mapreduce.**</bannedImport>
-                    <bannedImport>org.apache.hadoop.mapred.**</bannedImport>
-                  </bannedImports>
-                </restrictImports>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -476,6 +443,16 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.enterprise</groupId>
+          <artifactId>cdi-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -483,10 +460,24 @@
       <scope>test</scope>
       <type>test-jar</type>
     </dependency>
+
+    <!-- The v1 SDK is used at compilation time for adapter classes in
+         org.apache.hadoop.fs.s3a.adapter. It is not needed at runtime
+         unless a non-standard v1 credential provider is declared. -->
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-bundle</artifactId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>bundle</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.eventstream</groupId>
+      <artifactId>eventstream</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
@@ -535,6 +526,12 @@
       <artifactId>hadoop-hdfs</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-commons</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

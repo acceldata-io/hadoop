@@ -70,7 +70,7 @@ import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.util.Records;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Iterators;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 
 public class MockJobs extends MockApps {

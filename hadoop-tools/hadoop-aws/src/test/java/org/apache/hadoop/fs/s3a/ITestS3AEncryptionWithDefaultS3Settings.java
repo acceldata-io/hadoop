@@ -118,7 +118,8 @@ public class ITestS3AEncryptionWithDefaultS3Settings extends
     S3AFileSystem fs = getFileSystem();
     Path path = path(getMethodName() + "find-encryption-algo");
     ContractTestUtils.touch(fs, path);
-    String sseAlgorithm = fs.getObjectMetadata(path).getSSEAlgorithm();
+    String sseAlgorithm = getS3AInternals().getObjectMetadata(path)
+        .serverSideEncryptionAsString();
     if(StringUtils.isBlank(sseAlgorithm) ||
             !sseAlgorithm.equals(AWS_KMS_SSE_ALGORITHM)) {
       skip("Test bucket is not configured with " + AWS_KMS_SSE_ALGORITHM);
@@ -135,7 +136,7 @@ public class ITestS3AEncryptionWithDefaultS3Settings extends
     Path src = path(createFilename(1024));
     byte[] data = dataset(1024, 'a', 'z');
     EncryptionSecrets secrets = fs.getEncryptionSecrets();
-    validateEncrytionSecrets(secrets);
+    validateEncryptionSecrets(secrets);
     writeDataset(fs, src, data, data.length, 1024 * 1024, true);
     ContractTestUtils.verifyFileContents(fs, src, data);
 

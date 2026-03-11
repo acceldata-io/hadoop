@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hdfs.server.datanode;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Sets;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.fs.StorageType;
@@ -50,13 +50,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * One instance per block-pool/namespace on the DN, which handles the
  * heartbeats to the active and standby NNs for that namespace.
  * This class manages an instance of {@link BPServiceActor} for each NN,
- * and delegates calls to both NNs. 
+ * and delegates calls to both NNs.
  * It also maintains the state about which of the NNs is considered active.
  */
 @InterfaceAudience.Private
 class BPOfferService {
   static final Logger LOG = DataNode.LOG;
-  
+
   /**
    * Information about the namespace that this service
    * is registering with. This is assigned after
@@ -82,7 +82,7 @@ class BPOfferService {
    * of the {@link #bpServices} list.
    */
   private BPServiceActor bpServiceToActive = null;
-  
+
   /**
    * The list of all actors for namenodes in this nameservice, regardless
    * of their active or standby states.
@@ -96,7 +96,7 @@ class BPOfferService {
    * is more recent than the previous value. This allows us to detect
    * split-brain scenarios in which a prior NN is still asserting its
    * ACTIVE state but with a too-low transaction ID. See HDFS-2627
-   * for details. 
+   * for details.
    */
   private long lastActiveClaimTxId = -1;
 
@@ -148,7 +148,7 @@ class BPOfferService {
       oldAddrs.add(actor.getNNSocketAddress());
     }
     Set<InetSocketAddress> newAddrs = Sets.newHashSet(addrs);
-    
+
     // Process added NNs
     Set<InetSocketAddress> addedNNs = Sets.difference(newAddrs, oldAddrs);
     for (InetSocketAddress addedNN : addedNNs) {
@@ -178,7 +178,7 @@ class BPOfferService {
   boolean isInitialized() {
     return bpRegistration != null;
   }
-  
+
   /**
    * @return true if there is at least one actor thread running which is
    * talking to a NameNode.
@@ -286,7 +286,7 @@ class BPOfferService {
       readUnlock();
     }
   }
-  
+
   void reportBadBlocks(ExtendedBlock block,
                        String storageUuid, StorageType storageType) {
     checkBlock(block);
@@ -296,7 +296,7 @@ class BPOfferService {
       actor.bpThreadEnqueue(rbbAction);
     }
   }
-  
+
   /*
    * Informing the name node could take a long long time! Should we wait
    * till namenode is informed before responding with success to the
@@ -346,14 +346,14 @@ class BPOfferService {
       actor.start();
     }
   }
-  
+
   //This must be called only by blockPoolManager.
   void stop() {
     for (BPServiceActor actor : bpServices) {
       actor.stop();
     }
   }
-  
+
   //This must be called only by blockPoolManager
   void join() {
     for (BPServiceActor actor : bpServices) {
@@ -444,7 +444,7 @@ class BPOfferService {
       String idHelpText) throws IOException {
     if (!ourID.equals(theirID)) {
       throw new IOException(idHelpText + " mismatch: " +
-          "previously connected to " + idHelpText + " " + ourID + 
+          "previously connected to " + idHelpText + " " + ourID +
           " but now connected to " + idHelpText + " " + theirID);
     }
   }
@@ -486,7 +486,7 @@ class BPOfferService {
    */
   void trySendErrorReport(int errCode, String errMsg) {
     for (BPServiceActor actor : bpServices) {
-      ErrorReportAction errorReportAction = new ErrorReportAction 
+      ErrorReportAction errorReportAction = new ErrorReportAction
           (errCode, errMsg);
       actor.bpThreadEnqueue(errorReportAction);
     }
@@ -537,7 +537,7 @@ class BPOfferService {
   List<BPServiceActor> getBPServiceActors() {
     return Lists.newArrayList(bpServices);
   }
-  
+
   /**
    * Signal the current rolling upgrade status as indicated by the NN.
    * @param rollingUpgradeStatus rolling upgrade status
@@ -560,7 +560,7 @@ class BPOfferService {
   /**
    * Update the BPOS's view of which NN is active, based on a heartbeat
    * response from one of the actors.
-   * 
+   *
    * @param actor the actor which received the heartbeat
    * @param nnHaState the HA-related heartbeat contents
    */
@@ -623,7 +623,7 @@ class BPOfferService {
     }
     return false;
   }
-  
+
   @VisibleForTesting
   int countNameNodes() {
     return bpServices.size();
@@ -713,16 +713,16 @@ class BPOfferService {
   /**
    * This method should handle all commands from Active namenode except
    * DNA_REGISTER which should be handled earlier itself.
-   * 
+   *
    * @param cmd
-   * @return true if further processing may be required or false otherwise. 
+   * @return true if further processing may be required or false otherwise.
    * @throws IOException
    */
   private boolean processCommandFromActive(DatanodeCommand cmd,
       InetSocketAddress nnSocketAddress) throws IOException {
-    final BlockCommand bcmd = 
+    final BlockCommand bcmd =
       cmd instanceof BlockCommand? (BlockCommand)cmd: null;
-    final BlockIdCommand blockIdCmd = 
+    final BlockIdCommand blockIdCmd =
       cmd instanceof BlockIdCommand ? (BlockIdCommand)cmd: null;
 
     switch(cmd.getAction()) {
@@ -734,7 +734,7 @@ class BPOfferService {
       break;
     case DatanodeProtocol.DNA_INVALIDATE:
       //
-      // Some local block(s) are obsolete and can be 
+      // Some local block(s) are obsolete and can be
       // safely garbage-collected.
       //
       Block toDelete[] = bcmd.getBlocks();
@@ -781,7 +781,7 @@ class BPOfferService {
       LOG.info("DatanodeCommand action: DNA_ACCESSKEYUPDATE");
       if (dn.isBlockTokenEnabled) {
         dn.blockPoolTokenSecretManager.addKeys(
-            getBlockPoolId(), 
+            getBlockPoolId(),
             ((KeyUpdateCommand) cmd).getExportedKeys());
       }
       break;
@@ -809,7 +809,7 @@ class BPOfferService {
     }
     return true;
   }
- 
+
   /**
    * This method should handle commands from Standby namenode except
    * DNA_REGISTER which should be handled earlier itself.
@@ -822,7 +822,7 @@ class BPOfferService {
           nnSocketAddress);
       if (dn.isBlockTokenEnabled) {
         dn.blockPoolTokenSecretManager.addKeys(
-            getBlockPoolId(), 
+            getBlockPoolId(),
             ((KeyUpdateCommand) cmd).getExportedKeys());
       }
       break;

@@ -36,7 +36,7 @@ import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeDirType;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeFile;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
   public static final Logger LOG = LoggerFactory.getLogger(
@@ -44,10 +44,10 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
 
   private boolean needToSave = false;
   private boolean isUpgradeFinalized = true;
-  
+
   final List<FSImageFile> foundImages = new ArrayList<FSImageFile>();
   private long maxSeenTxId = 0;
-  
+
   private final List<Pattern> namePatterns = Lists.newArrayList();
 
   FSImageTransactionalStorageInspector() {
@@ -79,7 +79,7 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
       needToSave |= true;
       return;
     }
-    
+
     // Check for a seen_txid file, which marks a minimum transaction ID that
     // must be included in our load plan.
     try {
@@ -102,7 +102,7 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
     for (File f : filesInStorage) {
       LOG.debug("Checking file " + f);
       String name = f.getName();
-      
+
       // Check for fsimage_*
       Matcher imageMatch = this.matchPattern(name);
       if (imageMatch != null) {
@@ -121,7 +121,7 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
         }
       }
     }
-    
+
     // set finalized flag
     isUpgradeFinalized = isUpgradeFinalized && !sd.getPreviousDir().exists();
   }
@@ -130,12 +130,12 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
   public boolean isUpgradeFinalized() {
     return isUpgradeFinalized;
   }
-  
+
   /**
-   * @return the image files that have the most recent associated 
-   * transaction IDs.  If there are multiple storage directories which 
+   * @return the image files that have the most recent associated
+   * transaction IDs.  If there are multiple storage directories which
    * contain equal images, we'll return them all.
-   * 
+   *
    * @throws FileNotFoundException if not images are found.
    */
   @Override
@@ -159,11 +159,11 @@ class FSImageTransactionalStorageInspector extends FSImageStorageInspector {
     }
     return ret;
   }
-  
+
   public List<FSImageFile> getFoundImages() {
     return ImmutableList.copyOf(foundImages);
   }
-  
+
   @Override
   public boolean needToSave() {
     return needToSave;

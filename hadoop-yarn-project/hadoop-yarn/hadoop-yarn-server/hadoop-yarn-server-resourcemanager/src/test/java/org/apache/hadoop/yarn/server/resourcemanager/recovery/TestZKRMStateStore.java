@@ -77,7 +77,7 @@ import org.junit.Test;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import java.util.function.Supplier;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableMap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;

@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.util.Sets;
 
 /**
  * Test the {@link FairScheduler} queue manager correct queue hierarchies

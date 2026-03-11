@@ -72,8 +72,8 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.deletion.task.
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.hadoop.yarn.util.Times;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
+import org.apache.hadoop.classification.VisibleForTesting;
+import org.apache.hadoop.util.Sets;
 
 
 public class AppLogAggregatorImpl implements AppLogAggregator {

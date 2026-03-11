@@ -54,8 +54,4 @@ public class AWSClientIOException extends IOException {
   public boolean retryable() {
     return getCause().retryable();
   }
-
-  public String getOperation() {
-    return operation;
-  }
 }

@@ -42,7 +42,7 @@ import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.net.NetUtils;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.test.GenericTestUtils;
 
 public final class MiniJournalCluster implements Closeable {
@@ -59,16 +59,16 @@ public final class MiniJournalCluster implements Closeable {
     static {
       DefaultMetricsSystem.setMiniClusterMode(true);
     }
-    
+
     public Builder(Configuration conf) {
       this.conf = conf;
     }
-    
+
     public Builder baseDir(String d) {
       this.baseDir = d;
       return this;
     }
-    
+
     public Builder numJournalNodes(int n) {
       this.numJournalNodes = n;
       return this;
@@ -110,7 +110,7 @@ public final class MiniJournalCluster implements Closeable {
       LoggerFactory.getLogger(MiniJournalCluster.class);
   private final File baseDir;
   private final JNInfo[] nodes;
-  
+
   private MiniJournalCluster(Builder b) throws IOException {
 
     if (b.httpPorts != null && b.httpPorts.length != b.numJournalNodes) {
@@ -127,7 +127,7 @@ public final class MiniJournalCluster implements Closeable {
 
     LOG.info("Starting MiniJournalCluster with " +
         b.numJournalNodes + " journal nodes");
-    
+
     if (b.baseDir != null) {
       this.baseDir = new File(b.baseDir);
     } else {
@@ -150,7 +150,7 @@ public final class MiniJournalCluster implements Closeable {
   }
 
   /**
-   * Set up the given Configuration object to point to the set of JournalNodes 
+   * Set up the given Configuration object to point to the set of JournalNodes
    * in this cluster.
    */
   public URI getQuorumJournalURI(String jid) {
@@ -209,15 +209,15 @@ public final class MiniJournalCluster implements Closeable {
   public File getStorageDir(int idx) {
     return new File(baseDir, "journalnode-" + idx).getAbsoluteFile();
   }
-  
+
   public File getJournalDir(int idx, String jid) {
     return new File(getStorageDir(idx), jid);
   }
-  
+
   public File getCurrentDir(int idx, String jid) {
     return new File(getJournalDir(idx, jid), "current");
   }
-  
+
   public File getPreviousDir(int idx, String jid) {
     return new File(getJournalDir(idx, jid), "previous");
   }
@@ -237,7 +237,7 @@ public final class MiniJournalCluster implements Closeable {
     if (jn.isStarted()) {
       jn.stopAndJoin(0);
     }
-    
+
     conf.set(DFSConfigKeys.DFS_JOURNALNODE_RPC_ADDRESS_KEY,
         NetUtils.getHostPortString(info.ipcAddr));
 

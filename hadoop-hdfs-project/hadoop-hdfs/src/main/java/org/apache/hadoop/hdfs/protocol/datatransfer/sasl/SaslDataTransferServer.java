@@ -21,7 +21,7 @@ import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_DATA_TRANSF
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_ENCRYPT_DATA_TRANSFER_CIPHER_SUITES_KEY;
 import static org.apache.hadoop.hdfs.protocol.datatransfer.sasl.DataTransferSaslUtil.*;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -62,7 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Negotiates SASL for DataTransferProtocol on behalf of a server.  There are
@@ -259,7 +259,7 @@ public class SaslDataTransferServer {
   /**
    * Given a secret manager and a username encoded for the encrypted handshake,
    * determine the encryption key.
-   * 
+   *
    * @param userName containing the keyId, blockPoolId, and nonce.
    * @return secret encryption key.
    * @throws IOException
@@ -320,7 +320,7 @@ public class SaslDataTransferServer {
    *   identifier
    * @return expected correct SASL password
    * @throws IOException for any error
-   */    
+   */
   private char[] buildServerPassword(String userName) throws IOException {
     BlockTokenIdentifier identifier = deserializeIdentifier(userName);
     byte[] tokenPassword = blockPoolTokenSecretManager.retrievePassword(
@@ -370,7 +370,7 @@ public class SaslDataTransferServer {
 
     int magicNumber = in.readInt();
     if (magicNumber != SASL_TRANSFER_MAGIC_NUMBER) {
-      throw new InvalidMagicNumberException(magicNumber, 
+      throw new InvalidMagicNumberException(magicNumber,
           dnConf.getEncryptDataTransfer());
     }
     try {
@@ -426,13 +426,13 @@ public class SaslDataTransferServer {
       }
 
       // If negotiated cipher option is not null, wrap it before sending.
-      sendSaslMessageAndNegotiatedCipherOption(out, localResponse, 
+      sendSaslMessageAndNegotiatedCipherOption(out, localResponse,
           wrap(cipherOption, sasl));
 
-      // If negotiated cipher option is not null, we will use it to create 
+      // If negotiated cipher option is not null, we will use it to create
       // stream pair.
       return cipherOption != null ? createStreamPair(
-          dnConf.getConf(), cipherOption, underlyingOut, underlyingIn, true) : 
+          dnConf.getConf(), cipherOption, underlyingOut, underlyingIn, true) :
             sasl.createStreamPair(out, in);
     } catch (IOException ioe) {
       if (ioe instanceof SaslException &&

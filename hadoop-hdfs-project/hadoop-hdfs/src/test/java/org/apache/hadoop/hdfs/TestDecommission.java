@@ -45,7 +45,7 @@ import java.util.EnumSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.commons.text.TextStringBuilder;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -107,7 +107,7 @@ public class TestDecommission extends AdminStatesBaseTest {
    * is 1 more than what is specified.
    * For blocks without decommissioned nodes, verify their replication is
    * equal to what is specified.
-   * 
+   *
    * @param downnode - if null, there is no decommissioned node for this file.
    * @return - null if no failure found, else an error message string.
    */
@@ -242,7 +242,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     shutdownCluster();
     startCluster(1, 4);
   }
-  
+
   /**
    * Test decommission for federeated cluster
    */
@@ -375,8 +375,8 @@ public class TestDecommission extends AdminStatesBaseTest {
       throws IOException {
     LOG.info("Starting test testDecommission");
     startCluster(numNamenodes, numDatanodes);
-    
-    ArrayList<ArrayList<DatanodeInfo>> namenodeDecomList = 
+
+    ArrayList<ArrayList<DatanodeInfo>> namenodeDecomList =
       new ArrayList<ArrayList<DatanodeInfo>>(numNamenodes);
     for(int i = 0; i < numNamenodes; i++) {
       namenodeDecomList.add(i, new ArrayList<DatanodeInfo>(numDatanodes));
@@ -384,7 +384,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     Path file1 = new Path("testDecommission.dat");
     for (int iteration = 0; iteration < numDatanodes - 1; iteration++) {
       int replicas = numDatanodes - iteration - 1;
-      
+
       // Start decommissioning one namenode at a time
       for (int i = 0; i < numNamenodes; i++) {
         ArrayList<DatanodeInfo> decommissionedNodes = namenodeDecomList.get(i);
@@ -405,7 +405,7 @@ public class TestDecommission extends AdminStatesBaseTest {
 
         // Ensure decommissioned datanode is not automatically shutdown
         DFSClient client = getDfsClient(i);
-        assertEquals("All datanodes must be alive", numDatanodes, 
+        assertEquals("All datanodes must be alive", numDatanodes,
             client.datanodeReport(DatanodeReportType.LIVE).length);
         // wait for the block to be replicated
         int tries = 0;
@@ -519,7 +519,7 @@ public class TestDecommission extends AdminStatesBaseTest {
   public void testClusterStats() throws Exception {
     testClusterStats(1);
   }
-  
+
   /**
    * Tests cluster storage statistics during decommissioning for
    * federated cluster
@@ -528,27 +528,27 @@ public class TestDecommission extends AdminStatesBaseTest {
   public void testClusterStatsFederation() throws Exception {
     testClusterStats(3);
   }
-  
+
   public void testClusterStats(int numNameNodes) throws IOException,
       InterruptedException {
     LOG.info("Starting test testClusterStats");
     int numDatanodes = 1;
     startCluster(numNameNodes, numDatanodes);
-    
+
     for (int i = 0; i < numNameNodes; i++) {
       FileSystem fileSys = getCluster().getFileSystem(i);
       Path file = new Path("testClusterStats.dat");
       writeFile(fileSys, file, 1);
-      
+
       FSNamesystem fsn = getCluster().getNamesystem(i);
       NameNode namenode = getCluster().getNameNode(i);
-      
+
       DatanodeInfo decomInfo = takeNodeOutofService(i, null, 0, null,
           AdminStates.DECOMMISSION_INPROGRESS);
       DataNode decomNode = getDataNode(decomInfo);
       // Check namenode stats for multiple datanode heartbeats
       verifyStats(namenode, fsn, decomInfo, decomNode, true);
-      
+
       // Stop decommissioning and verify stats
       DatanodeInfo retInfo = NameNodeAdapter.getDatanode(fsn, decomInfo);
       putNodeInService(i, retInfo);
@@ -579,10 +579,10 @@ public class TestDecommission extends AdminStatesBaseTest {
     // Test for a single namenode cluster
     testHostsFile(1);
   }
-  
+
   /**
    * Test host/include file functionality. Only datanodes
-   * in the include file are allowed to connect to the namenode in a 
+   * in the include file are allowed to connect to the namenode in a
    * federated cluster.
    */
   @Test(timeout=360000)
@@ -591,7 +591,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     // Test for 3 namenode federated cluster
     testHostsFile(3);
   }
-  
+
   public void testHostsFile(int numNameNodes) throws IOException,
       InterruptedException {
     int numDatanodes = 1;
@@ -612,7 +612,7 @@ public class TestDecommission extends AdminStatesBaseTest {
         info = client.datanodeReport(DatanodeReportType.LIVE);
       }
       assertEquals("Number of live nodes should be 0", 0, info.length);
-      
+
       // Test that bogus hostnames are considered "dead".
       // The dead report should have an entry for the bogus entry in the hosts
       // file.  The original datanode is excluded from the report because it
@@ -622,30 +622,30 @@ public class TestDecommission extends AdminStatesBaseTest {
       assertEquals(bogusIp, info[0].getHostName());
     }
   }
-  
+
   @Test(timeout=120000)
   public void testDecommissionWithOpenfile()
       throws IOException, InterruptedException {
     LOG.info("Starting test testDecommissionWithOpenfile");
-    
+
     //At most 4 nodes will be decommissioned
     startCluster(1, 7);
-        
+
     FileSystem fileSys = getCluster().getFileSystem(0);
     FSNamesystem ns = getCluster().getNamesystem(0);
 
     String openFile = "/testDecommissionWithOpenfile.dat";
-           
-    writeFile(fileSys, new Path(openFile), (short)3);   
+
+    writeFile(fileSys, new Path(openFile), (short)3);
     // make sure the file was open for write
-    FSDataOutputStream fdos =  fileSys.append(new Path(openFile)); 
-    
+    FSDataOutputStream fdos =  fileSys.append(new Path(openFile));
+
     LocatedBlocks lbs = NameNodeAdapter.getBlockLocations(
         getCluster().getNameNode(0), openFile, 0, fileSize);
 
     DatanodeInfo[] dnInfos4LastBlock = lbs.getLastLocatedBlock().getLocations();
     DatanodeInfo[] dnInfos4FirstBlock = lbs.get(0).getLocations();
-    
+
     ArrayList<String> nodes = new ArrayList<String>();
     ArrayList<DatanodeInfo> dnInfos = new ArrayList<DatanodeInfo>();
 
@@ -1142,7 +1142,7 @@ public class TestDecommission extends AdminStatesBaseTest {
 
     shutdownCluster();
   }
-  
+
   /**
    * Tests restart of namenode while datanode hosts are added to exclude file
    **/
@@ -1161,7 +1161,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     Path file1 = new Path("testDecommissionWithNamenodeRestart.dat");
     FileSystem fileSys = getCluster().getFileSystem();
     writeFile(fileSys, file1, replicas);
-        
+
     DFSClient client = getDfsClient(0);
     DatanodeInfo[] info = client.datanodeReport(DatanodeReportType.LIVE);
     DatanodeID excludedDatanodeID = info[0];
@@ -1182,7 +1182,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     waitNodeState(datanodeInfo, AdminStates.DECOMMISSIONED);
 
     // Ensure decommissioned datanode is not automatically shutdown
-    assertEquals("All datanodes must be alive", numDatanodes, 
+    assertEquals("All datanodes must be alive", numDatanodes,
         client.datanodeReport(DatanodeReportType.LIVE).length);
     assertTrue("Checked if block was replicated after decommission.",
         checkFile(fileSys, file1, replicas, datanodeInfo.getXferAddr(),
@@ -1310,7 +1310,7 @@ public class TestDecommission extends AdminStatesBaseTest {
       }
     }, 500, 5000);
   }
-  
+
   @Test(timeout=120000)
   public void testBlocksPerInterval() throws Exception {
     org.apache.log4j.Logger.getLogger(DatanodeAdminManager.class)
@@ -1355,7 +1355,7 @@ public class TestDecommission extends AdminStatesBaseTest {
     }
     // Run decom scan and check
     BlockManagerTestUtil.recheckDecommissionState(datanodeManager);
-    assertEquals("Unexpected # of nodes checked", expectedNumCheckedNodes, 
+    assertEquals("Unexpected # of nodes checked", expectedNumCheckedNodes,
         decomManager.getNumNodesChecked());
     // Recommission all nodes
     for (DatanodeInfo dn : decommissionedNodes) {
@@ -1461,7 +1461,7 @@ public class TestDecommission extends AdminStatesBaseTest {
         decommissionedNodes, AdminStates.DECOMMISSION_INPROGRESS);
     decommissionedNodes.add(dn);
     BlockManagerTestUtil.recheckDecommissionState(datanodeManager);
-    
+
     assertTrackedAndPending(decomManager, 1, 0);
   }
 

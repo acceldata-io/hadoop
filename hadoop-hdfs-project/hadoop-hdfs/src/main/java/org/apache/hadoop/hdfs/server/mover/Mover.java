@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hdfs.server.mover;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -79,13 +79,13 @@ public class Mover {
         = new StorageGroupMap<StorageGroup>();
     private final EnumMap<StorageType, List<StorageGroup>> targetStorageTypeMap
         = new EnumMap<StorageType, List<StorageGroup>>(StorageType.class);
-    
+
     private StorageMap() {
       for(StorageType t : StorageType.getMovableTypes()) {
         targetStorageTypeMap.put(t, new LinkedList<StorageGroup>());
       }
     }
-    
+
     private void add(Source source, StorageGroup target) {
       sources.put(source);
       if (target != null) {
@@ -93,7 +93,7 @@ public class Mover {
         getTargetStorages(target.getStorageType()).add(target);
       }
     }
-    
+
     private Source getSource(MLocation ml) {
       return get(sources, ml);
     }
@@ -105,7 +105,7 @@ public class Mover {
     private static <G extends StorageGroup> G get(StorageGroupMap<G> map, MLocation ml) {
       return map.get(ml.datanode.getDatanodeUuid(), ml.storageType);
     }
-    
+
     private List<StorageGroup> getTargetStorages(StorageType t) {
       return targetStorageTypeMap.get(t);
     }
@@ -497,7 +497,7 @@ public class Mover {
           return true;
         }
       }
-      
+
       // Then, match nodes on the same rack
       if (chooseTarget(db, source, targetTypes, Matcher.SAME_RACK)) {
         return true;
@@ -528,7 +528,7 @@ public class Mover {
 
     boolean chooseTarget(DBlock db, Source source,
         List<StorageType> targetTypes, Matcher matcher) {
-      final NetworkTopology cluster = dispatcher.getCluster(); 
+      final NetworkTopology cluster = dispatcher.getCluster();
       for (StorageType t : targetTypes) {
         final List<StorageGroup> targets = storages.getTargetStorages(t);
         Collections.shuffle(targets);
@@ -551,13 +551,13 @@ public class Mover {
     final DatanodeInfo datanode;
     final StorageType storageType;
     final long size;
-    
+
     MLocation(DatanodeInfo datanode, StorageType storageType, long size) {
       this.datanode = datanode;
       this.storageType = storageType;
       this.size = size;
     }
-    
+
     static List<MLocation> toLocations(LocatedBlock lb) {
       final DatanodeInfo[] datanodeInfos = lb.getLocations();
       final StorageType[] storageTypes = lb.getStorageTypes();

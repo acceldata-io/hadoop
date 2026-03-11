@@ -34,7 +34,7 @@ import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.slf4j.LoggerFactory;
 
 public final class TestURLConnectionFactory {

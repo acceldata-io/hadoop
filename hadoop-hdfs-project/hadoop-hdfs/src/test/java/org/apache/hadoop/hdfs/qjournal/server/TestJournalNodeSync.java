@@ -20,7 +20,7 @@ package org.apache.hadoop.hdfs.qjournal.server;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSConfigKeys;

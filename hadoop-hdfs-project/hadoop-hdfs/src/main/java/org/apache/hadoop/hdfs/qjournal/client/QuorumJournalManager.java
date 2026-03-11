@@ -58,10 +58,10 @@ import org.apache.hadoop.hdfs.web.URLConnectionFactory;
 import org.apache.hadoop.log.LogThrottlingHelper;
 import org.apache.hadoop.log.LogThrottlingHelper.LogAction;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.protobuf.TextFormat;
 
 /**
@@ -96,13 +96,13 @@ public class QuorumJournalManager implements JournalManager {
   // e.g. format, upgrade operations and a few others. So we can use rather
   // lengthy timeouts by default.
   private final int timeoutMs;
-  
+
   private final Configuration conf;
   private final URI uri;
   private final NamespaceInfo nsInfo;
   private final String nameServiceId;
   private boolean isActiveWriter;
-  
+
   private final AsyncLoggerSet loggers;
 
   private static final int OUTPUT_BUFFER_CAPACITY_DEFAULT = 512 * 1024;
@@ -120,7 +120,7 @@ public class QuorumJournalManager implements JournalManager {
                               NamespaceInfo nsInfo) throws IOException {
     this(conf, uri, nsInfo, null, IPCLoggerChannel.FACTORY);
   }
-  
+
   public QuorumJournalManager(Configuration conf,
       URI uri, NamespaceInfo nsInfo, String nameServiceId) throws IOException {
     this(conf, uri, nsInfo, nameServiceId, IPCLoggerChannel.FACTORY);
@@ -134,7 +134,7 @@ public class QuorumJournalManager implements JournalManager {
 
   }
 
-  
+
   QuorumJournalManager(Configuration conf,
       URI uri, NamespaceInfo nsInfo, String nameServiceId,
       AsyncLogger.Factory loggerFactory) throws IOException {
@@ -193,7 +193,7 @@ public class QuorumJournalManager implements JournalManager {
         .newDefaultURLConnectionFactory(connectTimeoutMs, readTimeoutMs, conf);
     setOutputBufferCapacity(OUTPUT_BUFFER_CAPACITY_DEFAULT);
   }
-  
+
   protected List<AsyncLogger> createLoggers(
       AsyncLogger.Factory factory) throws IOException {
     return createLoggers(conf, uri, nsInfo, factory, nameServiceId);
@@ -208,7 +208,7 @@ public class QuorumJournalManager implements JournalManager {
     checkJournalId(journalId);
     return journalId;
   }
-  
+
   public static void checkJournalId(String jid) {
     Preconditions.checkArgument(jid != null &&
         !jid.isEmpty() &&
@@ -217,7 +217,7 @@ public class QuorumJournalManager implements JournalManager {
         "bad journal id: " + jid);
   }
 
-  
+
   /**
    * Fence any previous writers, and obtain a unique epoch number
    * for write-access to the journal nodes.
@@ -228,26 +228,26 @@ public class QuorumJournalManager implements JournalManager {
       throws IOException {
     Preconditions.checkState(!loggers.isEpochEstablished(),
         "epoch already created");
-    
+
     Map<AsyncLogger, GetJournalStateResponseProto> lastPromises =
       loggers.waitForWriteQuorum(loggers.getJournalState(),
           getJournalStateTimeoutMs, "getJournalState()");
-    
+
     long maxPromised = Long.MIN_VALUE;
     for (GetJournalStateResponseProto resp : lastPromises.values()) {
       maxPromised = Math.max(maxPromised, resp.getLastPromisedEpoch());
     }
     assert maxPromised >= 0;
-    
+
     long myEpoch = maxPromised + 1;
     Map<AsyncLogger, NewEpochResponseProto> resps =
         loggers.waitForWriteQuorum(loggers.newEpoch(nsInfo, myEpoch),
             newEpochTimeoutMs, "newEpoch(" + myEpoch + ")");
-        
+
     loggers.setEpoch(myEpoch);
     return resps;
   }
-  
+
   @Override
   public void format(NamespaceInfo nsInfo, boolean force) throws IOException {
     QuorumCall<AsyncLogger, Void> call = loggers.format(nsInfo, force);
@@ -259,7 +259,7 @@ public class QuorumJournalManager implements JournalManager {
     } catch (TimeoutException e) {
       throw new IOException("Timed out waiting for format() response");
     }
-    
+
     if (call.countExceptions() > 0) {
       call.rethrowException("Could not format one or more JournalNodes");
     }
@@ -277,12 +277,12 @@ public class QuorumJournalManager implements JournalManager {
     } catch (TimeoutException e) {
       throw new IOException("Timed out waiting for response from loggers");
     }
-    
+
     if (call.countExceptions() > 0) {
       call.rethrowException(
           "Unable to check if JNs are ready for formatting");
     }
-    
+
     // If any of the loggers returned with a non-empty manifest, then
     // we should prompt for format.
     for (Boolean hasData : call.getResults().values()) {
@@ -304,7 +304,7 @@ public class QuorumJournalManager implements JournalManager {
    * <li>All nodes which contain the finalized segment will
    * agree on the length.</li>
    * </ul>
-   * 
+   *
    * @param segmentTxId the starting txid of the segment
    * @throws IOException
    */
@@ -312,7 +312,7 @@ public class QuorumJournalManager implements JournalManager {
     Preconditions.checkArgument(segmentTxId > 0);
     LOG.info("Beginning recovery of unclosed segment starting at txid " +
         segmentTxId);
-    
+
     // Step 1. Prepare recovery
     QuorumCall<AsyncLogger,PrepareRecoveryResponseProto> prepare =
         loggers.prepareRecovery(segmentTxId);
@@ -329,14 +329,14 @@ public class QuorumJournalManager implements JournalManager {
     //  OR, if no such logger exists:
     //
     // b) Has the longest log starting at this transaction ID
-    
+
     // TODO: we should collect any "ties" and pass the URL for all of them
     // when syncing, so we can tolerate failure during recovery better.
     Entry<AsyncLogger, PrepareRecoveryResponseProto> bestEntry = Collections.max(
-        prepareResponses.entrySet(), SegmentRecoveryComparator.INSTANCE); 
+        prepareResponses.entrySet(), SegmentRecoveryComparator.INSTANCE);
     AsyncLogger bestLogger = bestEntry.getKey();
     PrepareRecoveryResponseProto bestResponse = bestEntry.getValue();
-    
+
     // Log the above decision, check invariants.
     if (bestResponse.hasAcceptedInEpoch()) {
       LOG.info("Using already-accepted recovery for segment " +
@@ -370,10 +370,10 @@ public class QuorumJournalManager implements JournalManager {
           QuorumCall.mapToString(prepareResponses));
       return;
     }
-    
+
     SegmentStateProto logToSync = bestResponse.getSegmentState();
     assert segmentTxId == logToSync.getStartTxId();
-    
+
     // Sanity check: none of the loggers should be aware of a higher
     // txid than the txid we intend to truncate to
     for (Map.Entry<AsyncLogger, PrepareRecoveryResponseProto> e :
@@ -388,9 +388,9 @@ public class QuorumJournalManager implements JournalManager {
             resp.getLastCommittedTxId() + " committed");
       }
     }
-    
+
     URL syncFromUrl = bestLogger.buildURLToFetchLogs(segmentTxId);
-    
+
     QuorumCall<AsyncLogger,Void> accept = loggers.acceptRecovery(logToSync, syncFromUrl);
     loggers.waitForWriteQuorum(accept, acceptRecoveryTimeoutMs,
         "acceptRecovery(" + TextFormat.shortDebugString(logToSync) + ")");
@@ -400,13 +400,13 @@ public class QuorumJournalManager implements JournalManager {
     // finalizing. Hence, even if it is not "in sync", it won't incorrectly
     // finalize.
     QuorumCall<AsyncLogger, Void> finalize =
-        loggers.finalizeLogSegment(logToSync.getStartTxId(), logToSync.getEndTxId()); 
+        loggers.finalizeLogSegment(logToSync.getStartTxId(), logToSync.getEndTxId());
     loggers.waitForWriteQuorum(finalize, finalizeSegmentTimeoutMs,
         String.format("finalizeLogSegment(%s-%s)",
             logToSync.getStartTxId(),
             logToSync.getEndTxId()));
   }
-  
+
   static List<AsyncLogger> createLoggers(Configuration conf,
                                          URI uri,
                                          NamespaceInfo nsInfo,
@@ -425,7 +425,7 @@ public class QuorumJournalManager implements JournalManager {
     }
     return ret;
   }
-  
+
   @Override
   public EditLogOutputStream startLogSegment(long txId, int layoutVersion)
       throws IOException {
@@ -473,7 +473,7 @@ public class QuorumJournalManager implements JournalManager {
   @Override
   public void recoverUnfinalizedSegments() throws IOException {
     Preconditions.checkState(!isActiveWriter, "already active writer");
-    
+
     LOG.info("Starting recovery process for unclosed journal segments...");
     Map<AsyncLogger, NewEpochResponseProto> resps = createNewUniqueEpoch();
     LOG.info("Successfully started new epoch " + loggers.getEpoch());
@@ -482,7 +482,7 @@ public class QuorumJournalManager implements JournalManager {
       LOG.debug("newEpoch(" + loggers.getEpoch() + ") responses:\n" +
         QuorumCall.mapToString(resps));
     }
-    
+
     long mostRecentSegmentTxId = Long.MIN_VALUE;
     for (NewEpochResponseProto r : resps.values()) {
       if (r.hasLastSegmentTxId()) {
@@ -490,7 +490,7 @@ public class QuorumJournalManager implements JournalManager {
             r.getLastSegmentTxId());
       }
     }
-    
+
     // On a completely fresh system, none of the journals have any
     // segments, so there's nothing to recover.
     if (mostRecentSegmentTxId != Long.MIN_VALUE) {
@@ -658,7 +658,7 @@ public class QuorumJournalManager implements JournalManager {
     }
     JournalSet.chainAndMakeRedundantStreams(streams, allStreams, fromTxnId);
   }
-  
+
   @Override
   public String toString() {
     return "QJM to " + loggers;
@@ -675,7 +675,7 @@ public class QuorumJournalManager implements JournalManager {
     try {
       call.waitFor(loggers.size(), loggers.size(), 0, timeoutMs,
           "doPreUpgrade");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not do pre-upgrade of one or more JournalNodes");
       }
@@ -692,7 +692,7 @@ public class QuorumJournalManager implements JournalManager {
     try {
       call.waitFor(loggers.size(), loggers.size(), 0, timeoutMs,
           "doUpgrade");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not perform upgrade of one or more JournalNodes");
       }
@@ -702,14 +702,14 @@ public class QuorumJournalManager implements JournalManager {
       throw new IOException("Timed out waiting for doUpgrade() response");
     }
   }
-  
+
   @Override
   public void doFinalize() throws IOException {
     QuorumCall<AsyncLogger, Void> call = loggers.doFinalize();
     try {
       call.waitFor(loggers.size(), loggers.size(), 0, timeoutMs,
           "doFinalize");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not finalize one or more JournalNodes");
       }
@@ -719,7 +719,7 @@ public class QuorumJournalManager implements JournalManager {
       throw new IOException("Timed out waiting for doFinalize() response");
     }
   }
-  
+
   @Override
   public boolean canRollBack(StorageInfo storage, StorageInfo prevStorage,
       int targetLayoutVersion) throws IOException {
@@ -728,12 +728,12 @@ public class QuorumJournalManager implements JournalManager {
     try {
       call.waitFor(loggers.size(), loggers.size(), 0, timeoutMs,
           "lockSharedStorage");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not check if roll back possible for"
             + " one or more JournalNodes");
       }
-      
+
       // Either they all return the same thing or this call fails, so we can
       // just return the first result.
       try {
@@ -751,7 +751,7 @@ public class QuorumJournalManager implements JournalManager {
       throw new IOException("Timed out waiting for lockSharedStorage() " +
           "response");
     }
-    
+
     throw new AssertionError("Unreachable code.");
   }
 
@@ -761,7 +761,7 @@ public class QuorumJournalManager implements JournalManager {
     try {
       call.waitFor(loggers.size(), loggers.size(), 0, timeoutMs,
           "doRollback");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not perform rollback of one or more JournalNodes");
       }
@@ -771,7 +771,7 @@ public class QuorumJournalManager implements JournalManager {
       throw new IOException("Timed out waiting for doFinalize() response");
     }
   }
-  
+
   @Override
   public void discardSegments(long startTxId) throws IOException {
     QuorumCall<AsyncLogger, Void> call = loggers.discardSegments(startTxId);
@@ -790,19 +790,19 @@ public class QuorumJournalManager implements JournalManager {
           "Timed out waiting for discardSegments() response");
     }
   }
-  
+
   @Override
   public long getJournalCTime() throws IOException {
     QuorumCall<AsyncLogger, Long> call = loggers.getJournalCTime();
     try {
       call.waitFor(loggers.size(), loggers.size(), 0,
           timeoutMs, "getJournalCTime");
-      
+
       if (call.countExceptions() > 0) {
         call.rethrowException("Could not journal CTime for one "
             + "more JournalNodes");
       }
-      
+
       // Either they all return the same thing or this call fails, so we can
       // just return the first result.
       try {
@@ -820,7 +820,7 @@ public class QuorumJournalManager implements JournalManager {
       throw new IOException("Timed out waiting for getJournalCTime() " +
           "response");
     }
-    
+
     throw new AssertionError("Unreachable code.");
   }
 }

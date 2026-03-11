@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -50,16 +50,16 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants;
 import org.apache.hadoop.util.Daemon;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * LeaseManager does the lease housekeeping for writing on files.   
+ * LeaseManager does the lease housekeeping for writing on files.
  * This class also provides useful static methods for lease recovery.
- * 
+ *
  * Lease Recovery Algorithm
  * 1) Namenode retrieves lease information
  * 2) For each file f in the lease, consider the last block b of f
@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * 2.4) p gets the block info from each datanode
  * 2.5) p computes the minimum block length
  * 2.6) p updates the datanodes, which have a valid generation stamp,
- *      with the new generation stamp and the minimum block length 
+ *      with the new generation stamp and the minimum block length
  * 2.7) p acknowledges the namenode the update results
 
  * 2.8) Namenode updates the BlockInfo
@@ -506,7 +506,7 @@ public class LeaseManager {
 
   public void setLeasePeriod(long softLimit, long hardLimit) {
     this.softLimit = softLimit;
-    this.hardLimit = hardLimit; 
+    this.hardLimit = hardLimit;
   }
 
   private synchronized Collection<Lease> getExpiredCandidateLeases() {
@@ -519,7 +519,7 @@ public class LeaseManager {
     }
     return expired;
   }
-  
+
   /******************************************************
    * Monitor checks for leases that have expired,
    * and disposes of them.
@@ -670,7 +670,7 @@ public class LeaseManager {
     lmthread = new Daemon(new Monitor());
     lmthread.start();
   }
-  
+
   void stopMonitor() {
     if (lmthread != null) {
       shouldRunMonitor = false;

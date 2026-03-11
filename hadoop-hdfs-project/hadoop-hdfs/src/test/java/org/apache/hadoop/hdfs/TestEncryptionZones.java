@@ -97,7 +97,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.DelegationTokenIssuer;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.crypto.key.KeyProviderDelegationTokenExtension.DelegationTokenExtension;
@@ -207,7 +207,7 @@ public class TestEncryptionZones {
     // Create a test key
     DFSTestUtil.createKey(TEST_KEY, cluster, conf);
   }
-  
+
   protected void setProvider() {
     // Need to set the client's KeyProvider to the NN's for JKS,
     // else the updates do not get flushed properly
@@ -2242,7 +2242,7 @@ public class TestEncryptionZones {
     dfsAdmin.createEncryptionZone(zonePath, TEST_KEY, NO_TRASH);
     final Path encryptedFilePath =
         new Path("/TestEncryptionZone/encryptedFile.txt");
-    final Path rawPath = 
+    final Path rawPath =
         new Path("/.reserved/raw/TestEncryptionZone/encryptedFile.txt");
     final String content = "hello world";
 

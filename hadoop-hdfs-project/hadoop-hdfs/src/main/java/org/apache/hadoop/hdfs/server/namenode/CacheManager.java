@@ -90,9 +90,9 @@ import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.collect.HashMultimap;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Multimap;
 
 /**
@@ -309,7 +309,7 @@ public class CacheManager {
     assert namesystem.hasReadLock();
     return Collections.unmodifiableCollection(directivesById.values());
   }
-  
+
   @VisibleForTesting
   public GSet<CachedBlock, CachedBlock> getCachedBlocks() {
     assert namesystem.hasReadLock();
@@ -372,7 +372,7 @@ public class CacheManager {
    * Calculates the absolute expiry time of the directive from the
    * {@link CacheDirectiveInfo.Expiration}. This converts a relative Expiration
    * into an absolute time based on the local clock.
-   * 
+   *
    * @param info to validate.
    * @param maxRelativeExpiryTime of the info's pool.
    * @return the expiration time, or the pool's max absolute expiration if the
@@ -574,11 +574,11 @@ public class CacheManager {
   /**
    * Factory method that makes a new CacheDirectiveInfo by applying fields in a
    * CacheDirectiveInfo to an existing CacheDirective.
-   * 
+   *
    * @param info with some or all fields set.
    * @param defaults directive providing default values for unset fields in
    *          info.
-   * 
+   *
    * @return new CacheDirectiveInfo of the info applied to the defaults.
    */
   private static CacheDirectiveInfo createFromInfoAndDefaults(
@@ -707,7 +707,7 @@ public class CacheManager {
     LOG.info("removeDirective of " + id + " successful.");
   }
 
-  public BatchedListEntries<CacheDirectiveEntry> 
+  public BatchedListEntries<CacheDirectiveEntry>
         listCacheDirectives(long prevId,
             CacheDirectiveInfo filter,
             FSPermissionChecker pc) throws IOException {
@@ -752,7 +752,7 @@ public class CacheManager {
           !(info.getId().equals(id))) {
         break;
       }
-      if (filter.getPool() != null && 
+      if (filter.getPool() != null &&
           !info.getPool().equals(filter.getPool())) {
         continue;
       }
@@ -778,7 +778,7 @@ public class CacheManager {
 
   /**
    * Create a cache pool.
-   * 
+   *
    * Only the superuser should be able to call this function.
    *
    * @param info    The info for the cache pool to create.
@@ -808,7 +808,7 @@ public class CacheManager {
 
   /**
    * Modify a cache pool.
-   * 
+   *
    * Only the superuser should be able to call this function.
    *
    * @param info
@@ -872,13 +872,13 @@ public class CacheManager {
       LOG.info("modifyCachePool of " + info + " failed: ", e);
       throw e;
     }
-    LOG.info("modifyCachePool of {} successful; {}", info.getPoolName(), 
+    LOG.info("modifyCachePool of {} successful; {}", info.getPoolName(),
         bld.toString());
   }
 
   /**
    * Remove a cache pool.
-   * 
+   *
    * Only the superuser should be able to call this function.
    *
    * @param poolName
@@ -914,7 +914,7 @@ public class CacheManager {
       listCachePools(FSPermissionChecker pc, String prevKey) {
     assert namesystem.hasReadLock();
     final int NUM_PRE_ALLOCATED_ENTRIES = 16;
-    ArrayList<CachePoolEntry> results = 
+    ArrayList<CachePoolEntry> results =
         new ArrayList<CachePoolEntry>(NUM_PRE_ALLOCATED_ENTRIES);
     SortedMap<String, CachePool> tailMap = cachePools.tailMap(prevKey, false);
     int numListed = 0;
@@ -984,7 +984,7 @@ public class CacheManager {
     final long startTime = Time.monotonicNow();
     final long endTime;
     try {
-      final DatanodeDescriptor datanode = 
+      final DatanodeDescriptor datanode =
           blockManager.getDatanodeManager().getDatanode(datanodeID);
       if (datanode == null || !datanode.isRegistered()) {
         throw new IOException(
@@ -1003,7 +1003,7 @@ public class CacheManager {
       metrics.addCacheBlockReport((int) (endTime - startTime));
     }
     LOG.debug("Processed cache report from {}, blocks: {}, " +
-        "processing time: {} msecs", datanodeID, blockIds.size(), 
+        "processing time: {} msecs", datanodeID, blockIds.size(),
         (endTime - startTime));
   }
 

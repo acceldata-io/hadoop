@@ -50,7 +50,7 @@ import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 import java.util.function.Supplier;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Test cases for in progress tailing edit logs by

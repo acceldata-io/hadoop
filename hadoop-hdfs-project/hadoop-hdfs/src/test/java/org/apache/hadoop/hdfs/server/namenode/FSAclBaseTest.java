@@ -58,7 +58,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Tests NameNode interaction for all ACL modification APIs.  This test suite

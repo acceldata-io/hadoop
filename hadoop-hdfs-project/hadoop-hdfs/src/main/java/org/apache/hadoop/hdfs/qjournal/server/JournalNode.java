@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hdfs.qjournal.server;
 
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.base.Strings;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.util.VersionInfo;
 import org.slf4j.Logger;
@@ -87,9 +87,9 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
   static {
     HdfsConfiguration.init();
   }
-  
+
   /**
-   * When stopped, the daemon will exit with this code. 
+   * When stopped, the daemon will exit with this code.
    */
   private int resultCode = 0;
 
@@ -98,7 +98,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
                                           StartupOption startOpt)
       throws IOException {
     QuorumJournalManager.checkJournalId(jid);
-    
+
     Journal journal = journalsById.get(jid);
     if (journal == null) {
       File logDir = getLogDir(jid, nameServiceId);
@@ -281,7 +281,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
       jSyncer.stopSync();
     }
 
-    if (rpcServer != null) { 
+    if (rpcServer != null) {
       rpcServer.stop();
     }
 
@@ -292,7 +292,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
         LOG.warn("Unable to stop HTTP server for " + this, ioe);
       }
     }
-    
+
     for (Journal j : journalsById.values()) {
       IOUtils.cleanupWithLogger(LOG, j);
     }
@@ -319,7 +319,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
     }
     return resultCode;
   }
-  
+
   public void stopAndJoin(int rc) throws InterruptedException {
     stop(rc);
     join();
@@ -327,7 +327,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
 
   /**
    * Return the directory inside our configured storage
-   * dir which corresponds to a given journal. 
+   * dir which corresponds to a given journal.
    * @param jid the journal identifier
    * @return the file, which may or may not exist yet
    */
@@ -361,7 +361,7 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
   @Override // JournalNodeMXBean
   public String getJournalsStatus() {
     // jid:{Formatted:True/False}
-    Map<String, Map<String, String>> status = 
+    Map<String, Map<String, String>> status =
         new HashMap<String, Map<String, String>>();
     synchronized (this) {
       for (Map.Entry<String, Journal> entry : journalsById.entrySet()) {
@@ -370,8 +370,8 @@ public class JournalNode implements Tool, Configurable, JournalNodeMXBean {
         status.put(entry.getKey(), jMap);
       }
     }
-    
-    // It is possible that some journals have been formatted before, while the 
+
+    // It is possible that some journals have been formatted before, while the
     // corresponding journals are not in journalsById yet (because of restarting
     // JN, e.g.). For simplicity, let's just assume a journal is formatted if
     // there is a directory for it. We can also call analyzeStorage method for

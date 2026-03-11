@@ -35,7 +35,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import java.util.function.Supplier;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;

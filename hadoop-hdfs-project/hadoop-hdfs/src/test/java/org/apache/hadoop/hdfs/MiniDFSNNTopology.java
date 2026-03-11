@@ -23,7 +23,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * This class is used to specify the setup of namenodes when instantiating
@@ -50,7 +50,7 @@ public class MiniDFSNNTopology {
           .setHttpPort(nameNodeHttpPort)
           .setIpcPort(nameNodePort)));
   }
-  
+
 
   /**
    * Set up an HA topology with a single HA nameservice.
@@ -154,7 +154,7 @@ public class MiniDFSNNTopology {
     }
     return count;
   }
-  
+
   public NNConf getOnlyNameNode() {
     Preconditions.checkState(countNameNodes() == 1,
         "must have exactly one NN!");
@@ -164,7 +164,7 @@ public class MiniDFSNNTopology {
   public boolean isFederated() {
     return nameservices.size() > 1 || federation;
   }
-  
+
   /**
    * @return true if at least one of the nameservices
    * in the topology has HA enabled.
@@ -192,7 +192,7 @@ public class MiniDFSNNTopology {
     }
     return true;
   }
-  
+
   /**
    * @return true if all of the NNs in the cluster have their IPC
    * port specified to be non-ephemeral.
@@ -211,15 +211,15 @@ public class MiniDFSNNTopology {
   public List<NSConf> getNameservices() {
     return nameservices;
   }
-  
+
   public static class NSConf {
     private final String id;
     private final List<NNConf> nns = Lists.newArrayList();
-    
+
     public NSConf(String id) {
       this.id = id;
     }
-    
+
     public NSConf addNN(NNConf nn) {
       this.nns.add(nn);
       return this;
@@ -233,13 +233,13 @@ public class MiniDFSNNTopology {
       return nns;
     }
   }
-  
+
   public static class NNConf {
     private final String nnId;
     private int httpPort;
     private int ipcPort;
     private String clusterId;
-    
+
     public NNConf(String nnId) {
       this.nnId = nnId;
     }
@@ -251,7 +251,7 @@ public class MiniDFSNNTopology {
     int getIpcPort() {
       return ipcPort;
     }
-    
+
     int getHttpPort() {
       return httpPort;
     }

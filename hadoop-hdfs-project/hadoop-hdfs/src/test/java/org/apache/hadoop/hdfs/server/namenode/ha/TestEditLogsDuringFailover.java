@@ -45,7 +45,7 @@ import static org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter.getFileInfo
 import org.junit.Test;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Lists;
 
 /**
  * Test cases for the handling of edit logs during failover

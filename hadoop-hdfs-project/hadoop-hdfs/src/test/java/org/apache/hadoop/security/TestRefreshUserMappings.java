@@ -34,8 +34,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -60,10 +64,10 @@ public class TestRefreshUserMappings {
   Configuration config;
   private static final long groupRefreshTimeoutSec = 1;
   private String tempResource = null;
-  
+
   public static class MockUnixGroupsMapping implements GroupMappingServiceProvider {
     private int i=0;
-    
+
     @Override
     public List<String> getGroups(String user) throws IOException {
       System.out.println("Getting groups in MockUnixGroupsMapping");
@@ -80,12 +84,12 @@ public class TestRefreshUserMappings {
     public void cacheGroupsRefresh() throws IOException {
       System.out.println("Refreshing groups in MockUnixGroupsMapping");
     }
-  
+
     @Override
     public void cacheGroupsAdd(List<String> groups) throws IOException {
     }
   }
-  
+
   @Before
   public void setUp() throws Exception {
     config = new Configuration();
@@ -94,7 +98,7 @@ public class TestRefreshUserMappings {
         GroupMappingServiceProvider.class);
     config.setLong("hadoop.security.groups.cache.secs", groupRefreshTimeoutSec);
     Groups.getUserToGroupsMappingService(config);
-    
+
     FileSystem.setDefaultUri(config, "hdfs://localhost:" + "0");
     cluster = new MiniDFSCluster.Builder(config).build();
     cluster.waitActive();
@@ -114,7 +118,7 @@ public class TestRefreshUserMappings {
       tempResource = null;
     }
   }
-    
+
   @Test
   public void testGroupMappingRefresh() throws Exception {
     DFSAdmin admin = new DFSAdmin(config);
@@ -173,11 +177,11 @@ public class TestRefreshUserMappings {
         getProxySuperuserGroupConfKey(SUPER_USER);
     String userKeyHosts = DefaultImpersonationProvider.getTestProvider().
         getProxySuperuserIpConfKey (SUPER_USER);
-    
+
     config.set(userKeyGroups, "gr3,gr4,gr5"); // superuser can proxy for this group
     config.set(userKeyHosts,"127.0.0.1");
     ProxyUsers.refreshSuperUserGroupsConfiguration(config);
-    
+
     UserGroupInformation ugi1 = mock(UserGroupInformation.class);
     UserGroupInformation ugi2 = mock(UserGroupInformation.class);
     UserGroupInformation suUgi = mock(UserGroupInformation.class);
@@ -186,10 +190,10 @@ public class TestRefreshUserMappings {
 
     when(suUgi.getShortUserName()).thenReturn(SUPER_USER); // super user
     when(suUgi.getUserName()).thenReturn(SUPER_USER+"L"); // super user
-     
+
     when(ugi1.getShortUserName()).thenReturn("user1");
     when(ugi2.getShortUserName()).thenReturn("user2");
-    
+
     when(ugi1.getUserName()).thenReturn("userL1");
     when(ugi2.getUserName()).thenReturn("userL2");
 
@@ -213,18 +217,18 @@ public class TestRefreshUserMappings {
     } catch (AuthorizationException e) {
       fail("first auth for " + ugi2.getShortUserName() + " should've succeeded: " + e.getLocalizedMessage());
     }
-    
+
     // refresh will look at configuration on the server side
     // add additional resource with the new value
     // so the server side will pick it up
     String rsrc = "testGroupMappingRefresh_rsrc.xml";
     tempResource = addNewConfigResource(rsrc, userKeyGroups, "gr2",
         userKeyHosts, "127.0.0.1");
-    
+
     DFSAdmin admin = new DFSAdmin(config);
     String [] args = new String[]{"-refreshSuperUserGroupsConfiguration"};
     admin.run(args);
-    
+
     try {
       ProxyUsers.authorize(ugi2, "127.0.0.1");
       fail("second auth for " + ugi2.getShortUserName() + " should've failed ");
@@ -239,8 +243,8 @@ public class TestRefreshUserMappings {
     } catch (AuthorizationException e) {
       fail("second auth for " + ugi1.getShortUserName() + " should've succeeded: " + e.getLocalizedMessage());
     }
-    
-    
+
+
   }
 
   public static String addNewConfigResource(String rsrcName, String keyGroup,

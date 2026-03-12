@@ -32,39 +32,38 @@ import com.microsoft.azure.storage.SendingRequestEvent;
 import com.microsoft.azure.storage.StorageEvent;
 
 /*
- * Self throttling is implemented by hooking into send & response callbacks 
+ * Self throttling is implemented by hooking into send & response callbacks
  * One instance of this class is created per operationContext so each blobUpload/blobDownload/etc.
- * 
- * Self throttling only applies to 2nd and subsequent packets of an operation.  This is a simple way to 
+ *
+ * Self throttling only applies to 2nd and subsequent packets of an operation.  This is a simple way to
  * ensure it only affects bulk transfers and not every tiny request.
- * 
+ *
  * A blobDownload will involve sequential packet transmissions and so there are no concurrency concerns
  * A blobUpload will generally involve concurrent upload worker threads that share one operationContext and one throttling instance.
- *   -- we do not track the latencies for each worker thread as they are doing similar work and will rarely collide in practice.  
- *   -- concurrent access to lastE2Edelay must be protected.  
- *       -- volatile is necessary and should be sufficient to protect simple access to primitive values (java 1.5 onwards) 
+ *   -- we do not track the latencies for each worker thread as they are doing similar work and will rarely collide in practice.
+ *   -- concurrent access to lastE2Edelay must be protected.
+ *       -- volatile is necessary and should be sufficient to protect simple access to primitive values (java 1.5 onwards)
  *       -- synchronized{} blocks are also used to be conservative and for easier maintenance.
- *   
+ *
  * If an operation were to perform concurrent GETs and PUTs there is the possibility of getting confused regarding
  * whether lastE2Edelay was a read or write measurement.  This scenario does not occur.
  *
  * readFactor  = target read throughput as factor of unrestricted throughput.
  * writeFactor = target write throughput as factor of unrestricted throughput.
- * 
+ *
  * As we introduce delays it is important to only measure the actual E2E latency and not the augmented latency
  * To achieve this, we fiddle the 'startDate' of the transfer tracking object.
  */
 
 
 /**
- * 
+ *
  * Introduces delays in our Azure traffic to prevent overrunning the server-side throttling limits.
  *
  */
 @InterfaceAudience.Private
 public class SelfThrottlingIntercept {
-  public static final Logger LOG = LogFactory
-      .getLog(SelfThrottlingIntercept.class);
+  public static final Logger LOG = LoggerFactory.getLogger(SelfThrottlingIntercept.class);
 
   private final float readFactor;
   private final float writeFactor;
@@ -73,7 +72,7 @@ public class SelfThrottlingIntercept {
   // Concurrency: access to non-final members must be thread-safe
   private long lastE2Elatency;
 
-  public SelfThrottlingIntercept(OperationContext operationContext, 
+  public SelfThrottlingIntercept(OperationContext operationContext,
       float readFactor, float writeFactor) {
     this.operationContext = operationContext;
     this.readFactor = readFactor;

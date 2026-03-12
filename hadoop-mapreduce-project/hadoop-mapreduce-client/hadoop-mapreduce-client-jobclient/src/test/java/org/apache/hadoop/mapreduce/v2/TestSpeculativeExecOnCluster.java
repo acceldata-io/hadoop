@@ -73,8 +73,7 @@ import org.junit.runners.Parameterized;
 @Ignore
 @RunWith(Parameterized.class)
 public class TestSpeculativeExecOnCluster {
-  private static final Logger LOG = LogFactory
-      .getLog(TestSpeculativeExecOnCluster.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestSpeculativeExecOnCluster.class);
 
   private static final int NODE_MANAGERS_COUNT = 2;
   private static final boolean ENABLE_SPECULATIVE_MAP = true;

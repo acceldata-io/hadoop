@@ -320,7 +320,7 @@ public class DataNode extends ReconfigurableBase
         ", blockid: %s" + // block id
         ", duration(ns): %s";  // duration time
 
-  static final Log ClientTraceLog =
+  static final Logger ClientTraceLog =
     LoggerFactory.getLogger(DataNode.class.getName() + ".clienttrace");
 
   private static final String USAGE =
@@ -360,7 +360,7 @@ public class DataNode extends ReconfigurableBase
               FS_GETSPACEUSED_JITTER_KEY,
               FS_GETSPACEUSED_CLASSNAME));
 
-  public static final Log METRICS_LOG = LoggerFactory.getLogger("DataNodeMetricsLog");
+  public static final Logger METRICS_LOG = LoggerFactory.getLogger("DataNodeMetricsLog");
 
   private static final String DATANODE_HTRACE_PREFIX = "datanode.htrace.";
   private final FileIoProvider fileIoProvider;

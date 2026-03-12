@@ -34,10 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.logging.impl.Jdk14Logger;
-import org.apache.commons.logging.impl.Log4JLogger;
+
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -48,9 +46,12 @@ import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.hadoop.util.GenericsUtil;
 import org.apache.hadoop.util.ServletUtil;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Change log level in runtime.
@@ -340,21 +341,17 @@ public class LogLevel {
         out.println(MARKER
             + "Submitted Class Name: <b>" + logName + "</b><br />");
 
-        Logger log = LoggerFactory.getLogger(logName);
+        org.slf4j.Logger log = LoggerFactory.getLogger(logName);
         out.println(MARKER
             + "Log Class: <b>" + log.getClass().getName() +"</b><br />");
         if (level != null) {
           out.println(MARKER + "Submitted Level: <b>" + level + "</b><br />");
         }
 
-        if (log instanceof Log4JLogger) {
-          process(((Log4JLogger)log).getLogger(), level, out);
-        }
-        else if (log instanceof Jdk14Logger) {
-          process(((Jdk14Logger)log).getLogger(), level, out);
-        }
-        else {
-          out.println("Sorry, " + log.getClass() + " not supported.<br />");
+        if (GenericsUtil.isLog4jLogger(logName)) {
+          process(Logger.getLogger(logName), level, out);
+        } else {
+          out.println("Sorry, setting log level is only supported for log4j loggers.<br />");
         }
       }
 

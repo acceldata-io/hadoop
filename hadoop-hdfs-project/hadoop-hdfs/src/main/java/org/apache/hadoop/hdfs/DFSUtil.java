@@ -75,6 +75,8 @@ import org.apache.hadoop.hdfs.server.namenode.FSDirectory;
 import org.apache.hadoop.hdfs.server.namenode.INodesInPath;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.HadoopIllegalArgumentException;
@@ -686,8 +688,9 @@ public class DFSUtil {
     } else {
       // Ensure that the internal service is indeed in the list of all available
       // nameservices.
-      Set<String> availableNameServices = Sets.newHashSet(conf
-          .getTrimmedStringCollection(DFSConfigKeys.DFS_NAMESERVICES));
+      Collection<String> namespaces = conf
+          .getTrimmedStringCollection(DFSConfigKeys.DFS_NAMESERVICES);
+      Set<String> availableNameServices = new HashSet<>(namespaces);
       for (String nsId : parentNameServices) {
         if (!availableNameServices.contains(nsId)) {
           throw new IOException("Unknown nameservice: " + nsId);

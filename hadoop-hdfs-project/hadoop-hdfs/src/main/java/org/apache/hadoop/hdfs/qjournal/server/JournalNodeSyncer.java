@@ -41,6 +41,7 @@ import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Daemon;
+import org.apache.hadoop.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -278,7 +280,7 @@ public class JournalNodeSyncer {
       }
 
       if (uriStr == null || uriStr.isEmpty()) {
-        HashSet<String> sharedEditsUri = Sets.newHashSet();
+        HashSet<String> sharedEditsUri = new HashSet<>();
         if (nameServiceId != null) {
           Collection<String> nnIds = DFSUtilClient.getNameNodeIds(
               conf, nameServiceId);
@@ -322,7 +324,8 @@ public class JournalNodeSyncer {
     URI uri = new URI(uriStr);
 
     InetSocketAddress boundIpcAddress = jn.getBoundIpcAddress();
-    Set<InetSocketAddress> excluded = Sets.newHashSet(boundIpcAddress);
+    Set<InetSocketAddress> excluded = new HashSet<>();
+    excluded.add(boundIpcAddress);
     List<InetSocketAddress> addrList = Util.getLoggerAddresses(uri, excluded);
 
     // Exclude the current JournalNode instance (a local address and the same port).  If the address

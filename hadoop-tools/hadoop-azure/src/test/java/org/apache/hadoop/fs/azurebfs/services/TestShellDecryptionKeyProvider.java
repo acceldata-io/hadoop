@@ -39,8 +39,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestShellDecryptionKeyProvider {
-  public static final Logger LOG = LogFactory
-      .getLog(TestShellDecryptionKeyProvider.class);
+  public static final Logger LOG = LoggerFactory.getLogger(TestShellDecryptionKeyProvider.class);
   private static final File TEST_ROOT_DIR = new File(System.getProperty(
       "test.build.data", "/tmp"), "TestShellDecryptionKeyProvider");
 

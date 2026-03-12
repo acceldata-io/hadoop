@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hdfs.server.protocol.RemoteEditLog;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.ipc.CallerContext;
 
@@ -2404,7 +2405,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     int maxEventsPerRPC = nn.getConf().getInt(
         DFSConfigKeys.DFS_NAMENODE_INOTIFY_MAX_EVENTS_PER_RPC_KEY,
         DFSConfigKeys.DFS_NAMENODE_INOTIFY_MAX_EVENTS_PER_RPC_DEFAULT);
-    FSEditLogger LOG = namesystem.getFSImage().getEditLog();
+    FSEditLog log = namesystem.getFSImage().getEditLog();
     long syncTxid = log.getSyncTxId();
     // If we haven't synced anything yet, we can only read finalized
     // segments since we can't reliably determine which txns in in-progress

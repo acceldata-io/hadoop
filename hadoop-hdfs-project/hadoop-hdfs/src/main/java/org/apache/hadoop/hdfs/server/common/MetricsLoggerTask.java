@@ -58,11 +58,11 @@ public class MetricsLoggerTask implements Runnable {
     }
   }
 
-  private Log metricsLog;
+  private Logger metricsLog;
   private String nodeName;
   private short maxLogLineLength;
 
-  public MetricsLoggerTask(Log metricsLog, String nodeName,
+  public MetricsLoggerTask(Logger metricsLog, String nodeName,
       short maxLogLineLength) {
     this.metricsLog = metricsLog;
     this.nodeName = nodeName;
@@ -118,7 +118,7 @@ public class MetricsLoggerTask implements Runnable {
         .substring(0, maxLogLineLength) + "...");
   }
 
-  private static boolean hasAppenders(Log logger) {
+  private static boolean hasAppenders(Logger logger) {
     if (!(logger instanceof Log4JLogger)) {
       // Don't bother trying to determine the presence of appenders.
       return true;
@@ -150,7 +150,7 @@ public class MetricsLoggerTask implements Runnable {
    * Make the metrics logger async and add all pre-existing appenders to the
    * async appender.
    */
-  public static void makeMetricsLoggerAsync(Log metricsLog) {
+  public static void makeMetricsLoggerAsync(Logger metricsLog) {
     if (!(metricsLog instanceof Log4JLogger)) {
       LOG.warn("Metrics logging will not be async since "
           + "the logger is not log4j");

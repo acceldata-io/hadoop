@@ -104,7 +104,7 @@ public class TestSecurityTokenEditLog {
   @Test
   public void testEditLog() throws IOException {
 
-    // start a cluster 
+    // start a cluster
     Configuration conf = new HdfsConfiguration();
     MiniDFSCluster cluster = null;
     FileSystem fileSys = null;
@@ -117,18 +117,18 @@ public class TestSecurityTokenEditLog {
       cluster.waitActive();
       fileSys = cluster.getFileSystem();
       final FSNamesystem namesystem = cluster.getNamesystem();
-  
+
       for (Iterator<URI> it = cluster.getNameDirs(0).iterator(); it.hasNext(); ) {
         File dir = new File(it.next().getPath());
         System.out.println(dir);
       }
-      
+
       FSImage fsimage = namesystem.getFSImage();
       FSEditLog editLog = fsimage.getEditLog();
-  
+
       // set small size of flush buffer
       editLog.setOutputBufferCapacity(2048);
-    
+
       // Create threads and make them run transactions concurrently.
       Thread threadId[] = new Thread[NUM_THREADS];
       for (int i = 0; i < NUM_THREADS; i++) {
@@ -136,18 +136,18 @@ public class TestSecurityTokenEditLog {
         threadId[i] = new Thread(trans, "TransactionThread-" + i);
         threadId[i].start();
       }
-  
+
       // wait for all transactions to get over
       for (int i = 0; i < NUM_THREADS; i++) {
         try {
           threadId[i].join();
         } catch (InterruptedException e) {
-          i--;      // retry 
+          i--;      // retry
         }
-      } 
-      
+      }
+
       editLog.close();
-        
+
       // Verify that we can read in all the transactions that we have written.
       // If there were any corruptions, it is likely that the reading in
       // of these transactions will throw an exception.
@@ -160,8 +160,8 @@ public class TestSecurityTokenEditLog {
       for (StorageDirectory sd : fsimage.getStorage().dirIterable(NameNodeDirType.EDITS)) {
         File editFile = NNStorage.getFinalizedEditsFile(sd, 1, 1 + expectedTransactions - 1);
         System.out.println("Verifying file: " + editFile);
-        
-        FSEditLogLoader loader = new FSEditLogLoader(namesystem, 0);        
+
+        FSEditLogLoader loader = new FSEditLogLoader(namesystem, 0);
         long numEdits = loader.loadFSEdits(
             new EditLogFileInputStream(editFile), 1);
         assertEquals("Verification for " + editFile, expectedTransactions, numEdits);
@@ -171,7 +171,7 @@ public class TestSecurityTokenEditLog {
       if(cluster != null) cluster.shutdown();
     }
   }
-  
+
   @Test(timeout=10000)
   public void testEditsForCancelOnTokenExpire() throws IOException,
   InterruptedException {
@@ -184,7 +184,7 @@ public class TestSecurityTokenEditLog {
 
     Text renewer = new Text(UserGroupInformation.getCurrentUser().getUserName());
     FSImage fsImage = mock(FSImage.class);
-    FSEditLogger LOG = mock(FSEditLog.class);
+    FSEditLog log = mock(FSEditLog.class);
     doReturn(log).when(fsImage).getEditLog();
     // verify that the namesystem read lock is held while logging token
     // expirations.  the namesystem is not updated, so write lock is not
@@ -204,11 +204,11 @@ public class TestSecurityTokenEditLog {
     ).when(log).logCancelDelegationToken(any(DelegationTokenIdentifier.class));
     FSNamesystem fsn = new FSNamesystem(conf, fsImage);
     fsnRef.set(fsn);
-    
+
     DelegationTokenSecretManager dtsm = fsn.getDelegationTokenSecretManager();
     try {
       dtsm.startThreads();
-      
+
       // get two tokens
       Token<DelegationTokenIdentifier> token1 = fsn.getDelegationToken(renewer);
       Token<DelegationTokenIdentifier> token2 = fsn.getDelegationToken(renewer);
@@ -216,14 +216,14 @@ public class TestSecurityTokenEditLog {
           token1.decodeIdentifier();
       DelegationTokenIdentifier ident2 =
           token2.decodeIdentifier();
-      
+
       // verify we got the tokens
       verify(log, times(1)).logGetDelegationToken(eq(ident1), anyLong());
       verify(log, times(1)).logGetDelegationToken(eq(ident2), anyLong());
-      
+
       // this is a little tricky because DTSM doesn't let us set scan interval
       // so need to periodically sleep, then stop/start threads to force scan
-      
+
       // renew first token 1/2 to expire
       Thread.sleep(renewInterval/2);
       fsn.renewDelegationToken(token2);
@@ -231,10 +231,10 @@ public class TestSecurityTokenEditLog {
       // force scan and give it a little time to complete
       dtsm.stopThreads(); dtsm.startThreads();
       Thread.sleep(250);
-      // no token has expired yet 
+      // no token has expired yet
       verify(log, times(0)).logCancelDelegationToken(eq(ident1));
       verify(log, times(0)).logCancelDelegationToken(eq(ident2));
-      
+
       // sleep past expiration of 1st non-renewed token
       Thread.sleep(renewInterval/2);
       dtsm.stopThreads(); dtsm.startThreads();
@@ -242,7 +242,7 @@ public class TestSecurityTokenEditLog {
       // non-renewed token should have implicitly been cancelled
       verify(log, times(1)).logCancelDelegationToken(eq(ident1));
       verify(log, times(0)).logCancelDelegationToken(eq(ident2));
-      
+
       // sleep past expiration of 2nd renewed token
       Thread.sleep(renewInterval/2);
       dtsm.stopThreads(); dtsm.startThreads();

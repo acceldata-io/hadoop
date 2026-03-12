@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
@@ -108,7 +109,7 @@ public class TestQJMWithFaults {
       qjm.format(FAKE_NSINFO, false);
       doWorkload(cluster, qjm);
       
-      SortedSet<Integer> ipcCounts = Sets.newTreeSet();
+      SortedSet<Integer> ipcCounts = new TreeSet<>();
       for (AsyncLogger l : qjm.getLoggerSetForTests().getLoggersForTests()) {
         InvocationCountingChannel ch = (InvocationCountingChannel)l;
         ch.waitForAllPendingCalls();

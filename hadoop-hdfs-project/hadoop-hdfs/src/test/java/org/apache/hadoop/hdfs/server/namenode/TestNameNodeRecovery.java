@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -300,7 +301,7 @@ public class TestNameNodeRecovery {
 
     @Override
     public Set<Long> getValidTxIds() {
-      return Sets.newHashSet(0L);
+      return new HashSet<>(Arrays.asList(0L));
     } 
     
     public int getMaxOpSize() {
@@ -342,7 +343,7 @@ public class TestNameNodeRecovery {
 
     @Override
     public Set<Long> getValidTxIds() {
-      return Sets.newHashSet(0L);
+      return new HashSet<>(Arrays.asList(0L));
     } 
   }
 
@@ -388,7 +389,7 @@ public class TestNameNodeRecovery {
 
     @Override
     public Set<Long> getValidTxIds() {
-      return Sets.newHashSet(1L , 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L);
+      return new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L));
     }
   }
   

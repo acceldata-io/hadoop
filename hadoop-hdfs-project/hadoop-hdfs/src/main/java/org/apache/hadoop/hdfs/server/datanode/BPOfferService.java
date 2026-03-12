@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -141,12 +142,12 @@ class BPOfferService {
   void refreshNNList(String serviceId, List<String> nnIds,
       ArrayList<InetSocketAddress> addrs,
       ArrayList<InetSocketAddress> lifelineAddrs) throws IOException {
-    Set<InetSocketAddress> oldAddrs = Sets.newHashSet();
+    Set<InetSocketAddress> oldAddrs = new HashSet<>();
     for (BPServiceActor actor : bpServices) {
       oldAddrs.add(actor.getNNSocketAddress());
     }
-    Set<InetSocketAddress> newAddrs = Sets.newHashSet(addrs);
-
+    Set<InetSocketAddress> newAddrs = new HashSet<>(addrs);
+    
     // Process added NNs
     Set<InetSocketAddress> addedNNs = Sets.difference(newAddrs, oldAddrs);
     for (InetSocketAddress addedNN : addedNNs) {

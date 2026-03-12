@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
@@ -217,7 +217,7 @@ public class LogAggregationIndexedFileController
             // append a simple character("\n") to move the writer cursor, so
             // we could get the correct position when we call
             // fsOutputStream.getStartPos()
-            final byte[] dummyBytes = "\n".getBytes(Charset.forName("UTF-8"));
+            final byte[] dummyBytes = "\n".getBytes(StandardCharsets.UTF_8);
             fsDataOStream.write(dummyBytes);
             fsDataOStream.flush();
 
@@ -282,7 +282,7 @@ public class LogAggregationIndexedFileController
           int actualLength = checksumFileInputStream.read(b);
           if (actualLength == nameLength) {
             String recoveredLogFile = new String(
-                b, Charset.forName("UTF-8"));
+                b, StandardCharsets.UTF_8);
             if (recoveredLogFile.equals(
                 currentRemoteLogFile.getName())) {
               overwriteCheckSum = false;
@@ -336,7 +336,7 @@ public class LogAggregationIndexedFileController
         String fileName = aggregatedLogFile.getName();
         checksumFileOutputStream.writeInt(fileName.length());
         checksumFileOutputStream.write(fileName.getBytes(
-            Charset.forName("UTF-8")));
+            StandardCharsets.UTF_8));
         checksumFileOutputStream.writeLong(
             currentAggregatedLogFileLength);
         checksumFileOutputStream.flush();
@@ -399,7 +399,7 @@ public class LogAggregationIndexedFileController
         if (outputStreamState != null &&
             outputStreamState.getOutputStream() != null) {
           outputStreamState.getOutputStream().write(
-              message.getBytes(Charset.forName("UTF-8")));
+              message.getBytes(StandardCharsets.UTF_8));
         }
       } finally {
         IOUtils.cleanupWithLogger(LOG, in);
@@ -594,7 +594,7 @@ public class LogAggregationIndexedFileController
               Times.format(candidate.getLastModifiedTime()),
               in, os, buf, ContainerLogAggregationType.AGGREGATED);
           byte[] b = aggregatedLogSuffix(candidate.getFileName())
-              .getBytes(Charset.forName("UTF-8"));
+              .getBytes(StandardCharsets.UTF_8);
           os.write(b, 0, b.length);
           findLogs = true;
         } catch (IOException e) {
@@ -725,7 +725,7 @@ public class LogAggregationIndexedFileController
         byte[] b = new byte[nameLength];
         int actualLength = checksumFileInputStream.read(b);
         if (actualLength == nameLength) {
-          nodeName = new String(b, Charset.forName("UTF-8"));
+          nodeName = new String(b, StandardCharsets.UTF_8);
           index = checksumFileInputStream.readLong();
         } else {
           continue;
@@ -870,9 +870,9 @@ public class LogAggregationIndexedFileController
         if (LOG.isDebugEnabled()) {
           LOG.debug("the length of loaded UUID:{}", uuidReadLen);
           LOG.debug("the loaded UUID:{}", new String(uuidRead,
-              Charset.forName("UTF-8")));
+              StandardCharsets.UTF_8));
           LOG.debug("the expected UUID:{}", new String(this.uuid,
-              Charset.forName("UTF-8")));
+              StandardCharsets.UTF_8));
         }
         throw new IOException("The UUID from "
             + remoteLogPath + " is not correct. The offset of loaded UUID is "
@@ -1278,7 +1278,7 @@ public class LogAggregationIndexedFileController
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       return digest.digest(appId.toString().getBytes(
-          Charset.forName("UTF-8")));
+          StandardCharsets.UTF_8));
     } catch (NoSuchAlgorithmException ex) {
       throw new IOException(ex);
     }

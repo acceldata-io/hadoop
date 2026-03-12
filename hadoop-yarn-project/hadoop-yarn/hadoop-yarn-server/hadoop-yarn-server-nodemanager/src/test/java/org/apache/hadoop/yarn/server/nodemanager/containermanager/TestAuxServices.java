@@ -46,13 +46,13 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -162,7 +162,7 @@ public class TestAuxServices {
 
          LightService(String name, char idef, int expected_appId) {
       this(name, idef, expected_appId, null);
-    } 
+    }
     LightService(String name, char idef, int expected_appId, ByteBuffer meta) {
       super(name);
       this.idef = idef;
@@ -176,7 +176,7 @@ public class TestAuxServices {
       return (ArrayList<Integer>)this.stoppedApps.clone();
     }
 
-    @Override 
+    @Override
     protected void serviceInit(Configuration conf) throws Exception {
       remaining_init = conf.getInt(idef + ".expected.init", 0);
       remaining_stop = conf.getInt(idef + ".expected.stop", 0);
@@ -221,13 +221,13 @@ public class TestAuxServices {
  }
 
   static class ServiceA extends LightService {
-    public ServiceA() { 
+    public ServiceA() {
       super("A", 'A', 65, ByteBuffer.wrap("A".getBytes()));
     }
   }
 
   static class ServiceB extends LightService {
-    public ServiceB() { 
+    public ServiceB() {
       super("B", 'B', 66, ByteBuffer.wrap("B".getBytes()));
     }
   }
@@ -426,7 +426,7 @@ public class TestAuxServices {
     Assert.assertTrue(meta.size() == 1);
     for(Entry<String, ByteBuffer> i : meta.entrySet()) {
       auxName = i.getKey();
-      String auxClassPath = Charsets.UTF_8.decode(i.getValue()).toString();
+      String auxClassPath = StandardCharsets.UTF_8.decode(i.getValue()).toString();
       defaultAuxClassPath = new HashSet<String>(Arrays.asList(StringUtils
           .getTrimmedStrings(auxClassPath)));
     }
@@ -478,7 +478,7 @@ public class TestAuxServices {
       Set<String> customizedAuxClassPath = null;
       for(Entry<String, ByteBuffer> i : meta.entrySet()) {
         Assert.assertTrue(auxName.equals(i.getKey()));
-        String classPath = Charsets.UTF_8.decode(i.getValue()).toString();
+        String classPath = StandardCharsets.UTF_8.decode(i.getValue()).toString();
         customizedAuxClassPath = new HashSet<String>(Arrays.asList(StringUtils
             .getTrimmedStrings(classPath)));
         Assert.assertTrue(classPath.contains(testJar.getName()));
@@ -574,7 +574,7 @@ public class TestAuxServices {
     ApplicationId appId2 = ApplicationId.newInstance(0, 66);
     event = new AuxServicesEvent(
         AuxServicesEventType.APPLICATION_STOP, "user0", appId2, "Bsrv", null);
-    // verify all services got the stop event 
+    // verify all services got the stop event
     aux.handle(event);
     Collection<AuxiliaryService> servs = aux.getServices();
     for (AuxiliaryService serv: servs) {

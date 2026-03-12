@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +62,6 @@ import org.apache.hadoop.security.token.SecretManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 
 /**
@@ -259,7 +259,7 @@ public class SaslDataTransferServer {
   /**
    * Given a secret manager and a username encoded for the encrypted handshake,
    * determine the encryption key.
-   * 
+   *
    * @param userName containing the keyId, blockPoolId, and nonce.
    * @return secret encryption key.
    * @throws IOException
@@ -320,13 +320,13 @@ public class SaslDataTransferServer {
    *   identifier
    * @return expected correct SASL password
    * @throws IOException for any error
-   */    
+   */
   private char[] buildServerPassword(String userName) throws IOException {
     BlockTokenIdentifier identifier = deserializeIdentifier(userName);
     byte[] tokenPassword = blockPoolTokenSecretManager.retrievePassword(
       identifier);
     return (new String(Base64.encodeBase64(tokenPassword, false),
-      Charsets.UTF_8)).toCharArray();
+      StandardCharsets.UTF_8)).toCharArray();
   }
 
   /**
@@ -370,7 +370,7 @@ public class SaslDataTransferServer {
 
     int magicNumber = in.readInt();
     if (magicNumber != SASL_TRANSFER_MAGIC_NUMBER) {
-      throw new InvalidMagicNumberException(magicNumber, 
+      throw new InvalidMagicNumberException(magicNumber,
           dnConf.getEncryptDataTransfer());
     }
     try {
@@ -381,7 +381,7 @@ public class SaslDataTransferServer {
       if (secret != null || bpid != null) {
         // sanity check, if one is null, the other must also not be null
         assert(secret != null && bpid != null);
-        String qop = new String(secret, Charsets.UTF_8);
+        String qop = new String(secret, StandardCharsets.UTF_8);
         saslProps.put(Sasl.QOP, qop);
       }
       SaslParticipant sasl = SaslParticipant.createServerSaslParticipant(
@@ -426,13 +426,13 @@ public class SaslDataTransferServer {
       }
 
       // If negotiated cipher option is not null, wrap it before sending.
-      sendSaslMessageAndNegotiatedCipherOption(out, localResponse, 
+      sendSaslMessageAndNegotiatedCipherOption(out, localResponse,
           wrap(cipherOption, sasl));
 
-      // If negotiated cipher option is not null, we will use it to create 
+      // If negotiated cipher option is not null, we will use it to create
       // stream pair.
       return cipherOption != null ? createStreamPair(
-          dnConf.getConf(), cipherOption, underlyingOut, underlyingIn, true) : 
+          dnConf.getConf(), cipherOption, underlyingOut, underlyingIn, true) :
             sasl.createStreamPair(out, in);
     } catch (IOException ioe) {
       if (ioe instanceof SaslException &&

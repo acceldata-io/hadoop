@@ -43,7 +43,7 @@ public class TestJarFinder {
   public void testJar() throws Exception {
 
     //picking a class that is for sure in a JAR in the classpath
-    String jar = JarFinder.getJar(LogFactory.class);
+    String jar = JarFinder.getJar(LoggerFactory.class);
     Assert.assertTrue(new File(jar).exists());
   }
 

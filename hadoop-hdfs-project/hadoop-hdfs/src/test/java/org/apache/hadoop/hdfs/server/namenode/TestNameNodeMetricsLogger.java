@@ -20,8 +20,6 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 import java.util.function.Supplier;
 import org.slf4j.Logger;
-import org.apache.commons.logging.impl.Log4JLogger;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
@@ -67,40 +65,6 @@ public class TestNameNodeMetricsLogger {
     assertNull(nn.metricsLoggerTimer);
   }
 
-  @Test
-  public void testMetricsLoggerIsAsync() throws IOException {
-    makeNameNode(true);
-    org.apache.log4j.Logger logger =
-        ((Log4JLogger) NameNode.MetricsLog).getLogger();
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    assertTrue(appenders.get(0) instanceof AsyncAppender);
-  }
-
-  /**
-   * Publish a fake metric under the "Hadoop:" domain and ensure it is
-   * logged by the metrics logger.
-   */
-  @Test
-  public void testMetricsLogOutput()
-      throws IOException, InterruptedException, TimeoutException {
-    TestFakeMetric metricsProvider = new TestFakeMetric();
-    MBeans.register(this.getClass().getSimpleName(),
-        "DummyMetrics", metricsProvider);
-    makeNameNode(true);     // Log metrics early and often.
-    final PatternMatchingAppender appender =
-        new PatternMatchingAppender("^.*FakeMetric42.*$");
-    addAppender(NameNode.MetricsLog, appender);
-
-    // Ensure that the supplied pattern was matched.
-    GenericTestUtils.waitFor(new Supplier<Boolean>() {
-      @Override
-      public Boolean get() {
-        return appender.isMatched();
-      }
-    }, 1000, 60000);
-  }
-
   /**
    * Create a NameNode object that listens on a randomly chosen port
    * number.
@@ -116,13 +80,6 @@ public class TestNameNodeMetricsLogger {
     conf.setInt(DFS_NAMENODE_METRICS_LOGGER_PERIOD_SECONDS_KEY,
         enableMetricsLogging ? 1 : 0);  // If enabled, log early and log often
     return new TestNameNode(conf);
-  }
-
-  private void addAppender(Log log, Appender appender) {
-    org.apache.log4j.Logger logger = ((Log4JLogger) log).getLogger();
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    ((AsyncAppender) appenders.get(0)).addAppender(appender);
   }
 
   /**

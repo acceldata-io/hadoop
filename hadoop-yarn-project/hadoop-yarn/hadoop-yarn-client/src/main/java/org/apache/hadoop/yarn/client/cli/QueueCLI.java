@@ -88,17 +88,17 @@ public class QueueCLI extends YarnCLI {
 
   /**
    * It prints the usage of the command
-   * 
+   *
    * @param opts
    */
   @VisibleForTesting
   void printUsage(Options opts) {
     new HelpFormatter().printHelp(QUEUE, opts);
   }
-  
+
   /**
    * Lists the Queue Information matching the given queue name
-   * 
+   *
    * @param queueName
    * @throws YarnException
    * @throws IOException

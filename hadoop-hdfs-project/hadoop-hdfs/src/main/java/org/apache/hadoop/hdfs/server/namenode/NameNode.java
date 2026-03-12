@@ -418,7 +418,7 @@ public class NameNode extends ReconfigurableBase implements
 
   private static final String NAMENODE_HTRACE_PREFIX = "namenode.htrace.";
 
-  public static final Log MetricsLog =
+  public static final Logger MetricsLog =
       LoggerFactory.getLogger("NameNodeMetricsLog");
 
   protected FSNamesystem namesystem; 

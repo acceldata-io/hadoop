@@ -366,6 +366,10 @@
           <groupId>com.sun.jmx</groupId>
           <artifactId>jmxri</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.yetus</groupId>
+          <artifactId>audience-annotations</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>

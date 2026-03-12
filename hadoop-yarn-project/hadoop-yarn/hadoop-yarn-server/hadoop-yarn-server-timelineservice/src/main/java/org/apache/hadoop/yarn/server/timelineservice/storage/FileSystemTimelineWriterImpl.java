@@ -20,6 +20,7 @@ package org.apache.hadoop.yarn.server.timelineservice.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -138,7 +139,7 @@ public class FileSystemTimelineWriterImpl extends AbstractService
 
       byte[] record =  new StringBuilder()
               .append(TimelineUtils.dumpTimelineRecordtoJSON(entity))
-              .append("\n").toString().getBytes("UTF-8");
+              .append("\n").toString().getBytes(StandardCharsets.UTF_8);
       writeFileWithRetries(filePath, record);
     } catch (Exception ioe) {
       LOG.warn("Interrupted operation:" + ioe.getMessage());

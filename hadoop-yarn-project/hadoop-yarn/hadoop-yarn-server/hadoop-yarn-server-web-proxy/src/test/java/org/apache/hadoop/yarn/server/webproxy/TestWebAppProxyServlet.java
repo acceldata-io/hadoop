@@ -38,6 +38,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -510,7 +511,7 @@ public class TestWebAppProxyServlet {
     while ((read = input.read(buffer)) >= 0) {
       data.write(buffer, 0, read);
     }
-    return new String(data.toByteArray(), "UTF-8");
+    return new String(data.toByteArray(), StandardCharsets.UTF_8);
   }
 
   private boolean isResponseCookiePresent(HttpURLConnection proxyConn,

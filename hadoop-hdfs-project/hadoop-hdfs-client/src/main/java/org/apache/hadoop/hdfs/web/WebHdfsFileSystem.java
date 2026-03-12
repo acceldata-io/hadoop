@@ -136,7 +136,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.util.Preconditions;
 
 import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapabilityArgs;
@@ -1735,7 +1734,7 @@ public class WebHdfsFileSystem extends FileSystem
     }
     DirectoryListing listing = new FsPathResponseRunner<DirectoryListing>(
         GetOpParam.Op.LISTSTATUS_BATCH,
-        f, new StartAfterParam(new String(prevKey, Charsets.UTF_8))) {
+        f, new StartAfterParam(new String(prevKey, StandardCharsets.UTF_8))) {
       @Override
       DirectoryListing decodeResponse(Map<?, ?> json) throws IOException {
         return JsonUtilClient.toDirectoryListing(json);

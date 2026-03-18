@@ -20,7 +20,6 @@ package org.apache.hadoop.streaming;
 
 import java.io.*;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Mapper;
@@ -76,11 +75,13 @@ public class PipeMapper extends PipeMapRed implements Mapper {
         inputFormatClassName.equals(TextInputFormat.class.getCanonicalName()));
     }
     
-    mapOutputFieldSeparator = job.get("stream.map.output.field.separator", "\t")
-            .getBytes(StandardCharsets.UTF_8);
-    mapInputFieldSeparator = job.get("stream.map.input.field.separator", "\t")
-            .getBytes(StandardCharsets.UTF_8);
-    numOfMapOutputKeyFields = job.getInt("stream.num.map.output.key.fields", 1);
+    try {
+      mapOutputFieldSeparator = job.get("stream.map.output.field.separator", "\t").getBytes("UTF-8");
+      mapInputFieldSeparator = job.get("stream.map.input.field.separator", "\t").getBytes("UTF-8");
+      numOfMapOutputKeyFields = job.getInt("stream.num.map.output.key.fields", 1);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException("The current system does not support UTF-8 encoding!", e);
+    }
   }
 
   // Do NOT declare default constructor

@@ -20,7 +20,7 @@ package org.apache.hadoop.fs.azurebfs.extensions;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 
 import org.apache.hadoop.util.Preconditions;
 import org.slf4j.Logger;
@@ -249,8 +249,8 @@ public class ClassicDelegationTokenManager
    * highlighting security risks of shared mutable byte arrays.
    * @return a password.
    */
-  private static byte[] getSecretManagerPassword() {
-    return "non-password".getBytes(StandardCharsets.UTF_8);
+  private static byte[] getSecretManagerPasssword() {
+    return "non-password".getBytes(Charset.forName("UTF-8"));
   }
 
   /**
@@ -265,13 +265,13 @@ public class ClassicDelegationTokenManager
 
     @Override
     protected byte[] createPassword(StubAbfsTokenIdentifier identifier) {
-      return getSecretManagerPassword();
+      return getSecretManagerPasssword();
     }
 
     @Override
     public byte[] retrievePassword(StubAbfsTokenIdentifier identifier)
         throws InvalidToken {
-      return getSecretManagerPassword();
+      return getSecretManagerPasssword();
     }
 
     @Override

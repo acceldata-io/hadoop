@@ -34,7 +34,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.IntFunction;
 import java.util.zip.CRC32;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;

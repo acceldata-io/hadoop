@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.yarn.service.utils;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -71,7 +72,7 @@ public abstract class PublishedConfigurationOutputter {
    * @throws IOException
    */
   public void save(OutputStream out) throws IOException {
-    IOUtils.write(asString(), out, StandardCharsets.UTF_8);
+    IOUtils.write(asString(), out, Charsets.UTF_8);
   }
   /**
    * Convert to a string

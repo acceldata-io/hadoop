@@ -25,7 +25,7 @@ import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * A low memory footprint Cache which extends {@link LightWeightGSet}.

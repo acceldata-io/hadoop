@@ -38,7 +38,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
@@ -296,7 +295,7 @@ public class TestConcatenatedCompressedInput {
     try {
       int numBytesUncompressed = inflater.inflate(uncompressedBuf);
       String outString =
-        new String(uncompressedBuf, 0, numBytesUncompressed, StandardCharsets.UTF_8);
+        new String(uncompressedBuf, 0, numBytesUncompressed, "UTF-8");
       System.out.println("uncompressed data of first gzip member = [" +
                          outString + "]");
     } catch (java.util.zip.DataFormatException ex) {

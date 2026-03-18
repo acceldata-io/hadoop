@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
@@ -113,7 +114,7 @@ public final class DockerClientConfigHandler {
             new DockerCredentialTokenIdentifier(registryUrl, applicationId);
         Token<DockerCredentialTokenIdentifier> token =
             new Token<>(tokenId.getBytes(),
-                registryCred.getBytes(StandardCharsets.UTF_8),
+                registryCred.getBytes(Charset.forName("UTF-8")),
                 tokenId.getKind(), new Text(registryUrl));
         credentials.addToken(
             new Text(registryUrl + "-" + applicationId), token);
@@ -170,7 +171,7 @@ public final class DockerClientConfigHandler {
           ObjectNode registryCredNode = mapper.createObjectNode();
           registryUrlNode.put(ti.getRegistryUrl(), registryCredNode);
           registryCredNode.put(CONFIG_AUTH_KEY,
-              new String(tk.getPassword(), StandardCharsets.UTF_8));
+              new String(tk.getPassword(), Charset.forName("UTF-8")));
           LOG.debug("Prepared token for write: {}", tk);
         }
       }

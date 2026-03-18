@@ -28,7 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import java.io.File;
 import java.io.FileInputStream;
@@ -2098,7 +2097,7 @@ public class TestRecovery {
     String contents = null;
     try {
       in.read(buf, 0, len);
-      contents = new String(buf, StandardCharsets.UTF_8);
+      contents = new String(buf, "UTF-8");
     } finally {
       in.close();
     }

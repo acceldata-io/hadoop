@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.hdfs.util.ReferenceCountMap.ReferenceCounter;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.ImmutableList;
 
 /**
@@ -55,9 +56,8 @@ public class AclFeature implements INode.Feature, ReferenceCounter {
    * @throws IndexOutOfBoundsException if pos out of bound
    */
   int getEntryAt(int pos) {
-    if (pos < 0 || pos > entries.length) {
-      throw new IndexOutOfBoundsException("Invalid position for AclEntry");
-    }
+    Preconditions.checkPositionIndex(pos, entries.length,
+        "Invalid position for AclEntry");
     return entries[pos];
   }
 

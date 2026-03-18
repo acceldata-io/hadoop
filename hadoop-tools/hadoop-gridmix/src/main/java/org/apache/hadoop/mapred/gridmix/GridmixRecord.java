@@ -21,7 +21,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.DataInputBuffer;
@@ -112,7 +111,7 @@ class GridmixRecord implements WritableComparable<GridmixRecord> {
     //TODO Should we use long for size. What if the data is more than 4G?
     
     String randomWord = rtg.getRandomWord();
-    byte[] bytes = randomWord.getBytes(StandardCharsets.UTF_8);
+    byte[] bytes = randomWord.getBytes("UTF-8");
     long randomWordSize = bytes.length;
     while (i >= randomWordSize) {
       out.write(bytes);
@@ -120,7 +119,7 @@ class GridmixRecord implements WritableComparable<GridmixRecord> {
       
       // get the next random word
       randomWord = rtg.getRandomWord();
-      bytes = randomWord.getBytes(StandardCharsets.UTF_8);
+      bytes = randomWord.getBytes("UTF-8");
       // determine the random word size
       randomWordSize = bytes.length;
     }

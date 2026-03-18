@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -120,7 +120,7 @@ public class TestTrafficController {
     Assert.assertTrue(tcCmdsFile.exists());
 
     List<String> tcCmds = Files.readAllLines(tcCmdsFile.toPath(),
-        StandardCharsets.UTF_8);
+        Charset.forName("UTF-8"));
 
     //Verify that the number of commands is the same as expected and verify
     //that each command is the same, in sequence

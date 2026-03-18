@@ -21,7 +21,7 @@ package org.apache.hadoop.streaming.io;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -77,7 +77,11 @@ public class KeyOnlyTextOutputReader extends OutputReader<Text, NullWritable> {
   @Override
   public String getLastOutput() {
     if (bytes != null) {
-      return new String(bytes, StandardCharsets.UTF_8);
+      try {
+        return new String(bytes, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        return "<undecodable>";
+      }
     } else {
       return null;
     }

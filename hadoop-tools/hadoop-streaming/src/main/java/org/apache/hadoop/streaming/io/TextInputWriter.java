@@ -20,7 +20,6 @@ package org.apache.hadoop.streaming.io;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -67,7 +66,7 @@ public class TextInputWriter extends InputWriter<Object, Object> {
       valSize = val.getLength();
     } else {
       String sval = object.toString();
-      bval = sval.getBytes(StandardCharsets.UTF_8);
+      bval = sval.getBytes("UTF-8");
       valSize = bval.length;
     }
     clientOut.write(bval, 0, valSize);

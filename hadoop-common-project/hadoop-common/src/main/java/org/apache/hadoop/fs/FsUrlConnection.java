@@ -24,7 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

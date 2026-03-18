@@ -30,7 +30,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.thirdparty.protobuf.InvalidProtocolBufferException;
@@ -55,13 +55,6 @@ import org.apache.hadoop.hdfs.protocolPB.PBHelperClient;
 import org.apache.hadoop.hdfs.server.namenode.FSDirectory.DirOp;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.hadoop.util.Lists;
-
-import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.hadoop.thirdparty.protobuf.InvalidProtocolBufferException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

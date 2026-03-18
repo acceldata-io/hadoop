@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +46,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.ToolRunner;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.util.concurrent.HadoopExecutors;
 
 /** Utility methods */
@@ -216,8 +216,7 @@ public class Util {
       final File f = new File(dir,
           prefix + dateFormat.format(new Date(System.currentTimeMillis())) + ".txt");
       if (!f.exists())
-        return new PrintWriter(new OutputStreamWriter(
-                new FileOutputStream(f), StandardCharsets.UTF_8));
+        return new PrintWriter(new OutputStreamWriter(new FileOutputStream(f), Charsets.UTF_8));
 
       try {Thread.sleep(10);} catch (InterruptedException e) {}
     }
@@ -292,7 +291,7 @@ public class Util {
     for(FileStatus status : fs.listStatus(outdir)) {
       if (status.getPath().getName().startsWith("part-")) {
         final BufferedReader in = new BufferedReader(
-            new InputStreamReader(fs.open(status.getPath()), StandardCharsets.UTF_8));
+            new InputStreamReader(fs.open(status.getPath()), Charsets.UTF_8));
         try {
           for(String line; (line = in.readLine()) != null; )
             results.add(TaskResult.valueOf(line));
@@ -311,14 +310,13 @@ public class Util {
   static void writeResults(String name, List<TaskResult> results, FileSystem fs, String dir) throws IOException {
     final Path outfile = new Path(dir, name + ".txt");
     Util.out.println(name + "> writing results to " + outfile);
-    final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(
-            fs.create(outfile), StandardCharsets.UTF_8), true);
+    final PrintWriter out = new PrintWriter(new OutputStreamWriter(fs.create(outfile), Charsets.UTF_8), true);
     try {
       for(TaskResult r : results)
-        printWriter.println(r);
+        out.println(r);
     }
     finally {
-      printWriter.close();
+      out.close();
     }
   }
 

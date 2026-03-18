@@ -71,7 +71,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * Tool which allows the standby node's storage directories to be bootstrapped

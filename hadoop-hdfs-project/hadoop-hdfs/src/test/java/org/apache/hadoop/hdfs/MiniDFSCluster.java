@@ -71,7 +71,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +86,6 @@ import org.apache.hadoop.hdfs.server.datanode.VolumeScanner;
 import org.apache.hadoop.hdfs.server.namenode.ImageServlet;
 import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.security.ssl.KeyStoreTestUtil;
-import org.apache.hadoop.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -148,7 +146,9 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Lists;
+import org.apache.hadoop.util.Sets;
 
 /**
  * This class creates a single-process DFS cluster for junit testing.
@@ -650,7 +650,7 @@ public class MiniDFSCluster implements AutoCloseable {
   private boolean federation;
   private boolean checkExitOnShutdown = true;
   protected final int storagesPerDatanode;
-  private Set<FileSystem> fileSystems = new HashSet<>();
+  private Set<FileSystem> fileSystems = Sets.newHashSet();
 
   private List<long[]> storageCap = Lists.newLinkedList();
 

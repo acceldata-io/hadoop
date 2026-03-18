@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
@@ -56,20 +56,20 @@ import org.slf4j.Logger;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class ReflectionUtils {
-
+    
   private static final Class<?>[] EMPTY_ARRAY = new Class[]{};
   volatile private static SerializationFactory serialFactory = null;
 
-  /**
+  /** 
    * Cache of constructors for each class. Pins the classes so they
    * can't be garbage collected until ReflectionUtils can be collected.
    */
-  private static final Map<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE =
+  private static final Map<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE = 
     new ConcurrentHashMap<Class<?>, Constructor<?>>();
 
   /**
    * Check and set 'configuration' if necessary.
-   *
+   * 
    * @param theObject object for which to set configuration
    * @param conf Configuration
    */
@@ -81,11 +81,11 @@ public class ReflectionUtils {
       setJobConf(theObject, conf);
     }
   }
-
+  
   /**
-   * This code is to support backward compatibility and break the compile
+   * This code is to support backward compatibility and break the compile  
    * time dependency of core on mapred.
-   * This should be made deprecated along with the mapred package HADOOP-1230.
+   * This should be made deprecated along with the mapred package HADOOP-1230. 
    * Should be removed when mapred package is removed.
    */
   private static void setJobConf(Object theObject, Configuration conf) {
@@ -94,20 +94,20 @@ public class ReflectionUtils {
     //conf is of type JobConf then
     //invoke configure on theObject
     try {
-      Class<?> jobConfClass =
+      Class<?> jobConfClass = 
         conf.getClassByNameOrNull("org.apache.hadoop.mapred.JobConf");
       if (jobConfClass == null) {
         return;
       }
-
-      Class<?> jobConfigurableClass =
+      
+      Class<?> jobConfigurableClass = 
         conf.getClassByNameOrNull("org.apache.hadoop.mapred.JobConfigurable");
       if (jobConfigurableClass == null) {
         return;
       }
       if (jobConfClass.isAssignableFrom(conf.getClass()) &&
             jobConfigurableClass.isAssignableFrom(theObject.getClass())) {
-        Method configureMethod =
+        Method configureMethod = 
           jobConfigurableClass.getMethod("configure", jobConfClass);
         configureMethod.invoke(theObject, conf);
       }
@@ -141,23 +141,23 @@ public class ReflectionUtils {
     return result;
   }
 
-  static private ThreadMXBean threadBean =
+  static private ThreadMXBean threadBean = 
     ManagementFactory.getThreadMXBean();
-
+    
   public static void setContentionTracing(boolean val) {
     threadBean.setThreadContentionMonitoringEnabled(val);
   }
-
+    
   private static String getTaskName(long id, String name) {
     if (name == null) {
       return Long.toString(id);
     }
     return id + " (" + name + ")";
   }
-
+    
   /**
    * Print all of the thread's information and stack traces.
-   *
+   * 
    * @param stream the stream to
    * @param title a string title for the stack trace
    */
@@ -174,7 +174,7 @@ public class ReflectionUtils {
         stream.println("  Inactive");
         continue;
       }
-      stream.println("Thread " +
+      stream.println("Thread " + 
                      getTaskName(info.getThreadId(),
                                  info.getThreadName()) + ":");
       Thread.State state = info.getThreadState();
@@ -189,7 +189,7 @@ public class ReflectionUtils {
         stream.println("  Waiting on " + info.getLockName());
       } else  if (state == Thread.State.BLOCKED) {
         stream.println("  Blocked on " + info.getLockName());
-        stream.println("  Blocked by " +
+        stream.println("  Blocked by " + 
                        getTaskName(info.getLockOwnerId(),
                                    info.getLockOwnerName()));
       }
@@ -200,8 +200,37 @@ public class ReflectionUtils {
     }
     stream.flush();
   }
-
+    
   private static long previousLogTime = 0;
+    
+  /**
+   * Log the current thread stacks at INFO level.
+   * @param log the logger that logs the stack trace
+   * @param title a descriptive title for the call stacks
+   * @param minInterval the minimum time from the last 
+   */
+  public static void logThreadInfo(Log log,
+                                   String title,
+                                   long minInterval) {
+    boolean dumpStack = false;
+    if (log.isInfoEnabled()) {
+      synchronized (ReflectionUtils.class) {
+        long now = Time.monotonicNow();
+        if (now - previousLogTime >= minInterval * 1000) {
+          previousLogTime = now;
+          dumpStack = true;
+        }
+      }
+      if (dumpStack) {
+        try {
+          ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+          printThreadInfo(new PrintStream(buffer, false, "UTF-8"), title);
+          log.info(buffer.toString(StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException ignored) {
+        }
+      }
+    }
+  }
 
   /**
    * Log the current thread stacks at INFO level.
@@ -243,12 +272,12 @@ public class ReflectionUtils {
   public static <T> Class<T> getClass(T o) {
     return (Class<T>)o.getClass();
   }
-
+  
   // methods to support testing
   static void clearCache() {
     CONSTRUCTOR_CACHE.clear();
   }
-
+    
   static int getCacheSize() {
     return CONSTRUCTOR_CACHE.size();
   }
@@ -265,7 +294,7 @@ public class ReflectionUtils {
       inBuffer.reset(outBuffer.getData(), outBuffer.getLength());
     }
   }
-
+  
   /**
    * Allocate a buffer for each thread that tries to clone objects.
    */
@@ -283,7 +312,7 @@ public class ReflectionUtils {
     }
     return serialFactory;
   }
-
+  
   /**
    * Make a copy of the writable object using serialization to a buffer.
    *
@@ -295,7 +324,7 @@ public class ReflectionUtils {
    * @throws IOException raised on errors performing I/O.
    */
   @SuppressWarnings("unchecked")
-  public static <T> T copy(Configuration conf,
+  public static <T> T copy(Configuration conf, 
                                 T src, T dst) throws IOException {
     CopyInCopyOutBuffer buffer = CLONE_BUFFERS.get();
     buffer.outBuffer.reset();
@@ -312,7 +341,7 @@ public class ReflectionUtils {
   }
 
   @Deprecated
-  public static void cloneWritableInto(Writable dst,
+  public static void cloneWritableInto(Writable dst, 
                                        Writable src) throws IOException {
     CopyInCopyOutBuffer buffer = CLONE_BUFFERS.get();
     buffer.outBuffer.reset();
@@ -320,7 +349,7 @@ public class ReflectionUtils {
     buffer.moveData();
     dst.readFields(buffer.inBuffer);
   }
-
+  
   /**
    * @return Gets all the declared fields of a class including fields declared in
    * superclasses.
@@ -340,10 +369,10 @@ public class ReflectionUtils {
       }
       clazz = clazz.getSuperclass();
     }
-
+    
     return fields;
   }
-
+  
   /**
    * @return Gets all the declared methods of a class including methods declared in
    * superclasses.
@@ -357,7 +386,7 @@ public class ReflectionUtils {
       }
       clazz = clazz.getSuperclass();
     }
-
+    
     return methods;
   }
 }

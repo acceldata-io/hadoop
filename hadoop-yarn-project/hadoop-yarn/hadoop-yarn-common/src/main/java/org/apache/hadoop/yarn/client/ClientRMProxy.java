@@ -42,7 +42,7 @@ import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 import org.apache.hadoop.yarn.server.api.ResourceManagerAdministrationProtocol;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable

@@ -129,16 +129,15 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSelect
 import org.apache.hadoop.security.token.DelegationTokenIssuer;
 import org.apache.hadoop.util.JsonSerialization;
 import org.apache.hadoop.util.KMSUtil;
-import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
-
-import static org.apache.hadoop.fs.impl.PathCapabilitiesSupport.validatePathCapabilityArgs;
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Lists;
 
 /** A FileSystem for HDFS over the web. */
 public class WebHdfsFileSystem extends FileSystem
@@ -835,7 +834,7 @@ public class WebHdfsFileSystem extends FileSystem
             newIoe.initCause(ioe.getCause());
             newIoe.setStackTrace(ioe.getStackTrace());
             ioe = newIoe;
-          } catch (NoSuchMethodException | SecurityException
+          } catch (NoSuchMethodException | SecurityException 
                    | InstantiationException | IllegalAccessException
                    | IllegalArgumentException | InvocationTargetException e) {
           }
@@ -1734,7 +1733,7 @@ public class WebHdfsFileSystem extends FileSystem
     }
     DirectoryListing listing = new FsPathResponseRunner<DirectoryListing>(
         GetOpParam.Op.LISTSTATUS_BATCH,
-        f, new StartAfterParam(new String(prevKey, StandardCharsets.UTF_8))) {
+        f, new StartAfterParam(new String(prevKey, Charsets.UTF_8))) {
       @Override
       DirectoryListing decodeResponse(Map<?, ?> json) throws IOException {
         return JsonUtilClient.toDirectoryListing(json);

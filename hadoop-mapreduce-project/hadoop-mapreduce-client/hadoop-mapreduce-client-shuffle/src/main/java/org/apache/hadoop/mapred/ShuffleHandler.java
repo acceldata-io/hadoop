@@ -136,7 +136,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import java.nio.charset.StandardCharsets;
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.thirdparty.com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.thirdparty.com.google.common.cache.CacheLoader;
 import org.apache.hadoop.thirdparty.com.google.common.cache.LoadingCache;
@@ -1350,7 +1350,7 @@ public class ShuffleHandler extends AuxiliaryService {
       // verify - throws exception
       SecureShuffleUtils.verifyReply(urlHashStr, encryptedURL, tokenSecret);
       // verification passed - encode the reply
-      String reply = SecureShuffleUtils.generateHash(urlHashStr.getBytes(StandardCharsets.UTF_8),
+      String reply = SecureShuffleUtils.generateHash(urlHashStr.getBytes(Charsets.UTF_8),
           tokenSecret);
       response.headers().set(
           SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH, reply);

@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1051,7 +1050,7 @@ public class LinuxContainerExecutor extends ContainerExecutor {
     if (file.createNewFile()) {
       FileOutputStream output = new FileOutputStream(file);
       try {
-        output.write(spec.getBytes(StandardCharsets.UTF_8));
+        output.write(spec.getBytes("UTF-8"));
       } finally {
         output.close();
       }

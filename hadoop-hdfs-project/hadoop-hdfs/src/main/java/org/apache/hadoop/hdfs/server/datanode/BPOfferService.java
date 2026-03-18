@@ -18,7 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Sets;
 
@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -144,11 +143,11 @@ class BPOfferService {
   void refreshNNList(String serviceId, List<String> nnIds,
       ArrayList<InetSocketAddress> addrs,
       ArrayList<InetSocketAddress> lifelineAddrs) throws IOException {
-    Set<InetSocketAddress> oldAddrs = new HashSet<>();
+    Set<InetSocketAddress> oldAddrs = Sets.newHashSet();
     for (BPServiceActor actor : bpServices) {
       oldAddrs.add(actor.getNNSocketAddress());
     }
-    Set<InetSocketAddress> newAddrs = new HashSet<>(addrs);
+    Set<InetSocketAddress> newAddrs = Sets.newHashSet(addrs);
 
     // Process added NNs
     Set<InetSocketAddress> addedNNs = Sets.difference(newAddrs, oldAddrs);

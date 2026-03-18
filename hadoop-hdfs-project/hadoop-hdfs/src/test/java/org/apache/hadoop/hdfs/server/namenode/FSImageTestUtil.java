@@ -415,7 +415,7 @@ public abstract class FSImageTestUtil {
     if (files.length < 2) return;
     
     Map<File, String> md5s = getFileMD5s(files);
-    if (new HashSet<>(md5s.values()).size() > 1) {
+    if (Sets.newHashSet(md5s.values()).size() > 1) {
       fail("File contents differed:\n  " +
           Joiner.on("\n  ")
             .withKeyValueSeparator("=")
@@ -432,8 +432,7 @@ public abstract class FSImageTestUtil {
       File... files) throws Exception
   {
     Map<File, String> md5s = getFileMD5s(files);
-    int uniqueHashes = new HashSet<>(md5s.values()).size();
-    if (uniqueHashes != expectedUniqueHashes) {
+    if (Sets.newHashSet(md5s.values()).size() != expectedUniqueHashes) {
       fail("Expected " + expectedUniqueHashes + " different hashes, got:\n  " +
           Joiner.on("\n  ")
             .withKeyValueSeparator("=")

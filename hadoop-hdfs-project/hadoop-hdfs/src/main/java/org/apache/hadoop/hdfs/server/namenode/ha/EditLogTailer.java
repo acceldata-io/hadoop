@@ -59,7 +59,7 @@ import static org.apache.hadoop.util.Time.monotonicNow;
 import static org.apache.hadoop.util.ExitUtil.terminate;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.Time;
 
 
@@ -86,7 +86,7 @@ public class EditLogTailer {
       Long.MAX_VALUE;
 
   private final EditLogTailerThread tailerThread;
-
+  
   private final Configuration conf;
   private final FSNamesystem namesystem;
   private final Iterator<RemoteNameNodeInfo> nnLookup;
@@ -98,7 +98,7 @@ public class EditLogTailer {
    * The last transaction ID at which an edit log roll was initiated.
    */
   private long lastRollTriggerTxId = HdfsServerConstants.INVALID_TXID;
-
+  
   /**
    * The highest transaction ID loaded by the Standby.
    */
@@ -177,7 +177,7 @@ public class EditLogTailer {
     this.conf = conf;
     this.namesystem = namesystem;
     this.editLog = namesystem.getEditLog();
-
+    
     lastLoadTimeMs = monotonicNow();
     lastRollTimeMs = monotonicNow();
 
@@ -208,7 +208,7 @@ public class EditLogTailer {
       LOG.info("Not going to trigger log rolls on active node because " +
           DFSConfigKeys.DFS_HA_LOGROLL_PERIOD_KEY + " is negative.");
     }
-
+    
     sleepTimeMs = conf.getTimeDuration(
         DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_KEY,
         DFSConfigKeys.DFS_HA_TAILEDITS_PERIOD_DEFAULT,
@@ -264,7 +264,7 @@ public class EditLogTailer {
   public void start() {
     tailerThread.start();
   }
-
+  
   public void stop() throws IOException {
     tailerThread.setShouldRun(false);
     tailerThread.interrupt();
@@ -277,12 +277,12 @@ public class EditLogTailer {
       rollEditsRpcExecutor.shutdown();
     }
   }
-
+  
   @VisibleForTesting
   FSEditLog getEditLog() {
     return editLog;
   }
-
+  
   @VisibleForTesting
   public void setEditLog(FSEditLog editLog) {
     this.editLog = editLog;
@@ -319,10 +319,10 @@ public class EditLogTailer {
       }
     });
   }
-
+  
   @VisibleForTesting
   public long doTailEdits() throws IOException, InterruptedException {
-    // Write lock needs to be interruptible here because the
+    // Write lock needs to be interruptible here because the 
     // transitionToActive RPC takes the write lock before calling
     // tailer.stop() -- so if we're not interruptible, it will
     // deadlock.
@@ -331,7 +331,7 @@ public class EditLogTailer {
       FSImage image = namesystem.getFSImage();
 
       long lastTxnId = image.getLastAppliedTxId();
-
+      
       if (LOG.isDebugEnabled()) {
         LOG.debug("lastTxnId: " + lastTxnId);
       }
@@ -354,7 +354,7 @@ public class EditLogTailer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("edit streams to load from: " + streams.size());
       }
-
+      
       // Once we have streams to load, errors encountered are legitimate cause
       // for concern, so we don't catch them here. Simple errors reading from
       // disk are ignored.
@@ -394,7 +394,7 @@ public class EditLogTailer {
    * @return true if the configured log roll period has elapsed.
    */
   private boolean tooLongSinceLastLoad() {
-    return logRollPeriodMs >= 0 &&
+    return logRollPeriodMs >= 0 && 
       (monotonicNow() - lastRollTimeMs) > logRollPeriodMs;
   }
 
@@ -449,15 +449,15 @@ public class EditLogTailer {
    */
   private class EditLogTailerThread extends Thread {
     private volatile boolean shouldRun = true;
-
+    
     private EditLogTailerThread() {
       super("Edit log tailer");
     }
-
+    
     private void setShouldRun(boolean shouldRun) {
       this.shouldRun = shouldRun;
     }
-
+    
     @Override
     public void run() {
       SecurityUtil.doAsLoginUserOrFatal(
@@ -469,7 +469,7 @@ public class EditLogTailer {
           }
         });
     }
-
+    
     private void doWork() {
       long currentSleepTimeMs = sleepTimeMs;
       while (shouldRun) {

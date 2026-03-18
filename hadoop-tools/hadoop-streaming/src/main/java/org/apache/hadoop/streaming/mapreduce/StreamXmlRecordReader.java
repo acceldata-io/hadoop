@@ -20,7 +20,6 @@ package org.apache.hadoop.streaming.mapreduce;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,7 +139,7 @@ public class StreamXmlRecordReader extends StreamBaseRecordReader {
     if (read == -1)
       return false;
 
-    String sbuf = new String(buf, 0, read, StandardCharsets.UTF_8);
+    String sbuf = new String(buf, 0, read, "UTF-8");
     Matcher match = markPattern.matcher(sbuf);
 
     firstMatchStart_ = NA;
@@ -247,7 +246,7 @@ public class StreamXmlRecordReader extends StreamBaseRecordReader {
 
   boolean fastReadUntilMatch(String textPat, boolean includePat,
       DataOutputBuffer outBufOrNull) throws IOException {
-    byte[] cpat = textPat.getBytes(StandardCharsets.UTF_8);
+    byte[] cpat = textPat.getBytes("UTF-8");
     int m = 0;
     boolean match = false;
     int msup = cpat.length;

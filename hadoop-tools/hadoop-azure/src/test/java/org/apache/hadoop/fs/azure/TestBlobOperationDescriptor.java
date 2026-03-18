@@ -32,7 +32,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.junit.Test;
 
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Tests for <code>BlobOperationDescriptor</code>.
@@ -72,7 +71,7 @@ public class TestBlobOperationDescriptor extends AbstractWasbTestBase {
       assertEquals(0, lastContentLengthReceived);
 
       String message = "this is a test";
-      output.write(message.getBytes(StandardCharsets.UTF_8));
+      output.write(message.getBytes("UTF-8"));
       output.flush();
       assertEquals(BlobOperationDescriptor.OperationType.AppendBlock,
           lastOperationTypeSent);
@@ -108,7 +107,7 @@ public class TestBlobOperationDescriptor extends AbstractWasbTestBase {
       assertEquals(0, lastContentLengthReceived);
 
       String message = "this is a test";
-      output.write(message.getBytes(StandardCharsets.UTF_8));
+      output.write(message.getBytes("UTF-8"));
       output.flush();
       assertEquals(BlobOperationDescriptor.OperationType.PutBlock,
           lastOperationTypeSent);
@@ -187,7 +186,7 @@ public class TestBlobOperationDescriptor extends AbstractWasbTestBase {
       assertNull(lastOperationTypeReceived);
       assertEquals(0, lastContentLengthReceived);
 
-      output.write(message.getBytes(StandardCharsets.UTF_8));
+      output.write(message.getBytes("UTF-8"));
       output.flush();
       assertEquals(BlobOperationDescriptor.OperationType.PutBlock,
           lastOperationTypeSent);

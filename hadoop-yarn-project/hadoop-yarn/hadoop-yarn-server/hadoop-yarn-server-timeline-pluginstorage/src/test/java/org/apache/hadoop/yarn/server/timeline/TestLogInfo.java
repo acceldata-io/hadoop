@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileContext;
@@ -41,6 +40,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
@@ -217,7 +217,7 @@ public class TestLogInfo {
     try {
       String broken = "{ broken { [[]} broken";
       out = PluginStoreTestUtils.createLogFile(logPath, fs);
-      out.write(broken.getBytes(StandardCharsets.UTF_8));
+      out.write(broken.getBytes(Charset.forName("UTF-8")));
       out.close();
       out = null;
     } finally {

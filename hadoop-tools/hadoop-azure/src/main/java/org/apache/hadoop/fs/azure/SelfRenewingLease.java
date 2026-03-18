@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.fs.azure;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.azure.StorageInterface.CloudBlobWrapper;
 
 import org.apache.hadoop.classification.VisibleForTesting;
@@ -58,7 +58,7 @@ public class SelfRenewingLease {
 
   // Time to wait to renew lease in milliseconds
   public static final int LEASE_RENEWAL_PERIOD = 40000;
-  private static final Logger LOG = LoggerFactory.getLogger(SelfRenewingLease.class);
+  private static final Log LOG = LogFactory.getLog(SelfRenewingLease.class);
 
   // Used to allocate thread serial numbers in thread name
   private static AtomicInteger threadNumber = new AtomicInteger(0);

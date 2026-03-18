@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -246,7 +245,7 @@ public class TestStartupProgressServlet {
    */
   private String doGetAndReturnResponseBody() throws IOException {
     servlet.doGet(req, resp);
-    return new String(respOut.toByteArray(), StandardCharsets.UTF_8);
+    return new String(respOut.toByteArray(), "UTF-8");
   }
 
   /**

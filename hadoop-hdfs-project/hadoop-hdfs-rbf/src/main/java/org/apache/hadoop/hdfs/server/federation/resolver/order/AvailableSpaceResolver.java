@@ -39,7 +39,7 @@ import org.apache.hadoop.hdfs.server.federation.store.records.MembershipState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * Order the destinations based on available space. This resolver uses a

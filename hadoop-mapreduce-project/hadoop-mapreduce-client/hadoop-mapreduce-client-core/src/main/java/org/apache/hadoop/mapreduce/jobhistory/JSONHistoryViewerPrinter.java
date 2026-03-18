@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -73,7 +72,7 @@ class JSONHistoryViewerPrinter implements HistoryViewerPrinter {
       printTaskSummary();
       printTasks();
 
-      writer = new OutputStreamWriter(ps, StandardCharsets.UTF_8);
+      writer = new OutputStreamWriter(ps, "UTF-8");
       json.write(writer);
       writer.flush();
     } catch (JSONException je) {

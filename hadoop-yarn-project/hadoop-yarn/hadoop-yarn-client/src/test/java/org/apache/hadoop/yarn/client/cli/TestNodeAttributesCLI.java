@@ -41,7 +41,6 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +60,7 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
 
 /**
@@ -528,8 +528,8 @@ public class TestNodeAttributesCLI {
     sysOutBytes.reset();
     LOG.info("Running: NodeAttributesCLI " + Joiner.on(" ").join(args));
     int ret = nodeAttributesCLI.run(args);
-    errOutput = new String(errOutBytes.toByteArray(), StandardCharsets.UTF_8);
-    sysOutput = new String(sysOutBytes.toByteArray(), StandardCharsets.UTF_8);
+    errOutput = new String(errOutBytes.toByteArray(), Charsets.UTF_8);
+    sysOutput = new String(sysOutBytes.toByteArray(), Charsets.UTF_8);
     LOG.info("Err_output:\n" + errOutput);
     LOG.info("Sys_output:\n" + sysOutput);
     return ret;

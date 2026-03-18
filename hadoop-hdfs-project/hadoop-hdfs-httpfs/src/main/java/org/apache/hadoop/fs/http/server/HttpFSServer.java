@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.fs.http.server;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -89,7 +90,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
@@ -404,7 +404,7 @@ public class HttpFSServer {
           HttpFSParametersProvider.StartAfterParam.class);
       byte[] token = HttpFSUtils.EMPTY_BYTES;
       if (startAfter != null) {
-        token = startAfter.getBytes(StandardCharsets.UTF_8);
+        token = startAfter.getBytes(Charsets.UTF_8);
       }
       FSOperations.FSListStatusBatch command = new FSOperations
           .FSListStatusBatch(path, token);

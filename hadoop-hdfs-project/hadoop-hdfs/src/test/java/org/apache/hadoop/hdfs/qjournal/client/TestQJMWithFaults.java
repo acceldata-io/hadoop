@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
@@ -62,7 +61,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.util.Sets;
 
@@ -109,7 +108,7 @@ public class TestQJMWithFaults {
       qjm.format(FAKE_NSINFO, false);
       doWorkload(cluster, qjm);
       
-      SortedSet<Integer> ipcCounts = new TreeSet<>();
+      SortedSet<Integer> ipcCounts = Sets.newTreeSet();
       for (AsyncLogger l : qjm.getLoggerSetForTests().getLoggersForTests()) {
         InvocationCountingChannel ch = (InvocationCountingChannel)l;
         ch.waitForAllPendingCalls();

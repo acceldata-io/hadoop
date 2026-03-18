@@ -26,8 +26,7 @@ import org.apache.hadoop.hdfs.XAttrHelper;
 import org.apache.hadoop.security.AccessControlException;
 
 import org.apache.hadoop.util.Lists;
-
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 import static org.apache.hadoop.hdfs.server.common.HdfsServerConstants.SECURITY_XATTR_UNREADABLE_BY_SUPERUSER;
 

@@ -60,7 +60,7 @@ import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.functional.CallableRaisingIOE;
 import org.apache.hadoop.util.Preconditions;
 
-import static org.apache.hadoop.util.Preconditions.checkNotNull;
+import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.hadoop.fs.s3a.Invoker.*;
 import static org.apache.hadoop.fs.store.audit.AuditingFunctions.withinAuditSpan;
 

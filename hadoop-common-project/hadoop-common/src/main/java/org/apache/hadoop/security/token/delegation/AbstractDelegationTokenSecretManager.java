@@ -55,7 +55,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.Time;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.functional.InvocationRaisingIOE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

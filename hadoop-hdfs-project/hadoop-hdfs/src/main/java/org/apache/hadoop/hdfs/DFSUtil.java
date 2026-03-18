@@ -75,8 +75,6 @@ import org.apache.hadoop.hdfs.server.namenode.FSDirectory;
 import org.apache.hadoop.hdfs.server.namenode.INodesInPath;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.HadoopIllegalArgumentException;
@@ -109,7 +107,8 @@ import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.hadoop.classification.VisibleForTesting;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Sets;
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 
@@ -310,11 +309,7 @@ public class DFSUtil {
     // specifically not using StringBuilder to more efficiently build
     // string w/o excessive byte[] copies and charset conversions.
     final int range = offset + length;
-    if (offset < 0 || range < offset || range > components.length) {
-      throw new IndexOutOfBoundsException(
-          "Incorrect index [offset, range, size] ["
-              + offset + ", " + range + ", " + components.length + "]");
-    }
+    Preconditions.checkPositionIndexes(offset, range, components.length);
     if (length == 0) {
       return "";
     }
@@ -689,9 +684,8 @@ public class DFSUtil {
     } else {
       // Ensure that the internal service is indeed in the list of all available
       // nameservices.
-      Collection<String> namespaces = conf
-          .getTrimmedStringCollection(DFSConfigKeys.DFS_NAMESERVICES);
-      Set<String> availableNameServices = new HashSet<>(namespaces);
+      Set<String> availableNameServices = Sets.newHashSet(conf
+          .getTrimmedStringCollection(DFSConfigKeys.DFS_NAMESERVICES));
       for (String nsId : parentNameServices) {
         if (!availableNameServices.contains(nsId)) {
           throw new IOException("Unknown nameservice: " + nsId);

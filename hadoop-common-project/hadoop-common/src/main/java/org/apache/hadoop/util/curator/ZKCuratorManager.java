@@ -18,7 +18,7 @@
 package org.apache.hadoop.util.curator;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +44,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * Helper class that provides utility methods specific to ZK operations.
@@ -212,7 +212,7 @@ public final class ZKCuratorManager {
   public String getStringData(final String path) throws Exception {
     byte[] bytes = getData(path);
     if (bytes != null) {
-      return new String(bytes, StandardCharsets.UTF_8);
+      return new String(bytes, Charset.forName("UTF-8"));
     }
     return null;
   }
@@ -227,7 +227,7 @@ public final class ZKCuratorManager {
   public String getStringData(final String path, Stat stat) throws Exception {
     byte[] bytes = getData(path, stat);
     if (bytes != null) {
-      return new String(bytes, StandardCharsets.UTF_8);
+      return new String(bytes, Charset.forName("UTF-8"));
     }
     return null;
   }
@@ -251,7 +251,7 @@ public final class ZKCuratorManager {
    * @throws Exception If it cannot contact Zookeeper.
    */
   public void setData(String path, String data, int version) throws Exception {
-    byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+    byte[] bytes = data.getBytes(Charset.forName("UTF-8"));
     setData(path, bytes, version);
   }
 

@@ -23,7 +23,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_CACHE_REVOCATION
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_CACHE_REVOCATION_POLLING_MS;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_CACHE_REVOCATION_POLLING_MS_DEFAULT;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.FileInputStream;
@@ -393,7 +393,7 @@ public class FsDatasetCache {
    * Background worker that mmaps, mlocks, and checksums a block
    */
   private class CachingTask implements Runnable {
-    private final ExtendedBlockId key;
+    private final ExtendedBlockId key; 
     private final String blockFileName;
     private final long length;
     private final long genstamp;
@@ -493,7 +493,7 @@ public class FsDatasetCache {
   }
 
   private class UncachingTask implements Runnable {
-    private final ExtendedBlockId key;
+    private final ExtendedBlockId key; 
     private final long revocationTimeMs;
 
     UncachingTask(ExtendedBlockId key, long revocationDelayMs) {

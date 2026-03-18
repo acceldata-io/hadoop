@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -147,7 +146,7 @@ public class StreamUtil {
     String contents = null;
     try {
       in.read(buf, 0, len);
-      contents = new String(buf, StandardCharsets.UTF_8);
+      contents = new String(buf, "UTF-8");
     } finally {
       in.close();
     }
@@ -161,7 +160,7 @@ public class StreamUtil {
     String contents = null;
     try {
       in.readFully(in.getPos(), buf);
-      contents = new String(buf, StandardCharsets.UTF_8);
+      contents = new String(buf, "UTF-8");
     } finally {
       in.close();
     }

@@ -32,7 +32,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -373,7 +373,7 @@ public final class AzureADAuthenticator {
           conn.getRequestProperties());
       if (httpMethod.equals("POST")) {
         conn.setDoOutput(true);
-        conn.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
+        conn.getOutputStream().write(payload.getBytes("UTF-8"));
       }
 
       int httpResponseCode = conn.getResponseCode();

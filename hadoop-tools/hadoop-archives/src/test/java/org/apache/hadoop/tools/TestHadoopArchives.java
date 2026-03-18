@@ -23,7 +23,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -82,7 +81,7 @@ public class TestHadoopArchives {
   private static String createFile(Path root, FileSystem fs, String... dirsAndFile
       ) throws IOException {
     String fileBaseName = dirsAndFile[dirsAndFile.length - 1]; 
-    return createFile(root, fs, fileBaseName.getBytes(StandardCharsets.UTF_8), dirsAndFile);
+    return createFile(root, fs, fileBaseName.getBytes("UTF-8"), dirsAndFile);
   }
   
   private static String createFile(Path root, FileSystem fs, byte[] fileContent, String... dirsAndFile
@@ -396,7 +395,7 @@ public class TestHadoopArchives {
           } else if ("zero-length".equals(baseName)) {
             assertEquals(0, actualContentSimple.length);
           } else {
-            String actual = new String(actualContentSimple, StandardCharsets.UTF_8);
+            String actual = new String(actualContentSimple, "UTF-8");
             assertEquals(baseName, actual);
           }
           readFileCount++;

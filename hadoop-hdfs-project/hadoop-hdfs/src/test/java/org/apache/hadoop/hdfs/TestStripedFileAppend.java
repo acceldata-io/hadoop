@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hdfs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +47,7 @@ import static org.junit.Assert.fail;
  * Tests append on erasure coded file.
  */
 public class TestStripedFileAppend {
-  public static final Logger LOG = LoggerFactory.getLogger(TestStripedFileAppend.class);
+  public static final Log LOG = LogFactory.getLog(TestStripedFileAppend.class);
 
   static {
     DFSTestUtil.setNameNodeLogLevel(Level.ALL);

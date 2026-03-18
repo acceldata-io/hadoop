@@ -20,6 +20,8 @@ import static org.apache.hadoop.security.authentication.server.HttpConstants.DIG
 
 import java.util.Locale;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+
 /**
  * This is a utility class designed to provide functionality related to
  * {@link AuthenticationHandler}.
@@ -42,10 +44,8 @@ public final class AuthenticationHandlerUtil {
    * @return an instance of AuthenticationHandler implementation.
    */
   public static String getAuthenticationHandlerClassName(String authHandler) {
-    if (authHandler == null) {
-      throw new NullPointerException();
-    }
-    String handlerName = authHandler.toLowerCase(Locale.ENGLISH);
+    String handlerName =
+        Preconditions.checkNotNull(authHandler).toLowerCase(Locale.ENGLISH);
 
     String authHandlerClassName = null;
 
@@ -98,14 +98,8 @@ public final class AuthenticationHandlerUtil {
    *         specified authentication scheme false Otherwise.
    */
   public static boolean matchAuthScheme(String scheme, String auth) {
-    if (scheme == null) {
-      throw new NullPointerException();
-    }
-    scheme = scheme.trim();
-    if (auth == null) {
-      throw new NullPointerException();
-    }
-    auth = auth.trim();
+    scheme = Preconditions.checkNotNull(scheme).trim();
+    auth = Preconditions.checkNotNull(auth).trim();
     return auth.regionMatches(true, 0, scheme, 0, scheme.length());
   }
 }

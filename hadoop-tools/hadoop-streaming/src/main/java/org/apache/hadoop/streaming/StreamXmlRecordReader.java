@@ -19,7 +19,6 @@
 package org.apache.hadoop.streaming;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -133,7 +132,7 @@ public class StreamXmlRecordReader extends StreamBaseRecordReader {
     read = bin_.read(buf);
     if (read == -1) return false;
 
-    String sbuf = new String(buf, 0, read, StandardCharsets.UTF_8);
+    String sbuf = new String(buf, 0, read, "UTF-8");
     Matcher match = markPattern.matcher(sbuf);
 
     firstMatchStart_ = NA;
@@ -236,7 +235,7 @@ public class StreamXmlRecordReader extends StreamBaseRecordReader {
   }
 
   boolean fastReadUntilMatch(String textPat, boolean includePat, DataOutputBuffer outBufOrNull) throws IOException {
-    byte[] cpat = textPat.getBytes(StandardCharsets.UTF_8);
+    byte[] cpat = textPat.getBytes("UTF-8");
     int m = 0;
     boolean match = false;
     int msup = cpat.length;

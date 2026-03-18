@@ -13,7 +13,7 @@
  */
 package org.apache.hadoop.util;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

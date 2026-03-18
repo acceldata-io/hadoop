@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-import java.nio.charset.StandardCharsets;
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonPathCapabilities;
@@ -71,7 +71,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 
@@ -636,7 +636,7 @@ public class HttpFSFileSystem extends FileSystem
 
   /**
    * Truncate a file.
-   *
+   * 
    * @param f the file to be truncated.
    * @param newLength The size the file is to be truncated to.
    *
@@ -771,7 +771,7 @@ public class HttpFSFileSystem extends FileSystem
     Map<String, String> params = new HashMap<String, String>();
     params.put(OP_PARAM, Operation.LISTSTATUS_BATCH.toString());
     if (token != null) {
-      params.put(START_AFTER_PARAM, new String(token, StandardCharsets.UTF_8));
+      params.put(START_AFTER_PARAM, new String(token, Charsets.UTF_8));
     }
     HttpURLConnection conn = getConnection(
         Operation.LISTSTATUS_BATCH.getMethod(),
@@ -786,7 +786,7 @@ public class HttpFSFileSystem extends FileSystem
     byte[] newToken = null;
     if (statuses.length > 0) {
       newToken = statuses[statuses.length - 1].getPath().getName().toString()
-          .getBytes(StandardCharsets.UTF_8);
+          .getBytes(Charsets.UTF_8);
     }
     // Parse the remainingEntries boolean into hasMore
     final long remainingEntries = (Long) listing.get(REMAINING_ENTRIES_JSON);
@@ -1325,7 +1325,7 @@ public class HttpFSFileSystem extends FileSystem
     params.put(OP_PARAM, Operation.SETXATTR.toString());
     params.put(XATTR_NAME_PARAM, name);
     if (value != null) {
-      params.put(XATTR_VALUE_PARAM,
+      params.put(XATTR_VALUE_PARAM, 
           XAttrCodec.encodeValue(value, XAttrCodec.HEX));
     }
     params.put(XATTR_SET_FLAG_PARAM, EnumSetParam.toString(flag));
@@ -1349,7 +1349,7 @@ public class HttpFSFileSystem extends FileSystem
   }
 
   /** Convert xAttrs json to xAttrs map */
-  private Map<String, byte[]> createXAttrMap(JSONArray jsonArray)
+  private Map<String, byte[]> createXAttrMap(JSONArray jsonArray) 
       throws IOException {
     Map<String, byte[]> xAttrs = Maps.newHashMap();
     for (Object obj : jsonArray) {
@@ -1393,7 +1393,7 @@ public class HttpFSFileSystem extends FileSystem
   @Override
   public Map<String, byte[]> getXAttrs(Path f, List<String> names)
       throws IOException {
-    Preconditions.checkArgument(names != null && !names.isEmpty(),
+    Preconditions.checkArgument(names != null && !names.isEmpty(), 
         "XAttr names cannot be null or empty.");
     Map<String, String> params = new HashMap<String, String>();
     params.put(OP_PARAM, Operation.GETXATTRS.toString());

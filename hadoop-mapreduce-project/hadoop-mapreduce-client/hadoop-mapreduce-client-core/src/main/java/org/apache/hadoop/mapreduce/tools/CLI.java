@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +64,7 @@ import org.apache.hadoop.yarn.logaggregation.LogCLIHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 
 /**
  * Interprets the map reduce cli options 
@@ -767,7 +767,7 @@ public class CLI extends Configured implements Tool {
   public void displayJobList(JobStatus[] jobs) 
       throws IOException, InterruptedException {
     displayJobList(jobs, new PrintWriter(new OutputStreamWriter(System.out,
-        StandardCharsets.UTF_8)));
+        Charsets.UTF_8)));
   }
 
   @Private

@@ -19,7 +19,8 @@ package org.apache.hadoop.hdfs.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileChecksum;
@@ -55,7 +56,6 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.ChunkedArrayList;
 import org.apache.hadoop.util.DataChecksum;
-import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.StringUtils;
 
 import java.io.ByteArrayInputStream;

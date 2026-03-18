@@ -32,6 +32,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -44,7 +45,7 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
 
 /**
- * An utility class for I/O related functionality.
+ * An utility class for I/O related functionality. 
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
@@ -56,8 +57,8 @@ public class IOUtils {
    *
    * @param in InputStrem to read from
    * @param out OutputStream to write to
-   * @param buffSize the size of the buffer
-   * @param close whether or not close the InputStream and
+   * @param buffSize the size of the buffer 
+   * @param close whether or not close the InputStream and 
    * OutputStream at the end. The streams are closed in the finally clause.
    * @throws IOException raised on errors performing I/O.
    */
@@ -79,16 +80,16 @@ public class IOUtils {
       }
     }
   }
-
+  
   /**
    * Copies from one stream to another.
-   *
+   * 
    * @param in InputStrem to read from
    * @param out OutputStream to write to
    * @param buffSize the size of the buffer.
    * @throws IOException raised on errors performing I/O.
    */
-  public static void copyBytes(InputStream in, OutputStream out, int buffSize)
+  public static void copyBytes(InputStream in, OutputStream out, int buffSize) 
     throws IOException {
     PrintStream ps = out instanceof PrintStream ? (PrintStream)out : null;
     byte buf[] = new byte[buffSize];
@@ -103,7 +104,7 @@ public class IOUtils {
   }
 
   /**
-   * Copies from one stream to another. <strong>closes the input and output streams
+   * Copies from one stream to another. <strong>closes the input and output streams 
    * at the end</strong>.
    *
    * @param in InputStrem to read from
@@ -116,14 +117,14 @@ public class IOUtils {
     copyBytes(in, out, conf.getInt(
         IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), true);
   }
-
+  
   /**
    * Copies from one stream to another.
    *
    * @param in InputStream to read from
    * @param out OutputStream to write to
    * @param conf the Configuration object
-   * @param close whether or not close the InputStream and
+   * @param close whether or not close the InputStream and 
    * OutputStream at the end. The streams are closed in the finally clause.
    * @throws IOException raised on errors performing I/O.
    */
@@ -173,12 +174,12 @@ public class IOUtils {
       }
     }
   }
-
+  
   /**
    * Utility wrapper for reading from {@link InputStream}. It catches any errors
    * thrown by the underlying stream (either IO or decompression-related), and
    * re-throws as an IOException.
-   *
+   * 
    * @param is - InputStream to be read from
    * @param buf - buffer the data is read into
    * @param off - offset within buf
@@ -204,7 +205,7 @@ public class IOUtils {
    * @param buf The buffer to fill
    * @param off offset from the buffer
    * @param len the length of bytes to read
-   * @throws IOException if it could not read requested number of bytes
+   * @throws IOException if it could not read requested number of bytes 
    * for any reason (including EOF)
    */
   public static void readFully(InputStream in, byte[] buf,
@@ -219,12 +220,12 @@ public class IOUtils {
       off += ret;
     }
   }
-
+  
   /**
    * Similar to readFully(). Skips bytes in a loop.
    * @param in The InputStream to skip bytes from
    * @param len number of bytes to skip.
-   * @throws IOException if it could not skip requested number of bytes
+   * @throws IOException if it could not skip requested number of bytes 
    * for any reason (including EOF)
    */
   public static void skipFully(InputStream in, long len) throws IOException {
@@ -232,7 +233,7 @@ public class IOUtils {
     while (amt > 0) {
       long ret = in.skip(amt);
       if (ret == 0) {
-        // skip may return 0 even if we're not at EOF.  Luckily, we can
+        // skip may return 0 even if we're not at EOF.  Luckily, we can 
         // use the read() method to figure out if we're at the end.
         int b = in.read();
         if (b == -1) {
@@ -242,6 +243,30 @@ public class IOUtils {
         ret = 1;
       }
       amt -= ret;
+    }
+  }
+  
+  /**
+   * Close the Closeable objects and <b>ignore</b> any {@link Throwable} or
+   * null pointers. Must only be used for cleanup in exception handlers.
+   *
+   * @param log the log to record problems to at debug level. Can be null.
+   * @param closeables the objects to close
+   * @deprecated use {@link #cleanupWithLogger(Logger, java.io.Closeable...)}
+   * instead
+   */
+  @Deprecated
+  public static void cleanup(Log log, java.io.Closeable... closeables) {
+    for (java.io.Closeable c : closeables) {
+      if (c != null) {
+        try {
+          c.close();
+        } catch(Throwable e) {
+          if (log != null && log.isDebugEnabled()) {
+            log.debug("Exception in closing " + c, e);
+          }
+        }
+      }
     }
   }
 
@@ -305,7 +330,7 @@ public class IOUtils {
       }
     }
   }
-
+  
   /**
    * The /dev/null of OutputStreams.
    */
@@ -317,11 +342,11 @@ public class IOUtils {
     @Override
     public void write(int b) throws IOException {
     }
-  }
-
+  }  
+  
   /**
    * Write a ByteBuffer to a WritableByteChannel, handling short writes.
-   *
+   * 
    * @param bc               The WritableByteChannel to write to
    * @param buf              The input buffer
    * @throws IOException     On I/O error
@@ -334,9 +359,9 @@ public class IOUtils {
   }
 
   /**
-   * Write a ByteBuffer to a FileChannel at a given offset,
+   * Write a ByteBuffer to a FileChannel at a given offset, 
    * handling short writes.
-   *
+   * 
    * @param fc               The FileChannel to write to
    * @param buf              The input buffer
    * @param offset           The offset in the file to start writing at

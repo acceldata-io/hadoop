@@ -58,7 +58,7 @@ import org.apache.hadoop.util.StringUtils;
 import static org.apache.hadoop.io.erasurecode.ErasureCodeConstants.REPLICATION_POLICY_ID;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /** I-node for closed file. */
 @InterfaceAudience.Private

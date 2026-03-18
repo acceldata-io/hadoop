@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hdfs.protocol;
 
+import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Date;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -26,7 +28,7 @@ import org.apache.hadoop.hdfs.server.namenode.CachePool;
 import org.apache.hadoop.util.IntrusiveCollection;
 import org.apache.hadoop.util.IntrusiveCollection.Element;
 
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * Namenode class that tracks state related to a cached path.
@@ -61,7 +63,7 @@ public final class CacheDirective implements IntrusiveCollection.Element {
       short replication, long expiryTime) {
     Preconditions.checkArgument(id > 0);
     this.id = id;
-    this.path = Preconditions.checkNotNull(path);
+    this.path = checkNotNull(path);
     Preconditions.checkArgument(replication > 0);
     this.replication = replication;
     this.expiryTime = expiryTime;

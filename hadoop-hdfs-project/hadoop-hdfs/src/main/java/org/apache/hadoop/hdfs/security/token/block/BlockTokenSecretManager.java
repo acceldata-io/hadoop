@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hdfs.security.token.block;
 
+import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.Timer;
 
 import org.apache.hadoop.classification.VisibleForTesting;
-import org.apache.hadoop.util.Preconditions;
+import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.HashMultiset;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Multiset;
 
@@ -293,7 +293,7 @@ public class BlockTokenSecretManager extends
     if (shouldWrapQOP) {
       String qop = Server.getAuxiliaryPortEstablishedQOP();
       if (qop != null) {
-        id.setHandshakeMsg(qop.getBytes(StandardCharsets.UTF_8));
+        id.setHandshakeMsg(qop.getBytes(Charsets.UTF_8));
       }
     }
     return new Token<BlockTokenIdentifier>(id, this);

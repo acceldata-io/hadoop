@@ -51,7 +51,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 
 /**
  * Test randomly mixing append, snapshot and truncate operations.
@@ -139,7 +139,7 @@ public class TestAppendSnapshotTruncate {
   static class DirWorker extends Worker {
     final Path dir;
     final File localDir;
-    
+
     final FileWorker[] files;
 
     private Map<String, Path> snapshotPaths = new HashMap<String, Path>();
@@ -165,7 +165,7 @@ public class TestAppendSnapshotTruncate {
           .append(snapshot).append(" for ").append(dir);
 
       {
-        //copy all local files to a sub dir to simulate snapshot. 
+        //copy all local files to a sub dir to simulate snapshot.
         final File subDir = new File(localDir, snapshot);
         Assert.assertFalse(subDir.exists());
         subDir.mkdir();
@@ -174,7 +174,7 @@ public class TestAppendSnapshotTruncate {
           FileUtils.copyFile(f, new File(subDir, f.getName()));
         }
       }
-      
+
       final Path p = dfs.createSnapshot(dir, snapshot);
       snapshotPaths.put(snapshot, p);
       return b.toString();
@@ -186,14 +186,14 @@ public class TestAppendSnapshotTruncate {
 
       final File subDir = new File(localDir, snapshot);
       Assert.assertTrue(subDir.exists());
-      
+
       final File[] localFiles = subDir.listFiles(FILE_ONLY);
       final Path p = snapshotPaths.get(snapshot);
       final FileStatus[] statuses = dfs.listStatus(p);
       Assert.assertEquals(localFiles.length, statuses.length);
       b.append(p).append(" vs ").append(subDir).append(", ")
        .append(statuses.length).append(" entries");
-      
+
       Arrays.sort(localFiles);
       Arrays.sort(statuses);
       for(int i = 0; i < statuses.length; i++) {
@@ -211,7 +211,7 @@ public class TestAppendSnapshotTruncate {
       return b.toString();
     }
 
-    
+
     @Override
     public String call() throws Exception {
       final int op = ThreadLocalRandom.current().nextInt(6);
@@ -231,7 +231,7 @@ public class TestAppendSnapshotTruncate {
         final String snapshot = keys[ThreadLocalRandom.current()
             .nextInt(keys.length)];
         final String s = checkSnapshot(snapshot);
-        
+
         if (op == 2) {
           return deleteSnapshot(snapshot);
         }
@@ -242,7 +242,7 @@ public class TestAppendSnapshotTruncate {
     }
 
     void pauseAllFiles() {
-      for(FileWorker f : files) { 
+      for(FileWorker f : files) {
         f.pause();
       }
 
@@ -251,22 +251,22 @@ public class TestAppendSnapshotTruncate {
         for(; i < files.length && files[i].isPaused(); i++);
       }
     }
-    
+
     void startAllFiles() {
-      for(FileWorker f : files) { 
+      for(FileWorker f : files) {
         f.start();
       }
     }
-    
+
     void stopAllFiles() throws InterruptedException {
-      for(FileWorker f : files) { 
+      for(FileWorker f : files) {
         f.stop();
       }
     }
 
     void checkEverything() throws IOException {
       LOG.info("checkEverything");
-      for(FileWorker f : files) { 
+      for(FileWorker f : files) {
         f.checkFullFile();
         f.checkErrorState();
       }
@@ -331,7 +331,7 @@ public class TestAppendSnapshotTruncate {
       }
       return b.toString();
     }
-    
+
     String truncateArbitrarily(int nBytes) throws IOException {
       Preconditions.checkArgument(nBytes > 0);
       final int length = checkLength();
@@ -367,7 +367,7 @@ public class TestAppendSnapshotTruncate {
       }
       return isReady;
     }
-    
+
     int checkLength() throws IOException {
       return checkLength(file, localFile);
     }
@@ -378,7 +378,7 @@ public class TestAppendSnapshotTruncate {
       Assert.assertTrue(length <= Integer.MAX_VALUE);
       return (int)length;
     }
-    
+
     String checkFullFile() throws IOException {
       return checkFullFile(file, localFile);
     }
@@ -388,23 +388,23 @@ public class TestAppendSnapshotTruncate {
           .append(file.getName()).append(" vs ").append(localFile);
       final byte[] bytes = new byte[checkLength(file, localFile)];
       b.append(", length=").append(bytes.length);
-      
-      final FileInputStream in = new FileInputStream(localFile); 
+
+      final FileInputStream in = new FileInputStream(localFile);
       for(int n = 0; n < bytes.length; ) {
         n += in.read(bytes, n, bytes.length - n);
       }
       in.close();
-      
+
       AppendTestUtil.checkFullFile(dfs, file, bytes.length, bytes,
           "File content mismatch: " + b, false);
       return b.toString();
     }
   }
-  
+
   static abstract class Worker implements Callable<String> {
     enum State {
       IDLE(false), RUNNING(false), STOPPED(true), ERROR(true);
-      
+
       final boolean isTerminated;
 
       State(boolean isTerminated) {
@@ -441,7 +441,7 @@ public class TestAppendSnapshotTruncate {
 
     void start() {
       Preconditions.checkState(state.compareAndSet(State.IDLE, State.RUNNING));
-      
+
       if (thread.get() == null) {
         final Thread t = new Thread(null, new Runnable() {
           @Override

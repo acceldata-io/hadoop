@@ -207,6 +207,14 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-http</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.javassist</groupId>
+          <artifactId>javassist</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 

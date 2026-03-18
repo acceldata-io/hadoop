@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hdfs.server.protocol.RemoteEditLog;
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.ipc.CallerContext;
 

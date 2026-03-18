@@ -120,9 +120,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.util.Timer;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.util.Lists;
-import org.apache.hadoop.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -424,11 +423,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    */
   private static List<VolumeFailureInfo> getInitialVolumeFailureInfos(
       Collection<StorageLocation> dataLocations, DataStorage storage) {
-    Set<StorageLocation> failedLocationSet = Sets.newHashSetWithExpectedSize(
-        dataLocations.size());
-    for (StorageLocation sl: dataLocations) {
-      failedLocationSet.add(sl);
-    }
+    Set<StorageLocation> failedLocationSet = new HashSet<>(dataLocations);
     for (Iterator<Storage.StorageDirectory> it = storage.dirIterator();
          it.hasNext(); ) {
       Storage.StorageDirectory sd = it.next();

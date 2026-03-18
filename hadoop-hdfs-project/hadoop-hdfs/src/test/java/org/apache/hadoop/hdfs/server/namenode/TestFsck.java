@@ -50,6 +50,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -386,15 +387,15 @@ public class TestFsck {
                                         cluster.getNameNodePort()), conf);
     String[] fileNames = util.getFileNames(topDir);
     CorruptedTestFile[] ctFiles = new CorruptedTestFile[]{
-        new CorruptedTestFile(fileNames[0], Sets.newHashSet(0),
+        new CorruptedTestFile(fileNames[0], new HashSet<>(Arrays.asList(0)),
             dfsClient, numDatanodes, dfsBlockSize),
-        new CorruptedTestFile(fileNames[1], Sets.newHashSet(2, 3),
+        new CorruptedTestFile(fileNames[1], new HashSet<>(Arrays.asList(2, 3)),
             dfsClient, numDatanodes, dfsBlockSize),
-        new CorruptedTestFile(fileNames[2], Sets.newHashSet(4),
+        new CorruptedTestFile(fileNames[2], new HashSet<>(Arrays.asList(4)),
             dfsClient, numDatanodes, dfsBlockSize),
-        new CorruptedTestFile(fileNames[3], Sets.newHashSet(0, 1, 2, 3),
+        new CorruptedTestFile(fileNames[3], new HashSet<>(Arrays.asList(0, 1, 2, 3)),
             dfsClient, numDatanodes, dfsBlockSize),
-        new CorruptedTestFile(fileNames[4], Sets.newHashSet(1, 2, 3, 4),
+        new CorruptedTestFile(fileNames[4], new HashSet<>(Arrays.asList(1, 2, 3, 4)),
             dfsClient, numDatanodes, dfsBlockSize)
     };
     int totalMissingBlocks = 0;
@@ -947,7 +948,7 @@ public class TestFsck {
     dfs = cluster.getFileSystem();
 
     // create files
-    final String testFile = new String("/testfile");
+    final String testFile = "/testfile";
     final Path path = new Path(testFile);
     DFSTestUtil.createFile(dfs, path, fileSize, replFactor, 1000L);
     DFSTestUtil.waitReplication(dfs, path, replFactor);
@@ -1236,7 +1237,7 @@ public class TestFsck {
     assertNotNull("Failed to get FileSystem", dfs);
 
     // Create a file that will be intentionally under-replicated
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     long fileLen = blockSize * numBlocks;
     DFSTestUtil.createFile(dfs, path, fileLen, replFactor, 1);
@@ -1298,7 +1299,7 @@ public class TestFsck {
     assertNotNull("Failed to get FileSystem", dfs);
 
     // Create a file that will be intentionally under-replicated
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     long fileLen = blockSize * numBlocks;
     DFSTestUtil.createFile(dfs, path, fileLen, replFactor, 1);
@@ -1475,7 +1476,7 @@ public class TestFsck {
     DFSTestUtil util = new DFSTestUtil.Builder().
         setName(getClass().getSimpleName()).setNumFiles(1).build();
     //create files
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     util.createFile(dfs, path, 1024, replFactor, 1000L);
     util.waitReplication(dfs, path, replFactor);
@@ -1530,7 +1531,7 @@ public class TestFsck {
     DFSTestUtil util = new DFSTestUtil.Builder().
         setName(getClass().getSimpleName()).setNumFiles(1).build();
     //create files
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     util.createFile(dfs, path, 1024, replFactor, 1000L);
     util.waitReplication(dfs, path, replFactor);
@@ -1618,7 +1619,7 @@ public class TestFsck {
     DFSTestUtil util = new DFSTestUtil.Builder().
         setName(getClass().getSimpleName()).setNumFiles(1).build();
     //create files
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     util.createFile(dfs, path, 1024, replFactor, 1000L);
     util.waitReplication(dfs, path, replFactor);
@@ -1737,7 +1738,7 @@ public class TestFsck {
     DFSTestUtil util = new DFSTestUtil.Builder().
         setName(getClass().getSimpleName()).setNumFiles(1).build();
     //create files
-    final String pathString = new String("/testfile");
+    final String pathString = "/testfile";
     final Path path = new Path(pathString);
     util.createFile(dfs, path, 1024, repFactor, 1000L);
     util.waitReplication(dfs, path, repFactor);
@@ -1851,7 +1852,7 @@ public class TestFsck {
         setName(getClass().getSimpleName()).setNumFiles(1).build();
 
     //create files
-    final String testFile = new String("/testfile");
+    final String testFile = "/testfile";
     final Path path = new Path(testFile);
     util.createFile(dfs, path, fileSize, replFactor, 1000L);
     util.waitReplication(dfs, path, replFactor);
@@ -1935,7 +1936,7 @@ public class TestFsck {
     DFSTestUtil util = new DFSTestUtil.Builder().
         setName(getClass().getSimpleName()).setNumFiles(1).build();
     //create files
-    final String testFile = new String("/testfile");
+    final String testFile = "/testfile";
     final Path path = new Path(testFile);
     util.createFile(dfs, path, 1024, replFactor, 1000L);
     util.waitReplication(dfs, path, replFactor);
@@ -2215,7 +2216,7 @@ public class TestFsck {
         new InetSocketAddress("localhost", cluster.getNameNodePort()), conf);
     final String blockFileToCorrupt = fileNames[0];
     final CorruptedTestFile ctf = new CorruptedTestFile(blockFileToCorrupt,
-        Sets.newHashSet(0), dfsClient, numDatanodes, dfsBlockSize);
+        new HashSet<>(Arrays.asList(0)), dfsClient, numDatanodes, dfsBlockSize);
     ctf.corruptBlocks(cluster);
 
     // Wait for fsck to discover all the missing blocks
@@ -2314,7 +2315,7 @@ public class TestFsck {
     }
 
     // create files
-    final String testFile = new String("/testfile");
+    final String testFile = "/testfile";
     final Path path = new Path(testFile);
     DFSTestUtil.createFile(dfs, path, fileSize, replFactor, 1000L);
     DFSTestUtil.waitReplication(dfs, path, replFactor);

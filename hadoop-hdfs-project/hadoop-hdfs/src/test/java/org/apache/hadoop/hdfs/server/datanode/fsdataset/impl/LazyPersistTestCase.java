@@ -45,8 +45,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;

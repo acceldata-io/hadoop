@@ -21,10 +21,9 @@ package org.apache.hadoop.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -75,9 +74,10 @@ public final class ServiceOperations {
    * @param log the log to warn at
    * @param service a service; may be null
    * @return any exception that was caught; null if none was.
-   * @see ServiceOperations#stopQuietly(Service)
+   * @deprecated to be removed with 3.4.0. Use {@link #stopQuietly(Logger, Service)} instead.
    */
-  public static Exception stopQuietly(Log log, Service service) {
+  @Deprecated
+  public static Exception stopQuietly(org.apache.commons.logging.Log log, Service service) {
     try {
       stop(service);
     } catch (Exception e) {

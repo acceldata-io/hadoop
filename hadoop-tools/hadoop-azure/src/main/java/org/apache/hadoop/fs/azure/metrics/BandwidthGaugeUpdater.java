@@ -21,8 +21,8 @@ package org.apache.hadoop.fs.azure.metrics;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 
 /**
@@ -31,11 +31,10 @@ import org.apache.hadoop.classification.InterfaceAudience;
  */
 @InterfaceAudience.Private
 public final class BandwidthGaugeUpdater {
-  public static final Log LOG = LogFactory
-      .getLog(BandwidthGaugeUpdater.class);
-  
+  public static final Logger LOG = LoggerFactory.getLogger(BandwidthGaugeUpdater.class);
+
   public static final String THREAD_NAME = "AzureNativeFilesystemStore-UploadBandwidthUpdater";
-  
+
   private static final int DEFAULT_WINDOW_SIZE_MS = 1000;
   private static final int PROCESS_QUEUE_INITIAL_CAPACITY = 1000;
   private int windowSizeMs;
@@ -161,7 +160,7 @@ public final class BandwidthGaugeUpdater {
    * Triggers the update of the metrics gauge based on all the blocks
    * uploaded/downloaded so far. This is typically done periodically in a
    * dedicated update thread, but exposing as public for unit test purposes.
-   * 
+   *
    * @param updateWrite If true, we'll update the write (upload) metrics.
    *                    Otherwise we'll update the read (download) ones.
    */
@@ -173,7 +172,7 @@ public final class BandwidthGaugeUpdater {
         allBlocksWritten = createNewToProcessQueue();
       } else if (!updateWrite && !allBlocksRead.isEmpty()) {
         toProcess = allBlocksRead;
-        allBlocksRead = createNewToProcessQueue();        
+        allBlocksRead = createNewToProcessQueue();
       }
     }
 
@@ -195,7 +194,7 @@ public final class BandwidthGaugeUpdater {
     long maxSingleBlockTransferRate = 0;
     long bytesInLastSecond = 0;
     for (BlockTransferWindow currentWindow : toProcess) {
-      long windowDuration = currentWindow.getEndDate().getTime() 
+      long windowDuration = currentWindow.getEndDate().getTime()
           - currentWindow.getStartDate().getTime();
       if (windowDuration == 0) {
         // Edge case, assume it took 1 ms but we were too fast
@@ -209,8 +208,8 @@ public final class BandwidthGaugeUpdater {
         // This block started its transfer before our time window,
         // interpolate to estimate how many bytes from that block
         // were actually transferred during our time window.
-        long adjustedBytes = (currentWindow.getBytesTransferred() 
-            * (currentWindow.getEndDate().getTime() - cutoffTime)) 
+        long adjustedBytes = (currentWindow.getBytesTransferred()
+            * (currentWindow.getEndDate().getTime() - cutoffTime))
             / windowDuration;
         bytesInLastSecond += adjustedBytes;
       }

@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hdfs.server.namenode;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.util.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.HadoopIllegalArgumentException;
@@ -34,6 +34,9 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.erasurecode.CodecRegistry;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.util.Lists;
+
+import org.apache.hadoop.util.Preconditions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

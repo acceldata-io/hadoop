@@ -39,8 +39,8 @@ import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.fs.Syncable;
 import org.apache.hadoop.fs.azure.StorageInterface.CloudPageBlobWrapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.classification.VisibleForTesting;
@@ -120,7 +120,7 @@ final class PageBlobOutputStream extends OutputStream implements Syncable, Strea
   // Whether the stream has been closed.
   private boolean closed = false;
 
-  public static final Log LOG = LogFactory.getLog(AzureNativeFileSystemStore.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AzureNativeFileSystemStore.class);
 
   // Set the minimum page blob file size to 128MB, which is >> the default
   // block size of 32MB. This default block size is often used as the

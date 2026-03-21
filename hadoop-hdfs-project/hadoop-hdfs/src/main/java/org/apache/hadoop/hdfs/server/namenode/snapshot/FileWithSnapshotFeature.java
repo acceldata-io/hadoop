@@ -29,6 +29,7 @@ import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo;
 import org.apache.hadoop.hdfs.server.namenode.AclFeature;
 import org.apache.hadoop.hdfs.server.namenode.INode;
 import org.apache.hadoop.hdfs.server.namenode.AclStorage;
+import org.apache.hadoop.hdfs.server.namenode.FSNamesystem;
 import org.apache.hadoop.hdfs.server.namenode.INodeFile;
 import org.apache.hadoop.hdfs.server.namenode.INodeFileAttributes;
 import org.apache.hadoop.hdfs.server.namenode.QuotaCounts;
@@ -226,7 +227,7 @@ public class FileWithSnapshotFeature implements INode.Feature {
     final long max;
     FileDiff diff = getDiffs().getLast();
     if (isCurrentFileDeleted()) {
-      max = diff == null? 0: diff.getFileSize();
+      max = diff == null ? 0 : diff.getFileSize();
     } else {
       max = file.computeFileSize();
     }
@@ -234,11 +235,16 @@ public class FileWithSnapshotFeature implements INode.Feature {
     // Collect blocks that should be deleted
     FileDiff last = diffs.getLast();
     BlockInfo[] snapshotBlocks = last == null ? null : last.getBlocks();
-    if(snapshotBlocks == null)
+    if (snapshotBlocks == null) {
       file.collectBlocksBeyondMax(max, reclaimContext.collectedBlocks(), null);
-    else
+    } else {
+      if (file != null && file.isStriped()) {
+        FSNamesystem.LOG.warn("Skip the EC file for block truncation: " + file.getFullPathName());
+        return;
+      }
       file.collectBlocksBeyondSnapshot(snapshotBlocks,
-                                       reclaimContext.collectedBlocks());
+              reclaimContext.collectedBlocks());
+    }
   }
 
   @Override

@@ -163,7 +163,7 @@ public class DatanodeHttpServer implements Closeable {
                 }
                 p.addLast(
                     new ChunkedWriteHandler(),
-                    new URLDispatcher(jettyAddr, conf, confForCreate));
+                    new URLDispatcher(jettyAddr, conf, confForCreate, false));
               }
             });
 
@@ -223,7 +223,7 @@ public class DatanodeHttpServer implements Closeable {
               }
               p.addLast(
                   new ChunkedWriteHandler(),
-                  new URLDispatcher(jettyAddr, conf, confForCreate));
+                  new URLDispatcher(jettyAddr, conf, confForCreate, true));
             }
           });
     } else {

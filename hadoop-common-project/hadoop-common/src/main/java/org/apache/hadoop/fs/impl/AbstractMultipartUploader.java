@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 
 import org.apache.hadoop.fs.MultipartUploader;
 import org.apache.hadoop.fs.PartHandle;

@@ -30,12 +30,12 @@ import org.apache.hadoop.hdfs.server.common.Storage.StorageDirectory;
 import org.apache.hadoop.hdfs.server.common.Storage.StorageState;
 import org.apache.hadoop.util.StringUtils;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 
 /**
  * Extension of FSImage for the backup node.
- * This class handles the setup of the journaling 
+ * This class handles the setup of the journaling
  * spool on the backup namenode.
  */
 @InterfaceAudience.Private
@@ -43,11 +43,11 @@ public class BackupImage extends FSImage {
   /** Backup input stream for loading edits into memory */
   private final EditLogBackupInputStream backupInputStream =
     new EditLogBackupInputStream("Data from remote NameNode");
-  
+
   /**
    * Current state of the BackupNode. The BackupNode's state
    * transitions are as follows:
-   * 
+   *
    * Initial: DROP_UNTIL_NEXT_ROLL
    * - Transitions to JOURNAL_ONLY the next time the log rolls
    * - Transitions to IN_SYNC in convergeJournalSpool
@@ -79,7 +79,7 @@ public class BackupImage extends FSImage {
    * {@see #freezeNamespaceAtNextRoll()}
    */
   private boolean stopApplyingEditsOnNextRoll = false;
-  
+
   private FSNamesystem namesystem;
 
   private int quotaInitThreads;
@@ -150,10 +150,10 @@ public class BackupImage extends FSImage {
 
   /**
    * Receive a batch of edits from the NameNode.
-   * 
+   *
    * Depending on bnState, different actions are taken. See
    * {@link BackupImage.BNState}
-   * 
+   *
    * @param firstTxId first txid in batch
    * @param numTxns number of transactions
    * @param data serialized journal records.
@@ -167,7 +167,7 @@ public class BackupImage extends FSImage {
           "; firstTxId = " + firstTxId +
           "; numTxns = " + numTxns);
     }
-    
+
     switch(bnState) {
       case DROP_UNTIL_NEXT_ROLL:
         return;
@@ -176,14 +176,14 @@ public class BackupImage extends FSImage {
         // update NameSpace in memory
         applyEdits(firstTxId, numTxns, data);
         break;
-      
+
       case JOURNAL_ONLY:
         break;
-      
+
       default:
         throw new AssertionError("Unhandled state: " + bnState);
     }
-    
+
     // write to BN's local edit log.
     editLog.journal(firstTxId, numTxns, data);
   }
@@ -243,11 +243,11 @@ public class BackupImage extends FSImage {
     }
     assert bnState == BNState.IN_SYNC;
   }
-  
+
   private boolean tryConvergeJournalSpool() throws IOException {
     Preconditions.checkState(bnState == BNState.JOURNAL_ONLY,
         "bad state: %s", bnState);
-    
+
     // This section is unsynchronized so we can continue to apply
     // ahead of where we're reading, concurrently. Since the state
     // is JOURNAL_ONLY at this point, we know that lastAppliedTxId
@@ -259,11 +259,11 @@ public class BackupImage extends FSImage {
           + lastAppliedTxId + " to " + target);
       FSImageTransactionalStorageInspector inspector =
         new FSImageTransactionalStorageInspector();
-      
+
       storage.inspectStorageDirs(inspector);
 
       editLog.recoverUnclosedStreams();
-      Iterable<EditLogInputStream> editStreamsAll 
+      Iterable<EditLogInputStream> editStreamsAll
         = editLog.selectInputStreams(lastAppliedTxId, target - 1);
       // remove inprogress
       List<EditLogInputStream> editStreams = Lists.newArrayList();
@@ -274,20 +274,20 @@ public class BackupImage extends FSImage {
       }
       loadEdits(editStreams, getNamesystem());
     }
-    
+
     // now, need to load the in-progress file
     synchronized (this) {
       if (lastAppliedTxId != editLog.getCurSegmentTxId() - 1) {
         LOG.debug("Logs rolled while catching up to current segment");
         return false; // drop lock and try again to load local logs
       }
-      
+
       EditLogInputStream stream = null;
       Collection<EditLogInputStream> editStreams
         = getEditLog().selectInputStreams(
             getEditLog().getCurSegmentTxId(),
             getEditLog().getCurSegmentTxId());
-      
+
       for (EditLogInputStream s : editStreams) {
         if (s.getFirstTxId() == getEditLog().getCurSegmentTxId()) {
           stream = s;
@@ -302,10 +302,10 @@ public class BackupImage extends FSImage {
 
       try {
         long remainingTxns = getEditLog().getLastWrittenTxId() - lastAppliedTxId;
-        
+
         LOG.info("Going to finish converging with remaining " + remainingTxns
             + " txns from in-progress stream " + stream);
-        
+
         FSEditLogLoader loader =
             new FSEditLogLoader(getNamesystem(), lastAppliedTxId);
         loader.loadFSEdits(stream, lastAppliedTxId + 1);
@@ -343,7 +343,7 @@ public class BackupImage extends FSImage {
     if (bnState == BNState.DROP_UNTIL_NEXT_ROLL) {
       setState(BNState.JOURNAL_ONLY);
     }
-    
+
     if (stopApplyingEditsOnNextRoll) {
       if (bnState == BNState.IN_SYNC) {
         LOG.info("Stopped applying edits to prepare for checkpoint.");

@@ -20,7 +20,7 @@ import static org.apache.hadoop.security.authentication.server.HttpConstants.DIG
 
 import java.util.Locale;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 
 /**
  * This is a utility class designed to provide functionality related to

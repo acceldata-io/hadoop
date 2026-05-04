@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementManager;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
@@ -71,6 +72,12 @@ public class AppManagerTestBase {
         throws YarnException {
       super.submitApplication(submissionContext, System.currentTimeMillis(),
           user);
+    }
+
+    public String getUserNameForPlacement(final String user,
+        final ApplicationSubmissionContext context,
+        final PlacementManager placementManager) throws YarnException {
+      return super.getUserNameForPlacement(user, context, placementManager);
     }
   }
 }

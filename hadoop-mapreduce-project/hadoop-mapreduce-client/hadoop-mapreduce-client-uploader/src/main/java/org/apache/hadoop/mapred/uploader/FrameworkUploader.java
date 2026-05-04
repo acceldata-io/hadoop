@@ -22,7 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
-import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -332,7 +332,7 @@ public class FrameworkUploader implements Runnable {
         LOG.info("Adding " + fullPath);
         File file = new File(fullPath);
         try (FileInputStream inputStream = new FileInputStream(file)) {
-          ArchiveEntry entry = out.createArchiveEntry(file, file.getName());
+          TarArchiveEntry entry = out.createArchiveEntry(file, file.getName());
           out.putArchiveEntry(entry);
           IOUtils.copyBytes(inputStream, out, 1024 * 1024);
           out.closeArchiveEntry();

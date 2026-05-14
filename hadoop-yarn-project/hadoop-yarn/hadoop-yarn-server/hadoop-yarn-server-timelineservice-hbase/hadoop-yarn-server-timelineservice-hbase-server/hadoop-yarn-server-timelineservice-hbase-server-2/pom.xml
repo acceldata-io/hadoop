@@ -27,22 +27,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>hadoop-yarn-server-timelineservice-hbase-server-2</artifactId>
-  <name>Apache Hadoop YARN TimelineService HBase Server 2.0</name>
+  <name>Apache Hadoop YARN TimelineService HBase Server 2.5</name>
   <version>3.2.3.3.2.3.6-2</version>
 
   <properties>
     <!-- Needed for generating FindBugs warnings using parent pom -->
     <yarn.basedir>${project.parent.parent.parent.parent.basedir}</yarn.basedir>
-    <!--Needed while compiling individual module-->
-    <hbase.version>${hbase.two.version}</hbase.version>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>hbase2</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -179,6 +171,4 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-  </profiles>
 </project>

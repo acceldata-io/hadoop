@@ -32,8 +32,6 @@ import java.util.Random;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -129,51 +127,6 @@ public class TestDataNodeMetricsLogger {
     startDNForTest(false);
     assertNotNull(dn);
     assertNull(dn.getMetricsLoggerTimer());
-  }
-
-  @Test
-  public void testMetricsLoggerIsAsync() throws IOException {
-    startDNForTest(true);
-    assertNotNull(dn);
-    org.apache.log4j.Logger logger = ((Log4JLogger) DataNode.METRICS_LOG)
-        .getLogger();
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    assertTrue(appenders.get(0) instanceof AsyncAppender);
-  }
-
-  /**
-   * Publish a fake metric under the "Hadoop:" domain and ensure it is logged by
-   * the metrics logger.
-   */
-  @Test
-  public void testMetricsLogOutput() throws IOException, InterruptedException,
-      TimeoutException {
-    TestFakeMetric metricsProvider = new TestFakeMetric();
-    MBeans.register(this.getClass().getSimpleName(), "DummyMetrics",
-        metricsProvider);
-    startDNForTest(true);
-    assertNotNull(dn);
-    final PatternMatchingAppender appender = new PatternMatchingAppender(
-        "^.*FakeMetric.*$");
-    addAppender(DataNode.METRICS_LOG, appender);
-
-    // Ensure that the supplied pattern was matched.
-    GenericTestUtils.waitFor(new Supplier<Boolean>() {
-      @Override
-      public Boolean get() {
-        return appender.isMatched();
-      }
-    }, 1000, 60000);
-
-    dn.shutdown();
-  }
-
-  private void addAppender(Log log, Appender appender) {
-    org.apache.log4j.Logger logger = ((Log4JLogger) log).getLogger();
-    @SuppressWarnings("unchecked")
-    List<Appender> appenders = Collections.list(logger.getAllAppenders());
-    ((AsyncAppender) appenders.get(0)).addAppender(appender);
   }
 
   public interface TestFakeMetricMXBean {

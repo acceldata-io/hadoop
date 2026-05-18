@@ -23,7 +23,6 @@ import java.util.NoSuchElementException;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +110,7 @@ public class IntrusiveCollection<E extends IntrusiveCollection.Element>
     // We keep references to the first and last elements for easy access.
     Element first = this;
     Element last = this;
-  
+
     @Override
     public void insertInternal(IntrusiveCollection<? extends Element> list,
         Element prev, Element next) {
@@ -131,19 +130,19 @@ public class IntrusiveCollection<E extends IntrusiveCollection.Element>
       Preconditions.checkState(list == IntrusiveCollection.this);
       first = next;
     }
-  
+
     @Override
     public void removeInternal(IntrusiveCollection<? extends Element> list) {
       throw new RuntimeException("Can't remove root element");
     }
-    
+
     @Override
     public Element getNext(
         IntrusiveCollection<? extends Element> list) {
       Preconditions.checkState(list == IntrusiveCollection.this);
       return first;
     }
-  
+
     @Override
     public Element getPrev(
         IntrusiveCollection<? extends Element> list) {
@@ -212,7 +211,7 @@ public class IntrusiveCollection<E extends IntrusiveCollection.Element>
       cur = null;
     }
   }
-  
+
   private Element removeElement(Element elem) {
     Element prev = elem.getPrev(IntrusiveCollection.this);
     Element next = elem.getNext(IntrusiveCollection.this);
@@ -227,7 +226,7 @@ public class IntrusiveCollection<E extends IntrusiveCollection.Element>
    * Get an iterator over the list.  This can be used to remove elements.
    * It is not safe to do concurrent modifications from other threads while
    * using this iterator.
-   * 
+   *
    * @return         The iterator.
    */
   public Iterator<E> iterator() {
@@ -280,7 +279,7 @@ public class IntrusiveCollection<E extends IntrusiveCollection.Element>
 
   /**
    * Add an element to the end of the list.
-   * 
+   *
    * @param elem     The new element to add.
    * @return add result.
    */

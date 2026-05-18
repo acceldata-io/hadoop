@@ -19,8 +19,7 @@
 package org.apache.hadoop.hdfs;
 
 import org.apache.hadoop.ipc.RpcNoSuchMethodException;
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.commons.collections.list.TreeList;
 import org.apache.hadoop.fs.LeaseRecoverable;
 import org.apache.hadoop.fs.SafeMode;
@@ -118,6 +117,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.DelegationTokenIssuer;
 import org.apache.hadoop.util.ChunkedArrayList;
+import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.Progressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

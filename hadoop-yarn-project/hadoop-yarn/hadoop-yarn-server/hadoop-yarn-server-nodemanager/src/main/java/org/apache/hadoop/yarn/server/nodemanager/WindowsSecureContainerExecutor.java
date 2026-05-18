@@ -29,7 +29,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,20 +60,20 @@ import org.apache.hadoop.yarn.server.nodemanager.executor.LocalizerStartContext;
 
 /**
  * Windows secure container executor (WSCE).
- * This class offers a secure container executor on Windows, similar to the 
- * LinuxContainerExecutor. As the NM does not run on a high privileged context, 
- * this class delegates elevated operations to the helper hadoopwintuilsvc, 
+ * This class offers a secure container executor on Windows, similar to the
+ * LinuxContainerExecutor. As the NM does not run on a high privileged context,
+ * this class delegates elevated operations to the helper hadoopwintuilsvc,
  * implemented by the winutils.exe running as a service.
  * JNI and LRPC is used to communicate with the privileged service.
  */
 public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
-  
+
   private static final Logger LOG = LoggerFactory
       .getLogger(WindowsSecureContainerExecutor.class);
-  
+
   public static final String LOCALIZER_PID_FORMAT = "STAR_LOCALIZER_%s";
-  
-  
+
+
   /**
    * This class is a container for the JNI Win32 native methods used by WSCE.
    */
@@ -94,8 +94,8 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
 
     /** Initialize the JNI method ID and class ID cache */
     private static native void initWsceNative();
-    
-    
+
+
     /**
      * This class contains methods used by the WindowsSecureContainerExecutor
      * file system operations.
@@ -110,93 +110,93 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
         }
         elevatedMkDirImpl(dirName.toString());
       }
-      
-      private static native void elevatedMkDirImpl(String dirName) 
+
+      private static native void elevatedMkDirImpl(String dirName)
           throws IOException;
-      
-      public static void chown(Path fileName, String user, String group) 
+
+      public static void chown(Path fileName, String user, String group)
           throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for chown");
         }
         elevatedChownImpl(fileName.toString(), user, group);
       }
-      
-      private static native void elevatedChownImpl(String fileName, String user, 
+
+      private static native void elevatedChownImpl(String fileName, String user,
           String group) throws IOException;
-      
-      public static void move(Path src, Path dst, boolean replaceExisting) 
+
+      public static void move(Path src, Path dst, boolean replaceExisting)
           throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for move");
         }
-        elevatedCopyImpl(MOVE_FILE, src.toString(), dst.toString(), 
+        elevatedCopyImpl(MOVE_FILE, src.toString(), dst.toString(),
             replaceExisting);
       }
-      
-      public static void copy(Path src, Path dst, boolean replaceExisting) 
+
+      public static void copy(Path src, Path dst, boolean replaceExisting)
           throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for copy");
         }
-        elevatedCopyImpl(COPY_FILE, src.toString(), dst.toString(), 
+        elevatedCopyImpl(COPY_FILE, src.toString(), dst.toString(),
             replaceExisting);
       }
-      
-      private static native void elevatedCopyImpl(int operation, String src, 
+
+      private static native void elevatedCopyImpl(int operation, String src,
           String dst, boolean replaceExisting) throws IOException;
-      
+
       public static void chmod(Path fileName, int mode) throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for chmod");
         }
         elevatedChmodImpl(fileName.toString(), mode);
       }
-      
-      private static native void elevatedChmodImpl(String path, int mode) 
+
+      private static native void elevatedChmodImpl(String path, int mode)
           throws IOException;
-      
+
       public static void killTask(String containerName) throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for killTask");
         }
         elevatedKillTaskImpl(containerName);
       }
-      
-      private static native void elevatedKillTaskImpl(String containerName) 
+
+      private static native void elevatedKillTaskImpl(String containerName)
           throws IOException;
 
-      public static OutputStream create(Path f, boolean append)  
+      public static OutputStream create(Path f, boolean append)
           throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for create");
         }
-        
+
         long desiredAccess = Windows.GENERIC_WRITE;
         long shareMode = 0L;
-        long creationDisposition = append ? 
+        long creationDisposition = append ?
             Windows.OPEN_ALWAYS : Windows.CREATE_ALWAYS;
         long flags = Windows.FILE_ATTRIBUTE_NORMAL;
-        
+
         String fileName = f.toString();
         fileName = fileName.replace('/', '\\');
-        
+
         long hFile = elevatedCreateImpl(
             fileName, desiredAccess, shareMode, creationDisposition, flags);
         return new FileOutputStream(
             WinutilsProcessStub.getFileDescriptorFromHandle(hFile));
       }
-      
-      private static native long elevatedCreateImpl(String path, 
+
+      private static native long elevatedCreateImpl(String path,
           long desiredAccess, long shareMode,
           long creationDisposition, long flags) throws IOException;
-      
-      
+
+
       public static boolean deleteFile(Path path) throws IOException {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for deleteFile");
         }
-        
+
         return elevatedDeletePathImpl(path.toString(), false);
       }
 
@@ -204,11 +204,11 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
         if (!nativeLoaded) {
           throw new IOException("Native WSCE libraries are required for deleteDirectory");
         }
-        
+
         return elevatedDeletePathImpl(path.toString(), true);
       }
 
-      public native static boolean elevatedDeletePathImpl(String path, 
+      public native static boolean elevatedDeletePathImpl(String path,
           boolean isDir) throws IOException;
     }
 
@@ -217,33 +217,33 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
      *
      */
     public static class WinutilsProcessStub extends Process {
-      
+
       private final long hProcess;
       private final long hThread;
       private boolean disposed = false;
-      
+
       private final InputStream stdErr;
       private final InputStream stdOut;
       private final OutputStream stdIn;
-      
-      public WinutilsProcessStub(long hProcess, long hThread, long hStdIn, 
+
+      public WinutilsProcessStub(long hProcess, long hThread, long hStdIn,
           long hStdOut, long hStdErr) {
         this.hProcess = hProcess;
         this.hThread = hThread;
-        
+
         this.stdIn = new FileOutputStream(getFileDescriptorFromHandle(hStdIn));
         this.stdOut = new FileInputStream(getFileDescriptorFromHandle(hStdOut));
         this.stdErr = new FileInputStream(getFileDescriptorFromHandle(hStdErr));
       }
-      
+
       public static native FileDescriptor getFileDescriptorFromHandle(long handle);
-      
+
       @Override
       public native void destroy();
-      
+
       @Override
       public native int exitValue();
-      
+
       @Override
       public InputStream getErrorStream() {
         return stdErr;
@@ -263,7 +263,7 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
 
       public native void resume() throws NativeIOException;
     }
-    
+
     public synchronized static WinutilsProcessStub createTaskAsUser(
         String cwd, String jobName, String user, String pidFile, String cmdLine)
       throws IOException {
@@ -282,12 +282,12 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
   }
 
   /**
-   * A shell script wrapper builder for WSCE.  
-   * Overwrites the default behavior to remove the creation of the PID file in 
-   * the script wrapper. WSCE creates the pid file as part of launching the 
+   * A shell script wrapper builder for WSCE.
+   * Overwrites the default behavior to remove the creation of the PID file in
+   * the script wrapper. WSCE creates the pid file as part of launching the
    * task in winutils.
    */
-  private class WindowsSecureWrapperScriptBuilder 
+  private class WindowsSecureWrapperScriptBuilder
     extends LocalWrapperScriptBuilder {
 
     public WindowsSecureWrapperScriptBuilder(Path containerWorkDir) {
@@ -310,12 +310,12 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
   private static class ElevatedFileSystem extends DelegateToFileSystem {
 
     /**
-     * This overwrites certain RawLocalSystem operations to be performed by a 
+     * This overwrites certain RawLocalSystem operations to be performed by a
      * privileged process.
-     * 
+     *
      */
     private static class ElevatedRawLocalFilesystem extends RawLocalFileSystem {
-      
+
       @Override
       protected boolean mkOneDirWithMode(Path path, File p2f,
           FsPermission permission) throws IOException {
@@ -339,26 +339,26 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
         }
         return ret;
       }
-      
+
       @Override
-      public void setPermission(Path p, FsPermission permission) 
+      public void setPermission(Path p, FsPermission permission)
           throws IOException {
         if (LOG.isDebugEnabled()) {
           LOG.debug(String.format("EFS:setPermission: %s %s", p, permission));
         }
         Native.Elevated.chmod(p, permission.toShort());
       }
-      
+
       @Override
-      public void setOwner(Path p, String username, String groupname) 
+      public void setOwner(Path p, String username, String groupname)
           throws IOException {
         if (LOG.isDebugEnabled()) {
-          LOG.debug(String.format("EFS:setOwner: %s %s %s", 
+          LOG.debug(String.format("EFS:setOwner: %s %s %s",
               p, username, groupname));
         }
         Native.Elevated.chown(p, username, groupname);
       }
-      
+
       @Override
       protected OutputStream createOutputStreamWithMode(Path f, boolean append,
           FsPermission permission) throws IOException {
@@ -374,19 +374,19 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
           return os;
         } finally {
           if (!success) {
-            IOUtils.cleanup(LOG, os);
+            IOUtils.cleanupWithLogger(LOG, os);
           }
         }
       }
-      
+
       @Override
       public boolean delete(Path p, boolean recursive) throws IOException {
         if (LOG.isDebugEnabled()) {
           LOG.debug(String.format("EFS:delete: %s %b", p, recursive));
         }
-        
-        // The super delete uses the FileUtil.fullyDelete, 
-        // but we cannot rely on that because we need to use the elevated 
+
+        // The super delete uses the FileUtil.fullyDelete,
+        // but we cannot rely on that because we need to use the elevated
         // operations to remove the files
         //
         File f = pathToFile(p);
@@ -396,15 +396,15 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
         }
         else if (f.isFile()) {
           return Native.Elevated.deleteFile(p);
-        } 
+        }
         else if (f.isDirectory()) {
-          
+
           // This is a best-effort attempt. There are race conditions in that
-          // child files can be created/deleted after we snapped the list. 
+          // child files can be created/deleted after we snapped the list.
           // No need to protect against that case.
           File[] files = FileUtil.listFiles(f);
           int childCount = files.length;
-          
+
           if (recursive) {
             for(File child:files) {
               if (delete(new Path(child.getPath()), recursive)) {
@@ -414,15 +414,15 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
           }
           if (childCount == 0) {
             return Native.Elevated.deleteDirectory(p);
-          } 
+          }
           else {
             throw new IOException("Directory " + f.toString() + " is not empty");
           }
         }
         else {
-          // This can happen under race conditions if an external agent 
+          // This can happen under race conditions if an external agent
           // is messing with the file type between IFs
-          throw new IOException("Path " + f.toString() + 
+          throw new IOException("Path " + f.toString() +
               " exists, but is neither a file nor a directory");
         }
       }
@@ -430,27 +430,27 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
 
     protected ElevatedFileSystem() throws IOException, URISyntaxException {
       super(FsConstants.LOCAL_FS_URI,
-          new ElevatedRawLocalFilesystem(), 
+          new ElevatedRawLocalFilesystem(),
           new Configuration(),
           FsConstants.LOCAL_FS_URI.getScheme(),
           false);
     }
   }
-  
-  private static class WintuilsProcessStubExecutor 
+
+  private static class WintuilsProcessStubExecutor
   implements Shell.CommandExecutor {
     private Native.WinutilsProcessStub processStub;
     private StringBuilder output = new StringBuilder();
     private int exitCode;
-    
+
     private enum State {
       INIT,
       RUNNING,
       COMPLETE
     };
-    
+
     private State state;;
-    
+
     private final String cwd;
     private final String jobName;
     private final String userName;
@@ -458,9 +458,9 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
     private final String cmdLine;
 
     public WintuilsProcessStubExecutor(
-        String cwd, 
-        String jobName, 
-        String userName, 
+        String cwd,
+        String jobName,
+        String userName,
         String pidFile,
         String cmdLine) {
       this.cwd = cwd;
@@ -469,24 +469,24 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
       this.pidFile = pidFile;
       this.cmdLine = cmdLine;
       this.state = State.INIT;
-    }    
-    
+    }
+
     private void assertComplete() throws IOException {
       if (state != State.COMPLETE) {
         throw new IOException("Process is not complete");
       }
     }
-    
+
     public String getOutput () throws IOException {
       assertComplete();
       return output.toString();
     }
-    
+
     public int getExitCode() throws IOException {
       assertComplete();
       return exitCode;
     }
-    
+
     public void validateResult() throws IOException {
       assertComplete();
       if (0 != exitCode) {
@@ -494,15 +494,15 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
         throw new IOException("Processs exit code is:" + exitCode);
       }
     }
-    
-    private Thread startStreamReader(final InputStream stream) 
+
+    private Thread startStreamReader(final InputStream stream)
         throws IOException {
       Thread streamReaderThread = new Thread() {
-        
+
         @Override
         public void run() {
           try (BufferedReader lines = new BufferedReader(
-                   new InputStreamReader(stream, Charset.forName("UTF-8")))) {
+                   new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             char[] buf = new char[512];
             int nRead;
             while ((nRead = lines.read(buf, 0, buf.length)) > 0) {
@@ -527,7 +527,7 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
 
       Thread stdOutReader = startStreamReader(processStub.getInputStream());
       Thread stdErrReader = startStreamReader(processStub.getErrorStream());
-      
+
       try {
         processStub.resume();
         processStub.waitFor();
@@ -537,7 +537,7 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
       catch(InterruptedException ie) {
         throw new IOException(ie);
       }
-      
+
       exitCode = processStub.exitValue();
       state = State.COMPLETE;
     }
@@ -551,15 +551,15 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
   }
 
   private String nodeManagerGroup;
-  
-  /** 
+
+  /**
    * Permissions for user WSCE dirs.
    */
-  static final short DIR_PERM = (short)0750;  
-  
-  public WindowsSecureContainerExecutor() 
+  static final short DIR_PERM = (short)0750;
+
+  public WindowsSecureContainerExecutor()
       throws IOException, URISyntaxException {
-    super(FileContext.getFileContext(new ElevatedFileSystem(), 
+    super(FileContext.getFileContext(new ElevatedFileSystem(),
         new Configuration()));
   }
 
@@ -569,26 +569,26 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
     nodeManagerGroup = conf.get(
         YarnConfiguration.NM_WINDOWS_SECURE_CONTAINER_GROUP);
   }
-  
+
   @Override
   protected String[] getRunCommand(String command, String groupId,
       String userName, Path pidFile, Configuration conf) {
     File f = new File(command);
     if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("getRunCommand: %s exists:%b", 
+      LOG.debug(String.format("getRunCommand: %s exists:%b",
           command, f.exists()));
     }
     return new String[] { Shell.getWinUtilsPath(), "task",
         "createAsUser", groupId,
         userName, pidFile.toString(), "cmd /c " + command };
   }
-  
+
   @Override
   protected LocalWrapperScriptBuilder getLocalWrapperScriptBuilder(
       String containerIdStr, Path containerWorkDir) {
    return  new WindowsSecureWrapperScriptBuilder(containerWorkDir);
   }
-  
+
   @Override
   protected void copyFile(Path src, Path dst, String owner) throws IOException {
     LOG.debug("copyFile: {} -> {} owner:{}", src, dst, owner);
@@ -599,19 +599,19 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
   @Override
   protected void createDir(Path dirPath, FsPermission perms,
       boolean createParent, String owner) throws IOException {
-    
+
     // WSCE requires dirs to be 750, not 710 as DCE.
     // This is similar to how LCE creates dirs
     //
     perms = new FsPermission(DIR_PERM);
     LOG.debug("createDir: {} perm:{} owner:{}", dirPath, perms, owner);
-    
+
     super.createDir(dirPath, perms, createParent, owner);
     lfs.setOwner(dirPath, owner, nodeManagerGroup);
   }
 
   @Override
-  protected void setScriptExecutable(Path script, String owner) 
+  protected void setScriptExecutable(Path script, String owner)
       throws IOException {
     LOG.debug("setScriptExecutable: {} owner:{}", script, owner);
     super.setScriptExecutable(script, owner);
@@ -619,7 +619,7 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
   }
 
   @Override
-  public Path localizeClasspathJar(Path jarPath, Path target, String owner) 
+  public Path localizeClasspathJar(Path jarPath, Path target, String owner)
       throws IOException {
     LOG.debug("localizeClasspathJar: {} {} o:{}", jarPath, target, owner);
     createDir(target,  new FsPermission(DIR_PERM), true, owner);
@@ -721,10 +721,10 @@ public class WindowsSecureContainerExecutor extends DefaultContainerExecutor {
       File wordDir, Map<String, String> environment) {
      return new WintuilsProcessStubExecutor(
          wordDir.toString(),
-         containerIdStr, userName, pidFile.toString(), 
+         containerIdStr, userName, pidFile.toString(),
          "cmd /c " + wrapperScriptPath);
    }
-   
+
    @Override
    protected void killContainer(String pid, Signal signal) throws IOException {
      Native.Elevated.killTask(pid);

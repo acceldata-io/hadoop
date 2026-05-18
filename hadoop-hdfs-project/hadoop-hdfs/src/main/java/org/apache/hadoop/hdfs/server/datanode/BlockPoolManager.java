@@ -30,7 +30,7 @@ import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Sets;
@@ -195,9 +195,9 @@ class BlockPoolManager {
       
       // Step 2. Any nameservices we currently have but are no longer present
       // need to be removed.
-      toRemove = Sets.newHashSet(Sets.difference(
-          bpByNameserviceId.keySet(), addrMap.keySet()));
-      
+      toRemove = Sets.difference(
+          bpByNameserviceId.keySet(), addrMap.keySet());
+
       assert toRefresh.size() + toAdd.size() ==
         addrMap.size() :
           "toAdd: " + Joiner.on(",").useForNull("<default>").join(toAdd) +

@@ -25,7 +25,6 @@ import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
 
 /**
  * A low memory footprint Cache which extends {@link LightWeightGSet}.
@@ -35,7 +34,7 @@ import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
  * When an entry is expired, it may be evicted from the cache.
  * When the size limit of the cache is set, the cache will evict the entries
  * with earliest expiration time, even if they are not expired.
- * 
+ *
  * It is guaranteed that number of entries in the cache is less than or equal
  * to the size limit.  However, It is not guaranteed that expired entries are
  * evicted from the cache. An expired entry may possibly be accessed after its
@@ -79,7 +78,7 @@ public class LightWeightCache<K, E extends K> extends LightWeightGSet<K, E> {
       return l > r? 1: l < r? -1: 0;
     }
   };
-  
+
   private static int updateRecommendedLength(int recommendedLength,
       int sizeLimit) {
     return sizeLimit > 0 && sizeLimit < recommendedLength?
@@ -108,7 +107,7 @@ public class LightWeightCache<K, E extends K> extends LightWeightGSet<K, E> {
    *            cache longer than C.
    * @param accessExpirationPeriod the time period A &gt;= 0 in nanoseconds that
    *            the access of an entry is expired if it is not accessed
-   *            longer than A. 
+   *            longer than A.
    */
   public LightWeightCache(final int recommendedLength,
       final int sizeLimit,
@@ -183,7 +182,7 @@ public class LightWeightCache<K, E extends K> extends LightWeightGSet<K, E> {
       }
     }
   }
-  
+
   @Override
   public E get(K key) {
     final E entry = super.get(key);
@@ -216,7 +215,7 @@ public class LightWeightCache<K, E extends K> extends LightWeightGSet<K, E> {
     final Entry e = (Entry)entry;
     setExpirationTime(e, creationExpirationPeriod);
     queue.offer(e);
-    
+
     evictEntries();
     return existing;
   }

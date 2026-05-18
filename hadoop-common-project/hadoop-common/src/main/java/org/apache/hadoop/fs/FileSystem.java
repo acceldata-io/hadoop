@@ -47,8 +47,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -85,7 +85,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.tracing.Tracer;
 import org.apache.hadoop.tracing.TraceScope;
 
-import org.apache.hadoop.thirdparty.com.google.common.base.Preconditions;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,7 +183,7 @@ public abstract class FileSystem extends Configured
    * so must be considered something to only be changed with care.
    */
   @InterfaceAudience.Private
-  public static final Log LOG = LogFactory.getLog(FileSystem.class);
+  public static final Logger LOG = LoggerFactory.getLogger(FileSystem.class);
 
   /**
    * The SLF4J logger to use in logging within the FileSystem class itself.

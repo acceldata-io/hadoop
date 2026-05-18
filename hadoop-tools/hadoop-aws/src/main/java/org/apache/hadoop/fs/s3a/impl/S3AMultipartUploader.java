@@ -25,6 +25,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -38,7 +39,6 @@ import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
-import org.apache.hadoop.thirdparty.com.google.common.base.Charsets;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -130,7 +130,7 @@ class S3AMultipartUploader extends AbstractMultipartUploader {
               PutObjectOptions.keepingDirs());
           statistics.uploadStarted();
           return BBUploadHandle.from(ByteBuffer.wrap(
-              uploadId.getBytes(Charsets.UTF_8)));
+              uploadId.getBytes(StandardCharsets.UTF_8)));
         }));
   }
 
@@ -149,7 +149,7 @@ class S3AMultipartUploader extends AbstractMultipartUploader {
     checkUploadId(uploadIdBytes);
     String key = context.pathToKey(dest);
     String uploadIdString = new String(uploadIdBytes, 0, uploadIdBytes.length,
-        Charsets.UTF_8);
+        StandardCharsets.UTF_8);
     return context.submit(new CompletableFuture<>(),
         () -> {
           UploadPartRequest request = writeOperations.newUploadPartRequest(key,
@@ -187,7 +187,7 @@ class S3AMultipartUploader extends AbstractMultipartUploader {
     String key = context.pathToKey(dest);
 
     String uploadIdStr = new String(uploadIdBytes, 0, uploadIdBytes.length,
-        Charsets.UTF_8);
+        StandardCharsets.UTF_8);
     ArrayList<PartETag> eTags = new ArrayList<>();
     eTags.ensureCapacity(handles.size());
     long totalLength = 0;
@@ -218,7 +218,7 @@ class S3AMultipartUploader extends AbstractMultipartUploader {
                   finalLen
               );
 
-          byte[] eTag = result.getETag().getBytes(Charsets.UTF_8);
+          byte[] eTag = result.getETag().getBytes(StandardCharsets.UTF_8);
           statistics.uploadCompleted();
           return (PathHandle) () -> ByteBuffer.wrap(eTag);
         }));
@@ -234,7 +234,7 @@ class S3AMultipartUploader extends AbstractMultipartUploader {
     final byte[] uploadIdBytes = uploadId.toByteArray();
     checkUploadId(uploadIdBytes);
     String uploadIdString = new String(uploadIdBytes, 0, uploadIdBytes.length,
-        Charsets.UTF_8);
+        StandardCharsets.UTF_8);
     return context.submit(new CompletableFuture<>(),
         () -> {
           writeOperations.abortMultipartCommit(

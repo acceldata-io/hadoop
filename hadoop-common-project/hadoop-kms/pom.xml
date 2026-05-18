@@ -22,11 +22,11 @@
   <parent>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-project</artifactId>
-    <version>3.3.6.3.3.6.3-SNAPSHOT</version>
+    <version>3.3.6.3.3.6.4-1</version>
     <relativePath>../../hadoop-project</relativePath>
   </parent>
   <artifactId>hadoop-kms</artifactId>
-  <version>3.3.6.3.3.6.3-SNAPSHOT</version>
+  <version>3.3.6.3.3.6.4-1</version>
   <packaging>jar</packaging>
 
   <name>Apache Hadoop KMS</name>
@@ -171,7 +171,7 @@
     <!-- 'mvn dependency:analyze' fails to detect use of this dependency -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
+      <artifactId>bcprov-jdk18on</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

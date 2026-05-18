@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.http;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -55,7 +55,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestHttpServerWithSpnego {
 
-  static final Log LOG = LogFactory.getLog(TestHttpServerWithSpnego.class);
+  static final Logger LOG = LoggerFactory.getLogger(TestHttpServerWithSpnego.class);
 
   private static final String SECRET_STR = "secret";
   private static final String HTTP_USER = "HTTP";

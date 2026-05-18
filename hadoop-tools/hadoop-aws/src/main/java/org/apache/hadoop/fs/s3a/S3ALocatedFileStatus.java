@@ -22,7 +22,7 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.EtagSource;
 import org.apache.hadoop.fs.LocatedFileStatus;
 
-import static org.apache.hadoop.thirdparty.com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.hadoop.util.Preconditions.checkNotNull;
 
 /**
  * {@link LocatedFileStatus} extended to also carry ETag and object version ID.

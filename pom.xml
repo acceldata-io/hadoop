@@ -98,7 +98,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <properties>
     <!-- required as child projects with different version can't use ${project.version} -->
-    <hadoop.version>3.3.6.3.3.6.5-SNAPSHOT</hadoop.version>
+    <odp.release.version>3.3.6.5-SNAPSHOT</odp.release.version>
+    <hadoop.version>3.3.6.${odp.release.version}</hadoop.version>
 
     <distMgmtSnapshotsId>apache.snapshots.https</distMgmtSnapshotsId>
     <distMgmtSnapshotsName>Apache Development Snapshot Repository</distMgmtSnapshotsName>

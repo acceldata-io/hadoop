@@ -138,7 +138,7 @@
     <htrace3.version>3.1.0-incubating</htrace3.version>
     <htrace4.version>4.1.0-incubating</htrace4.version>
     <metrics.version>3.2.4</metrics.version>
-    <netty4.version>4.1.133.Final</netty4.version>
+    <netty4.version>4.1.135.Final</netty4.version>
     <snappy-java.version>1.1.10.4</snappy-java.version>
 
     <!-- Maven protoc compiler -->

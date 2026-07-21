@@ -36,19 +36,15 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <distributionManagement>
     <repository>
-      <id>${distMgmtStagingId}</id>
-      <name>${distMgmtStagingName}</name>
-      <url>${distMgmtStagingUrl}</url>
+      <id>nexus-releases</id>
+      <name>Releases</name>
+      <url>https://repo1.acceldata.dev/repository/odp-staging-release/</url>
     </repository>
     <snapshotRepository>
-      <id>${distMgmtSnapshotsId}</id>
-      <name>${distMgmtSnapshotsName}</name>
-      <url>${distMgmtSnapshotsUrl}</url>
+      <id>nexus-snapshots</id>
+      <name>Snapshot</name>
+      <url>https://repo1.acceldata.dev/repository/odp-staging-snapshot/</url>
     </snapshotRepository>
-    <site>
-      <id>apache.website</id>
-      <url>scpexe://people.apache.org/www/hadoop.apache.org/docs/r${project.version}</url>
-    </site>
   </distributionManagement>
 
   <repositories>
@@ -56,15 +52,34 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
       <id>${distMgmtSnapshotsId}</id>
       <name>${distMgmtSnapshotsName}</name>
       <url>${distMgmtSnapshotsUrl}</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
     </repository>
     <repository>
       <id>repository.jboss.org</id>
       <url>https://repository.jboss.org/nexus/content/groups/public/</url>
       <snapshots>
         <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>acceldata repo</id>
+      <name>acceldata repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-staging-central/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>acceldata staging repo</id>
+      <name>acceldata staging repo</name>
+      <url>https://repo1.acceldata.dev/repository/odp-staging-central/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
       </snapshots>
     </repository>
   </repositories>
@@ -83,6 +98,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 
   <properties>
     <!-- required as child projects with different version can't use ${project.version} -->
+    <odp.release.version>3.4.3.0-1</odp.release.version>
     <hadoop.version>3.4.3.3.4.3.0-1</hadoop.version>
 
     <distMgmtSnapshotsId>apache.snapshots.https</distMgmtSnapshotsId>

@@ -43,16 +43,23 @@
         -->
       <optional>true</optional>
       <exclusions>
-        <!-- these APIs are a part of the SE JDK -->
-        <exclusion>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
-        </exclusion>
+        <!-- xml-apis is part of the SE JDK; do NOT exclude jaxb-api.
+             Jackson's shaded jaxb module (YarnJacksonJaxbJsonProvider / Timeline)
+             needs org.apache.hadoop.shaded.javax.xml.bind.* inside this runtime
+             jar. Excluding jaxb-api leaves those classes missing and breaks
+             Spark-on-YARN when yarn.timeline-service.enabled=true
+             (see HADOOP-17540 / ODP-7266). -->
         <exclusion>
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- Ensure jaxb-api is shaded into this jar as org.apache.hadoop.shaded.javax.xml.bind -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <!-- At runtime anyone using us must have the api present -->
     <dependency>

@@ -54,6 +54,15 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Ensure jaxb-api is shaded into this jar as org.apache.hadoop.shaded.javax.xml.bind.
+         Optional so it is not a transitive dependency of this artifact
+         (BanTransitiveDependencies in hadoop-client-check-invariants). -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
     <!-- At runtime anyone using us must have the api present -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>

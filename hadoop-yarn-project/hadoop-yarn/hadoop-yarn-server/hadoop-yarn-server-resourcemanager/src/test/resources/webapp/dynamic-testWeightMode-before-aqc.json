@@ -1,7 +1,7 @@
 {
   "scheduler" : {
     "schedulerInfo" : {
-      "type" : "capacityScheduler",
+      "@xsi.type" : "capacityScheduler",
       "capacity" : 100,
       "usedCapacity" : 0,
       "maxCapacity" : 100,
@@ -23,7 +23,7 @@
       "isAbsoluteResource" : false,
       "queues" : {
         "queue" : [ {
-          "type" : "capacitySchedulerLeafQueueInfo",
+          "@xsi.type" : "capacitySchedulerLeafQueueInfo",
           "queuePath" : "root.default",
           "capacity" : 12.5,
           "usedCapacity" : 0,
@@ -857,7 +857,7 @@
           "state" : "RUNNING",
           "queues" : {
             "queue" : [ {
-              "type" : "capacitySchedulerLeafQueueInfo",
+              "@xsi.type" : "capacitySchedulerLeafQueueInfo",
               "queuePath" : "root.test1.test1_1",
               "capacity" : 12.5,
               "usedCapacity" : 0,
@@ -1336,7 +1336,7 @@
               "maxApplicationLifetime" : -1,
               "defaultApplicationLifetime" : -1
             }, {
-              "type" : "capacitySchedulerLeafQueueInfo",
+              "@xsi.type" : "capacitySchedulerLeafQueueInfo",
               "queuePath" : "root.test1.test1_2",
               "capacity" : 12.5,
               "usedCapacity" : 0,
@@ -1815,7 +1815,7 @@
               "maxApplicationLifetime" : -1,
               "defaultApplicationLifetime" : -1
             }, {
-              "type" : "capacitySchedulerLeafQueueInfo",
+              "@xsi.type" : "capacitySchedulerLeafQueueInfo",
               "queuePath" : "root.test1.test1_3",
               "capacity" : 75,
               "usedCapacity" : 0,

@@ -96,7 +96,8 @@ public class TestRMWebApp {
     assertEquals("Applications", c.get(TITLE, "unknown"));
   }
 
-  @Test public void testView() {
+  @Test
+  public void testView() {
     Injector injector = WebAppTests.createMockInjector(RMContext.class,
         mockRMContext(15, 1, 2, 8*GiB),
         new Module() {
@@ -127,21 +128,19 @@ public class TestRMWebApp {
     Assert.assertTrue(appsTableColumnsMeta.indexOf("natural") != -1);
   }
 
-  @Test public void testNodesPage() {
+  @Test
+  public void testNodesPage() {
     // 10 nodes. Two of each type.
     final RMContext rmContext = mockRMContext(3, 2, 12, 8*GiB);
     Injector injector = WebAppTests.createMockInjector(RMContext.class,
         rmContext,
-        new Module() {
-      @Override
-      public void configure(Binder binder) {
-        try {
-          binder.bind(ResourceManager.class).toInstance(mockRm(rmContext));
-        } catch (IOException e) {
-          throw new IllegalStateException(e);
-        }
-      }
-    });
+        binder -> {
+          try {
+            binder.bind(ResourceManager.class).toInstance(mockRm(rmContext));
+          } catch (IOException e) {
+            throw new IllegalStateException(e);
+          }
+        });
 
     // All nodes
     NodesPage instance = injector.getInstance(NodesPage.class);
@@ -166,9 +165,9 @@ public class TestRMWebApp {
   public void testRMAppColumnIndices() {
 
     // Find the columns to check
-    List<Integer> colsId = new LinkedList<Integer>();
-    List<Integer> colsTime = new LinkedList<Integer>();
-    List<Integer> colsProgress = new LinkedList<Integer>();
+    List<Integer> colsId = new LinkedList<>();
+    List<Integer> colsTime = new LinkedList<>();
+    List<Integer> colsProgress = new LinkedList<>();
     for (int i = 0; i < RMAppsBlock.COLUMNS.length; i++) {
       ColumnHeader col = RMAppsBlock.COLUMNS[i];
       if (col.getCData().contains("ID")) {

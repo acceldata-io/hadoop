@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
@@ -99,7 +100,11 @@ public class TestRMWebServicesCapacitySchedLegacyQueueCreationAbsoluteMode exten
       conf.setInt(YarnConfiguration.RM_AM_MAX_ATTEMPTS,
           YarnConfiguration.DEFAULT_RM_AM_MAX_ATTEMPTS);
 
-      rm = createMutableRM(conf, false);
+      try {
+        rm = createMutableRM(conf, false);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       final HttpServletRequest request = mock(HttpServletRequest.class);
       when(request.getScheme()).thenReturn("http");
       final HttpServletResponse response = mock(HttpServletResponse.class);

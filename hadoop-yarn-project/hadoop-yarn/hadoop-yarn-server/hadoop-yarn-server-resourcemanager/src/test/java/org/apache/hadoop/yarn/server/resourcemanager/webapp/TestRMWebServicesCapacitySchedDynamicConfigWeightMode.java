@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
@@ -112,7 +113,11 @@ public class TestRMWebServicesCapacitySchedDynamicConfigWeightMode extends Jerse
           ResourceScheduler.class);
       conf.set(YarnConfiguration.RM_CLUSTER_ID, "subCluster1");
 
-      rm = createMutableRM(conf, false);
+      try {
+        rm = createMutableRM(conf, false);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       final HttpServletRequest request = mock(HttpServletRequest.class);
       when(request.getScheme()).thenReturn("http");
       final HttpServletResponse response = mock(HttpServletResponse.class);

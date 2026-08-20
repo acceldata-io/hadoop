@@ -37,6 +37,7 @@ import org.junit.runners.Parameterized;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Application;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -114,7 +115,11 @@ public class TestRMWebServicesCapacitySchedDynamicConfigAbsoluteMode extends Jer
           ResourceScheduler.class);
       conf.set(YarnConfiguration.RM_CLUSTER_ID, "subCluster1");
 
-      rm = createMutableRM(conf, false);
+      try {
+        rm = createMutableRM(conf, false);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       final HttpServletRequest request = mock(HttpServletRequest.class);
       when(request.getScheme()).thenReturn("http");
       final HttpServletResponse response = mock(HttpServletResponse.class);

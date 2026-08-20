@@ -23,7 +23,6 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
 import org.apache.hadoop.yarn.webapp.JerseyTestBase;
@@ -54,8 +53,8 @@ import static org.mockito.Mockito.when;
 @RunWith(Parameterized.class)
 public class TestRMWebServicesCapacitySchedDefaultLabel extends JerseyTestBase {
 
-  private static final QueuePath ROOT = new QueuePath(CapacitySchedulerConfiguration.ROOT);
-  private static final QueuePath A = new QueuePath(CapacitySchedulerConfiguration.ROOT + ".a");
+  private static final String ROOT = CapacitySchedulerConfiguration.ROOT;
+  private static final String A = CapacitySchedulerConfiguration.ROOT + ".a";
   private final boolean legacyQueueMode;
   private MockRM rm;
   private ResourceConfig config;

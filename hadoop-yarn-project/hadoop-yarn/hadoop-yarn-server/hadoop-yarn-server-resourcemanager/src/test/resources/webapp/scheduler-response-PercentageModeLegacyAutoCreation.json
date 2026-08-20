@@ -1,7 +1,7 @@
 {
   "scheduler" : {
     "schedulerInfo" : {
-      "type" : "capacityScheduler",
+      "@xsi.type" : "capacityScheduler",
       "capacity" : 100,
       "usedCapacity" : 0,
       "maxCapacity" : 100,
@@ -23,7 +23,7 @@
       "isAbsoluteResource" : false,
       "queues" : {
         "queue" : [ {
-          "type" : "capacitySchedulerLeafQueueInfo",
+          "@xsi.type" : "capacitySchedulerLeafQueueInfo",
           "queuePath" : "root.default",
           "capacity" : 25,
           "usedCapacity" : 0,

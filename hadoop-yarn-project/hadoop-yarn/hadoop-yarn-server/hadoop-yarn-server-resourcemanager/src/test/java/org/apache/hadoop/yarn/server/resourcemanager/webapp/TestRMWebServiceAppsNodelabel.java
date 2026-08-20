@@ -50,7 +50,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
 import org.apache.hadoop.yarn.webapp.JerseyTestBase;
@@ -124,9 +123,9 @@ public class TestRMWebServiceAppsNodelabel extends JerseyTestBase {
       CapacitySchedulerConfiguration config) {
 
     // Define top-level queues
-    QueuePath root = new QueuePath(CapacitySchedulerConfiguration.ROOT);
-    QueuePath queueA = root.createNewLeaf("a");
-    QueuePath defaultQueue = root.createNewLeaf("default");
+    String root = CapacitySchedulerConfiguration.ROOT;
+    String queueA = root + ".a";
+    String defaultQueue = root + ".default";
 
     config.setQueues(root,
         new String[]{"a", "default"});

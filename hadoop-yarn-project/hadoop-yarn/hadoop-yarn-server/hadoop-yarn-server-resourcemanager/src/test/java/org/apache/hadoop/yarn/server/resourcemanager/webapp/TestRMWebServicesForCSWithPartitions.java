@@ -70,7 +70,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.ActivityDiagnosticConstant;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.ActivityState;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.jsonprovider.JsonProviderFeature;
 import org.apache.hadoop.yarn.util.resource.Resources;
 import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
@@ -106,8 +105,7 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
   private static final String QUEUE_A = "Qa";
   private static final String LABEL_LY = "Ly";
   private static final String LABEL_LX = "Lx";
-  private static final QueuePath ROOT_QUEUE_PATH =
-      new QueuePath(CapacitySchedulerConfiguration.ROOT);
+  private static final String ROOT_QUEUE_PATH = CapacitySchedulerConfiguration.ROOT;
   private static final ImmutableSet<String> CLUSTER_LABELS =
       ImmutableSet.of(LABEL_LX, LABEL_LY, DEFAULT_PARTITION);
   private static final String DOT = ".";
@@ -201,19 +199,19 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
         new String[] { QUEUE_A, QUEUE_B, QUEUE_C });
     String interMediateQueueC =
         CapacitySchedulerConfiguration.ROOT + "." + QUEUE_C;
-    QueuePath interMediateQueueCPath = new QueuePath(interMediateQueueC);
+    String interMediateQueueCPath = interMediateQueueC;
     config.setQueues(interMediateQueueCPath,
         new String[] { LEAF_QUEUE_C1, LEAF_QUEUE_C2 });
     config.setCapacityByLabel(ROOT_QUEUE_PATH, LABEL_LX, 100);
     config.setCapacityByLabel(ROOT_QUEUE_PATH, LABEL_LY, 100);
 
     String leafQueueA = CapacitySchedulerConfiguration.ROOT + "." + QUEUE_A;
-    QueuePath leafQueueAPath = new QueuePath(leafQueueA);
+    String leafQueueAPath = leafQueueA;
     config.setCapacity(leafQueueAPath, 30);
     config.setMaximumCapacity(leafQueueAPath, 50);
 
     String leafQueueB = CapacitySchedulerConfiguration.ROOT + "." + QUEUE_B;
-    QueuePath leafQueueBPath = new QueuePath(leafQueueB);
+    String leafQueueBPath = leafQueueB;
     config.setCapacity(leafQueueBPath, 30);
     config.setMaximumCapacity(leafQueueBPath, 50);
 
@@ -221,12 +219,12 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
     config.setMaximumCapacity(interMediateQueueCPath, 50);
 
     String leafQueueC1 = interMediateQueueC + "." + LEAF_QUEUE_C1;
-    QueuePath leafQueueC1Path = new QueuePath(leafQueueC1);
+    String leafQueueC1Path = leafQueueC1;
     config.setCapacity(leafQueueC1Path, 50);
     config.setMaximumCapacity(leafQueueC1Path, 60);
 
     String leafQueueC2 = interMediateQueueC + "." + LEAF_QUEUE_C2;
-    QueuePath leafQueueC2Path = new QueuePath(leafQueueC2);
+    String leafQueueC2Path = leafQueueC2;
     config.setCapacity(leafQueueC2Path, 50);
     config.setMaximumCapacity(leafQueueC2Path, 70);
 

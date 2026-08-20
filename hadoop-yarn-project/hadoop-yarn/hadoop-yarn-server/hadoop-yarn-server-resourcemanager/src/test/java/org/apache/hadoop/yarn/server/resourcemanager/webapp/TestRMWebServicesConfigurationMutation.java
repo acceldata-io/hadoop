@@ -222,14 +222,14 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
   public void testGetSchedulerConf() throws Exception {
     CapacitySchedulerConfiguration orgConf = getSchedulerConf();
     assertNotNull(orgConf);
-    assertEquals(4, orgConf.getQueues(ROOT).size());
+    assertEquals(4, orgConf.getQueues(ROOT.getFullPath()).length);
   }
 
   @Test
   public void testFormatSchedulerConf() throws Exception {
     CapacitySchedulerConfiguration newConf = getSchedulerConf();
     assertNotNull(newConf);
-    assertEquals(4, newConf.getQueues(ROOT).size());
+    assertEquals(4, newConf.getQueues(ROOT.getFullPath()).length);
 
     SchedConfUpdateInfo updateInfo = new SchedConfUpdateInfo();
     Map<String, String> nearEmptyCapacity = new HashMap<>();
@@ -255,7 +255,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
         .put(Entity.entity(updateInfo, MediaType.APPLICATION_JSON), Response.class);
     newConf = getSchedulerConf();
     assertNotNull(newConf);
-    assertEquals(5, newConf.getQueues(ROOT).size());
+    assertEquals(5, newConf.getQueues(ROOT.getFullPath()).length);
 
     // Format the scheduler config and validate root.formattest is not present
     response = r.path("ws").path("v1").path("cluster")
@@ -264,7 +264,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
         .request(MediaType.APPLICATION_JSON).get(Response.class);
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     newConf = getSchedulerConf();
-    assertEquals(4, newConf.getQueues(ROOT).size());
+    assertEquals(4, newConf.getQueues(ROOT.getFullPath()).length);
   }
 
   private long getConfigVersion() throws Exception {
@@ -291,7 +291,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
   public void testAddNestedQueue() throws Exception {
     CapacitySchedulerConfiguration orgConf = getSchedulerConf();
     assertNotNull(orgConf);
-    assertEquals(4, orgConf.getQueues(ROOT).size());
+    assertEquals(4, orgConf.getQueues(ROOT.getFullPath()).length);
 
     WebTarget r = target()
         .register(new IncludeRootJSONProvider())
@@ -326,8 +326,8 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(5, newCSConf.getQueues(ROOT).size());
-    assertEquals(2, newCSConf.getQueues(ROOT_D).size());
+    assertEquals(5, newCSConf.getQueues(ROOT.getFullPath()).length);
+    assertEquals(2, newCSConf.getQueues(ROOT_D.getFullPath()).length);
     assertEquals(25.0f, newCSConf.getNonLabeledQueueCapacity(new QueuePath("root.d.d1")),
         0.01f);
     assertEquals(75.0f, newCSConf.getNonLabeledQueueCapacity(new QueuePath("root.d.d2")),
@@ -335,7 +335,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
 
     CapacitySchedulerConfiguration newConf = getSchedulerConf();
     assertNotNull(newConf);
-    assertEquals(5, newConf.getQueues(ROOT).size());
+    assertEquals(5, newConf.getQueues(ROOT.getFullPath()).length);
   }
 
   @Test
@@ -365,7 +365,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(5, newCSConf.getQueues(ROOT).size());
+    assertEquals(5, newCSConf.getQueues(ROOT.getFullPath()).length);
     assertEquals(25.0f, newCSConf.getNonLabeledQueueCapacity(new QueuePath("root.d")), 0.01f);
     assertEquals(50.0f, newCSConf.getNonLabeledQueueCapacity(new QueuePath("root.b")), 0.01f);
   }
@@ -487,9 +487,9 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
     assertEquals("Failed to remove the queue",
-        1, newCSConf.getQueues(ROOT_A).size());
+        1, newCSConf.getQueues(ROOT_A.getFullPath()).length);
     assertEquals("Failed to remove the right queue",
-        "a1", newCSConf.getQueues(ROOT_A).get(0));
+        "a1", newCSConf.getQueues(ROOT_A.getFullPath())[0]);
   }
 
   @Test
@@ -519,8 +519,8 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(1, newCSConf.getQueues(ROOT_A).size());
-    assertEquals("a1", newCSConf.getQueues(ROOT_A).get(0));
+    assertEquals(1, newCSConf.getQueues(ROOT_A.getFullPath()).length);
+    assertEquals("a1", newCSConf.getQueues(ROOT_A.getFullPath())[0]);
   }
 
   @Test
@@ -559,7 +559,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     // Validate queue 'mappedqueue' exists after above failure
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(4, newCSConf.getQueues(ROOT).size());
+    assertEquals(4, newCSConf.getQueues(ROOT.getFullPath()).length);
     assertNotNull("CapacityScheduler Configuration is corrupt",
         cs.getQueue("mappedqueue"));
   }
@@ -593,8 +593,8 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(1, newCSConf.getQueues(ROOT_B).size());
-    assertEquals("b1", newCSConf.getQueues(ROOT_B).get(0));
+    assertEquals(1, newCSConf.getQueues(ROOT_B.getFullPath()).length);
+    assertEquals("b1", newCSConf.getQueues(ROOT_B.getFullPath())[0]);
   }
 
   @Test
@@ -618,8 +618,8 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(3, newCSConf.getQueues(ROOT).size());
-    assertEquals(0, newCSConf.getQueues(ROOT_C).size());
+    assertEquals(3, newCSConf.getQueues(ROOT.getFullPath()).length);
+    assertEquals(0, newCSConf.getQueues(ROOT_C.getFullPath()).length);
   }
 
   @Test
@@ -649,7 +649,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(3, newCSConf.getQueues(ROOT).size());
+    assertEquals(3, newCSConf.getQueues(ROOT.getFullPath()).length);
     assertEquals(100.0f, newCSConf.getNonLabeledQueueCapacity(new QueuePath("root.b")),
         0.01f);
   }
@@ -681,7 +681,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
-    assertEquals(2, newCSConf.getQueues(ROOT).size());
+    assertEquals(2, newCSConf.getQueues(ROOT.getFullPath()).length);
   }
 
   private void stopQueue(QueuePath... queuePaths) throws Exception {
@@ -709,7 +709,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     CapacitySchedulerConfiguration newCSConf =
         ((CapacityScheduler) rm.getResourceScheduler()).getConfiguration();
     for (QueuePath queue : queuePaths) {
-      assertEquals(QueueState.STOPPED, newCSConf.getState(queue));
+      assertEquals(QueueState.STOPPED, newCSConf.getState(queue.getFullPath()));
     }
   }
 
@@ -733,7 +733,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(CapacitySchedulerConfiguration
             .DEFAULT_MAXIMUM_APPLICATIONMASTERS_RESOURCE_PERCENT,
         cs.getConfiguration()
-            .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A),
+            .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A.getFullPath()),
         0.001f);
     response =
         r.path("ws").path("v1").path("cluster")
@@ -744,7 +744,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     CapacitySchedulerConfiguration newCSConf = cs.getConfiguration();
     assertEquals(0.2f, newCSConf
-        .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A), 0.001f);
+        .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A.getFullPath()), 0.001f);
 
     // Remove config. Config value should be reverted to default.
     updateParam.put(CapacitySchedulerConfiguration.MAXIMUM_AM_RESOURCE_SUFFIX,
@@ -762,7 +762,7 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     newCSConf = cs.getConfiguration();
     assertEquals(CapacitySchedulerConfiguration
         .DEFAULT_MAXIMUM_APPLICATIONMASTERS_RESOURCE_PERCENT, newCSConf
-            .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A),
+            .getMaximumApplicationMasterResourcePerQueuePercent(ROOT_A.getFullPath()),
         0.001f);
   }
 
@@ -892,9 +892,9 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
     CapacityScheduler cs = (CapacityScheduler) rm.getResourceScheduler();
 
     assertEquals(Sets.newHashSet("*"),
-        cs.getConfiguration().getAccessibleNodeLabels(ROOT));
+        cs.getConfiguration().getAccessibleNodeLabels(ROOT.getFullPath()));
     assertEquals(Sets.newHashSet(LABEL_1),
-        cs.getConfiguration().getAccessibleNodeLabels(ROOT_A));
+        cs.getConfiguration().getAccessibleNodeLabels(ROOT_A.getFullPath()));
 
     // 4. Set partition capacities to queues as below
     updateInfo = new SchedConfUpdateInfo();
@@ -988,8 +988,8 @@ public class TestRMWebServicesConfigurationMutation extends JerseyTestBase {
         SchedConfUpdateInfo.class)), MediaType.APPLICATION_JSON), Response.class);
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
     assertEquals(Sets.newHashSet("*"),
-        cs.getConfiguration().getAccessibleNodeLabels(ROOT));
-    assertNull(cs.getConfiguration().getAccessibleNodeLabels(ROOT_A));
+        cs.getConfiguration().getAccessibleNodeLabels(ROOT.getFullPath()));
+    assertNull(cs.getConfiguration().getAccessibleNodeLabels(ROOT_A.getFullPath()));
 
     //6. Remove node label 'label1'
     response =

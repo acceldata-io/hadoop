@@ -25,25 +25,33 @@
 </head>
 <body>
 
-<header class="navbar navbar-inverse bs-docs-nav" role="banner">
+<header class="navbar navbar-expand-lg navbar-dark bs-docs-nav" role="banner">
   <div class="container">
     <div class="custom-navbar-header">
       <div class="custom-navbar-brand">Hadoop</div>
     </div>
-
-    <ul class="nav navbar-nav" id="ui-tabs">
-      <li><a href="#tab-overview">Overview</a></li>
-      <li class="dropdown">
-        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
-        <ul class="dropdown-menu">
-          <li><a href="logs/">Logs</a></li>
-          <li><a href="logLevel">Log Level</a></li>
-          <li><a href="jmx">Metrics</a></li>
-          <li><a href="conf">Configuration</a></li>
-          <li><a href="stacks">Process Thread Dump</a></li>
-        </ul>
-      </li>
-    </ul>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav" id="ui-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" href="#tab-overview" aria-selected="false" tabindex="-1" role="tab">Overview</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Utilities
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="logs/">Logs</a></li>
+            <li><a class="dropdown-item" href="logLevel">Log Level</a></li>
+            <li><a class="dropdown-item" href="jmx">Metrics</a></li>
+            <li><a class="dropdown-item" href="conf">Configuration</a></li>
+            <li><a class="dropdown-item" href="stacks">Process Thread Dump</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </header>
 
@@ -131,7 +139,7 @@
 </script>
 
 <script type="text/javascript" src="/static/jquery-3.7.1.min.js"></script>
-<script type="text/javascript" src="/static/bootstrap-5.3.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/bootstrap-5.3.3/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/static/moment.min.js"></script>
 <script type="text/javascript" src="/static/dust-full-2.0.0.min.js"></script>
 <script type="text/javascript" src="/static/dust-helpers-1.1.1.min.js"></script>

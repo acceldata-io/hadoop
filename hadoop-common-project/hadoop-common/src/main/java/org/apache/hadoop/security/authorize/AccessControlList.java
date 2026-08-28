@@ -133,6 +133,7 @@ public class AccessControlList implements Writable {
   private boolean isWildCardACLValue(String aclString) {
     if (aclString.contains(WILDCARD_ACL_VALUE) && 
         aclString.trim().equals(WILDCARD_ACL_VALUE)) {
+      System.out.println("TestPR");
       return true;
     }
     return false;

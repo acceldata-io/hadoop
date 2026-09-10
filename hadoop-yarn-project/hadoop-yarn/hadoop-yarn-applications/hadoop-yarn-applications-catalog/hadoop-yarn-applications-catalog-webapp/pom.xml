@@ -133,6 +133,10 @@
             <artifactId>solr-solrj</artifactId>
             <version>${solr.version}</version>
             <exclusions>
+              <exclusion>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-alpn-java-client</artifactId>
+              </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>

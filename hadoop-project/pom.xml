@@ -1528,6 +1528,11 @@
         <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
+        <!-- Use the jdk8 classifier to exclude the FFM terminal provider, whose
+             class files target Java 22 and trip bytecode-version enforcement
+             for downstream consumers (e.g. Spark) built on JDK <= 21.
+             See https://github.com/jline/jline3/issues/937 -->
+        <classifier>jdk8</classifier>
       </dependency>
       <dependency>
         <groupId>org.hsqldb</groupId>

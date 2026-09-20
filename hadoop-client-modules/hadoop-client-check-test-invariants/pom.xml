@@ -106,6 +106,12 @@
                 </banTransitiveDependencies>
                 <banDuplicateClasses>
                   <findAllDuplicates>true</findAllDuplicates>
+                  <ignoreClasses>
+                    <!-- Ignore shaded Jersey and JAX-RS classes that appear in both runtime and minicluster -->
+                    <ignoreClass>org.apache.hadoop.shaded.org.glassfish.jersey.*</ignoreClass>
+                    <ignoreClass>org.apache.hadoop.shaded.javax.ws.rs.*</ignoreClass>
+                    <ignoreClass>META-INF.versions.*.org.glassfish.jersey.*</ignoreClass>
+                  </ignoreClasses>
                   <dependencies>
                     <dependency>
                       <groupId>org.apache.hadoop</groupId>

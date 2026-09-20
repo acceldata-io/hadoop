@@ -63,6 +63,30 @@
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
+    <!-- Ensure JAX-RS 2.x API (javax.ws.rs.*) is shaded into this jar as org.apache.hadoop.shaded.javax.ws.rs.
+         This contains the MessageBodyReader and other JAX-RS API classes needed by YARN timeline service.
+         Optional so it is not a transitive dependency of this artifact. -->
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <!-- Ensure Jersey 2.x implementation classes are shaded for JAX-RS support.
+         Optional so they are not transitive dependencies of this artifact. -->
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
     <!-- At runtime anyone using us must have the api present -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -182,7 +206,9 @@
                       <exclude>org.glassfish.hk2:*</exclude>
                       <exclude>org.glassfish.jersey.inject:*</exclude>
                       <exclude>org.glassfish.grizzly:*</exclude>
-                      <exclude>org.glassfish.jersey.core:*</exclude>
+                      <!-- MODIFIED: Don't exclude jersey-common and jersey-client - they're needed for YARN
+                           and are now explicitly listed as dependencies above to be shaded. -->
+                      <exclude>org.glassfish.jersey.core:jersey-server</exclude>
                       <exclude>org.glassfish.hk2.external:*</exclude>
                       <exclude>org.glassfish.jaxb:*</exclude>
                       <exclude>jakarta.ws.rs:*</exclude>

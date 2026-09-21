@@ -25,6 +25,7 @@ import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
+import org.apache.hadoop.hdfs.server.namenode.ha.HATestUtil;
 import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Test;
 
@@ -49,40 +50,50 @@ public class TestFileUtilSameNameservice {
     File testDir = GenericTestUtils.getRandomizedTestDir();
     File sourceDir = new File(testDir, "source");
     File destinationDir = new File(testDir, "destination");
-    MiniDFSNNTopology sourceTopology =
-        MiniDFSNNTopology.simpleFederatedTopology(NAMESERVICE);
-    MiniDFSNNTopology destinationTopology =
-        MiniDFSNNTopology.simpleFederatedTopology(NAMESERVICE);
 
     try (MiniDFSCluster sourceCluster =
              new MiniDFSCluster.Builder(sourceConf, sourceDir)
-                 .nnTopology(sourceTopology)
+                 .nnTopology(createTopology())
                  .numDataNodes(1)
                  .build();
          MiniDFSCluster destinationCluster =
              new MiniDFSCluster.Builder(destinationConf, destinationDir)
-                 .nnTopology(destinationTopology)
+                 .nnTopology(createTopology())
                  .numDataNodes(1)
-                 .build();
-         FileSystem sourceFs =
-             FileSystem.newInstance(NAMESERVICE_URI, sourceConf);
-         FileSystem destinationFs =
-             FileSystem.newInstance(NAMESERVICE_URI, destinationConf)) {
+                 .build()) {
+      HATestUtil.setFailoverConfigurations(
+          sourceCluster, sourceConf, NAMESERVICE);
+      HATestUtil.setFailoverConfigurations(
+          destinationCluster, destinationConf, NAMESERVICE);
       sourceCluster.waitActive();
       destinationCluster.waitActive();
+      sourceCluster.transitionToActive(0);
+      destinationCluster.transitionToActive(0);
 
-      String contents = "copied between clusters";
-      DFSTestUtil.writeFile(sourceFs, FILE, contents);
-      assertFalse(destinationFs.exists(FILE));
+      try (FileSystem sourceFs =
+               FileSystem.newInstance(NAMESERVICE_URI, sourceConf);
+           FileSystem destinationFs =
+               FileSystem.newInstance(NAMESERVICE_URI, destinationConf)) {
+        String contents = "copied between clusters";
+        DFSTestUtil.writeFile(sourceFs, FILE, contents);
+        assertFalse(destinationFs.exists(FILE));
 
-      assertTrue(FileUtil.copy(sourceFs, FILE, destinationFs, FILE,
-          false, destinationConf));
+        assertTrue(FileUtil.copy(sourceFs, FILE, destinationFs, FILE,
+            false, destinationConf));
 
-      assertTrue(destinationFs.exists(FILE));
-      assertEquals(contents, DFSTestUtil.readFile(destinationFs, FILE));
-      assertTrue(sourceFs.exists(FILE));
+        assertTrue(destinationFs.exists(FILE));
+        assertEquals(contents, DFSTestUtil.readFile(destinationFs, FILE));
+        assertTrue(sourceFs.exists(FILE));
+      }
     } finally {
       FileUtil.fullyDelete(testDir);
     }
+  }
+
+  private static MiniDFSNNTopology createTopology() {
+    return new MiniDFSNNTopology().addNameservice(
+        new MiniDFSNNTopology.NSConf(NAMESERVICE)
+            .addNN(new MiniDFSNNTopology.NNConf("nn1"))
+            .addNN(new MiniDFSNNTopology.NNConf("nn2")));
   }
 }

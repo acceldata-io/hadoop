@@ -19,6 +19,7 @@
 #ifndef HDFSPP_EVENTS
 #define HDFSPP_EVENTS
 
+#include <cstdint>
 #include "hdfspp/status.h"
 
 #include <functional>

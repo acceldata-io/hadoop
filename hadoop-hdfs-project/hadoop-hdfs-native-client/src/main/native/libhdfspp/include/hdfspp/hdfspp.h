@@ -18,6 +18,7 @@
 #ifndef LIBHDFSPP_HDFSPP_H_
 #define LIBHDFSPP_HDFSPP_H_
 
+#include <cstdint>
 #include "hdfspp/options.h"
 #include "hdfspp/ioservice.h"
 #include "hdfspp/status.h"

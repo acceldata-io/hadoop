@@ -18,6 +18,7 @@
 #ifndef LIBHDFSPP_HDFS_HDFSEXT
 #define LIBHDFSPP_HDFS_HDFSEXT
 
+#include <cstdint>
 #include <hdfspp/log.h>
 
 /* get typdefs and #defines from libhdfs' hdfs.h to stay consistent */

@@ -240,6 +240,7 @@ static void windows_locking_callback(int mode, int type, char *file, int line)
 #endif /* WINDOWS */
 
 #ifdef UNIX
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 static void pthreads_locking_callback(int mode, int type, char *file, int line);
 static unsigned long pthreads_thread_id(void);
 static pthread_mutex_t *lock_cs;
@@ -299,6 +300,7 @@ static unsigned long pthreads_thread_id(void)
 #endif
   return thread_id;
 }
+#endif /* OPENSSL_VERSION_NUMBER < 0x10100000L */
 
 #endif /* UNIX */
 

@@ -56,6 +56,12 @@ static int (*dlsym_ENGINE_finish) (ENGINE *);
 static int (*dlsym_ENGINE_free) (ENGINE *);
 static int (*dlsym_RAND_bytes) (unsigned char *, int);
 static unsigned long (*dlsym_ERR_get_error) (void);
+
+// Fallback definition for ENGINE_METHOD_RAND if not provided by OpenSSL headers
+// This constant is used to set the default RAND method for an ENGINE
+#ifndef ENGINE_METHOD_RAND
+#define ENGINE_METHOD_RAND  (unsigned int)0x0008
+#endif
 #endif
 
 #ifdef WINDOWS

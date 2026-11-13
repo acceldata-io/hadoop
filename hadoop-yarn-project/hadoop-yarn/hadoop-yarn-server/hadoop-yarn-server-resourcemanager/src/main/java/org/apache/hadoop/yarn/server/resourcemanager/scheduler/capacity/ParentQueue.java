@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -727,10 +728,9 @@ public class ParentQueue extends AbstractCSQueue {
     // Two conditions need to meet when trying to allocate:
     // 1) Node doesn't have reserved container
     // 2) Node's available-resource + killable-resource should > 0
-    boolean accept = node.getReservedContainer() == null && Resources
-        .greaterThanOrEqual(resourceCalculator, clusterResource, Resources
-            .add(node.getUnallocatedResource(),
-                node.getTotalKillableResources()), minimumAllocation);
+    boolean accept = node.getReservedContainer() == null &&
+        Resources.fitsIn(resourceCalculator, minimumAllocation,
+            Resources.add(node.getUnallocatedResource(), node.getTotalKillableResources()));
     if (!accept) {
       ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
           getParentName(), getQueuePath(), ActivityState.REJECTED,
@@ -935,7 +935,6 @@ public class ParentQueue extends AbstractCSQueue {
 
   private void calculateEffectiveResourcesAndCapacity(String label,
       Resource clusterResource) {
-
     // For root queue, ensure that max/min resource is updated to latest
     // cluster resource.
     Resource resourceByLabel = labelManager.getResourceByLabel(label,
@@ -1146,7 +1145,9 @@ public class ParentQueue extends AbstractCSQueue {
       LOG.info("LeafQueue:" + leafQueue.getQueuePath() + ", maxApplications="
           + maxApplications + ", maxApplicationsPerUser="
           + maxApplicationsPerUser + ", Abs Cap:"
-          + childQueue.getQueueCapacities().getAbsoluteCapacity(label));
+          + childQueue.getQueueCapacities().getAbsoluteCapacity(label) + ", Cap: "
+          + childQueue.getQueueCapacities().getCapacity(label) + ", MaxCap : "
+          + childQueue.getQueueCapacities().getMaximumCapacity(label));
     }
   }
 
@@ -1159,6 +1160,18 @@ public class ParentQueue extends AbstractCSQueue {
       readLock.unlock();
     }
 
+  }
+
+  @Override
+  public List<CSQueue> getChildQueuesByTryLock() {
+    try {
+      while (!readLock.tryLock()) {
+        LockSupport.parkNanos(10000);
+      }
+      return new ArrayList<>(childQueues);
+    } finally {
+      readLock.unlock();
+    }
   }
   
   @Override

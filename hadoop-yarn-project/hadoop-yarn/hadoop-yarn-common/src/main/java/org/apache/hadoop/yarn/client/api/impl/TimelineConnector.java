@@ -35,6 +35,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
@@ -80,7 +82,8 @@ public class TimelineConnector extends AbstractService {
   private static final Joiner JOINER = Joiner.on("");
   private static final Logger LOG =
       LoggerFactory.getLogger(TimelineConnector.class);
-  public final static int DEFAULT_SOCKET_TIMEOUT = 1 * 60 * 1000; // 1 minute
+  @VisibleForTesting
+  public static int DEFAULT_SOCKET_TIMEOUT = 60_000; // 1 minute
 
   private SSLFactory sslFactory;
   private Client client;

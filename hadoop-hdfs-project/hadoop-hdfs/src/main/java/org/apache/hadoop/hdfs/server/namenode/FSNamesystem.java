@@ -114,6 +114,7 @@ import static org.apache.hadoop.ha.HAServiceProtocol.HAServiceState.OBSERVER;
 
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 
+import org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoStriped;
 import org.apache.hadoop.thirdparty.com.google.common.collect.Maps;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 import org.apache.hadoop.hdfs.protocol.BatchedDirectoryListing;
@@ -1386,7 +1387,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         editLogTailer.catchupDuringFailover();
         
         blockManager.setPostponeBlocksFromFuture(false);
-        blockManager.getDatanodeManager().markAllDatanodesStale();
+        blockManager.getDatanodeManager().markAllDatanodesStaleAndSetKeyUpdateIfNeed();
         blockManager.clearQueues();
         blockManager.processAllPendingDNMessages();
         blockManager.getBlockIdManager().applyImpendingGenerationStamp();
@@ -1513,10 +1514,10 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       if (dir != null && getFSImage() != null) {
         if (getFSImage().editLog != null) {
           getFSImage().editLog.close();
+          // Update the fsimage with the last txid that we wrote
+          // so that the tailer starts from the right spot.
+          getFSImage().updateLastAppliedTxIdFromWritten();
         }
-        // Update the fsimage with the last txid that we wrote
-        // so that the tailer starts from the right spot.
-        getFSImage().updateLastAppliedTxIdFromWritten();
       }
       if (dir != null) {
         dir.ezManager.stopReencryptThread();
@@ -2306,7 +2307,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     requireEffectiveLayoutVersionForFeature(Feature.TRUNCATE);
     final FSDirTruncateOp.TruncateResult r;
     try {
-      NameNode.stateChangeLog.debug(
+      NameNode.stateChangeLog.info(
           "DIR* NameSystem.truncate: src={} newLength={}", src, newLength);
       if (newLength < 0) {
         throw new HadoopIllegalArgumentException(
@@ -3254,6 +3255,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       logAuditEvent(false, operationName, src, dst, null);
       throw e;
     }
+    assert ret != null;
     boolean success = ret.success;
     if (success) {
       getEditLog().logSync();
@@ -3286,7 +3288,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       throw e;
     }
     getEditLog().logSync();
-
+    assert res != null;
     BlocksMapUpdateInfo collectedBlocks = res.collectedBlocks;
     if (!collectedBlocks.getToDeleteList().isEmpty()) {
       blockManager.addBLocksToMarkedDeleteQueue(
@@ -3732,7 +3734,12 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
             lastBlock.getBlockType());
       }
 
-      if (uc.getNumExpectedLocations() == 0 && lastBlock.getNumBytes() == 0) {
+      int minLocationsNum = 1;
+      if (lastBlock.isStriped()) {
+        minLocationsNum = ((BlockInfoStriped) lastBlock).getRealDataBlockNum();
+      }
+      if (uc.getNumExpectedLocations() < minLocationsNum &&
+          lastBlock.getNumBytes() == 0) {
         // There is no datanode reported to this block.
         // may be client have crashed before writing data to pipeline.
         // This blocks doesn't need any recovery.
@@ -3740,8 +3747,18 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         pendingFile.removeLastBlock(lastBlock);
         finalizeINodeFileUnderConstruction(src, pendingFile,
             iip.getLatestSnapshotId(), false);
-        NameNode.stateChangeLog.warn("BLOCK* internalReleaseLease: "
-            + "Removed empty last block and closed file " + src);
+        if (uc.getNumExpectedLocations() == 0) {
+          // If uc.getNumExpectedLocations() is 0, regardless of whether it
+          // is a striped block or not, we should consider it as an empty block.
+          NameNode.stateChangeLog.warn("BLOCK* internalReleaseLease: "
+              + "Removed empty last block and closed file " + src);
+        } else {
+          // If uc.getNumExpectedLocations() is greater than 0, it means that
+          // minLocationsNum must be greater than 1, so this must be a striped
+          // block.
+          NameNode.stateChangeLog.warn("BLOCK* internalReleaseLease: "
+              + "Removed last unrecoverable block group and closed file " + src);
+        }
         return true;
       }
       // Start recovery of the last block for this file
@@ -3972,6 +3989,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         boolean remove = iFile.removeLastBlock(blockToDel) != null;
         if (remove) {
           blockManager.removeBlock(storedBlock);
+          FSDirWriteFileOp.persistBlocks(dir, src, iFile, false);
         }
       } else {
         // update last block
@@ -4190,11 +4208,22 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
           if (dirListing == null) {
             throw new FileNotFoundException("Path " + src + " does not exist");
           }
+          if (needLocation && isObserver()) {
+            for (HdfsFileStatus fs : dirListing.getPartialListing()) {
+              if (fs instanceof HdfsLocatedFileStatus) {
+                LocatedBlocks lbs = ((HdfsLocatedFileStatus) fs).getLocatedBlocks();
+                checkBlockLocationsWhenObserver(lbs, fs.toString());
+              }
+            }
+          }
           listing = new HdfsPartialListing(
               srcsIndex, Lists.newArrayList(dirListing.getPartialListing()));
           numEntries += listing.getPartialListing().size();
           lastListing = dirListing;
         } catch (Exception e) {
+          if (e instanceof ObserverRetryOnActiveException) {
+            throw (ObserverRetryOnActiveException) e;
+          }
           if (e instanceof AccessControlException) {
             logAuditEvent(false, operationName, src);
           }
@@ -4257,6 +4286,8 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
             true,
             returnedStartAfter);
       }
+    } catch(ObserverRetryOnActiveException e){
+      throw e;
     } finally {
       readUnlock(operationName);
     }
@@ -4335,11 +4366,9 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     readLock();
     try {
       //get datanode commands
-      final int maxTransfer = blockManager.getMaxReplicationStreams()
-          - xmitsInProgress;
       DatanodeCommand[] cmds = blockManager.getDatanodeManager().handleHeartbeat(
           nodeReg, reports, getBlockPoolId(), cacheCapacity, cacheUsed,
-          xceiverCount, maxTransfer, failedVolumes, volumeFailureSummary,
+          xceiverCount, xmitsInProgress, failedVolumes, volumeFailureSummary,
           slowPeers, slowDisks);
       long blockReportLeaseId = 0;
       if (requestFullBlockReportLease) {
@@ -4444,6 +4473,11 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
               LOG.warn(lowResourcesMsg + "Already in safe mode.");
             }
             enterSafeMode(true);
+          } else {
+            if (isNoManualAndResourceLowSafeMode()) {
+              LOG.info("Namenode has sufficient available resources, exiting safe mode.");
+              leaveSafeMode(false);
+            }
           }
           try {
             Thread.sleep(resourceRecheckInterval);
@@ -5154,6 +5188,13 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
    */
   private synchronized boolean isInManualOrResourceLowSafeMode() {
     return manualSafeMode || resourceLowSafeMode;
+  }
+
+  /**
+   * @return true if it is not in manual safe mode and resource low safe mode.
+   */
+  private synchronized boolean isNoManualAndResourceLowSafeMode() {
+    return !manualSafeMode && resourceLowSafeMode;
   }
 
   private synchronized void setManualAndResourceLowSafeMode(boolean manual,
@@ -6913,6 +6954,11 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
   public EditLogTailer getEditLogTailer() {
     return editLogTailer;
   }
+
+  @VisibleForTesting
+  public long getStandbyLastCheckpointTime() {
+    return standbyCheckpointer.getLastCheckpointTime();
+  }
   
   @VisibleForTesting
   public void setEditLogTailerForTests(EditLogTailer tailer) {
@@ -7525,6 +7571,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       throw ace;
     }
     getEditLog().logSync();
+    assert effectiveDirective != null;
     effectiveDirectiveStr = effectiveDirective.toString();
     logAuditEvent(true, operationName, effectiveDirectiveStr);
     return effectiveDirective.getId();

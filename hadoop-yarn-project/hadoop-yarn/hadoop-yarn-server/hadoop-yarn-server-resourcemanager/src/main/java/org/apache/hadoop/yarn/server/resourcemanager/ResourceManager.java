@@ -22,6 +22,7 @@ import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTest
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 import org.apache.hadoop.yarn.metrics.GenericEventTypeMetrics;
+import org.apache.hadoop.yarn.webapp.WebAppException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -1122,7 +1123,11 @@ public class ResourceManager extends CompositeService
    * Transition to standby state in a new thread. The transition operation is
    * asynchronous to avoid deadlock caused by cyclic dependency.
    */
-  private void handleTransitionToStandByInNewThread() {
+  private synchronized void handleTransitionToStandByInNewThread() {
+    if (rmContext.getHAServiceState() == HAServiceProtocol.HAServiceState.STANDBY) {
+      LOG.info("RM already in standby state");
+      return;
+    }
     Thread standByTransitionThread =
         new Thread(activeServices.standByTransitionRunnable);
     standByTransitionThread.setName("StandByTransitionThread");
@@ -1313,9 +1318,7 @@ public class ResourceManager extends CompositeService
         false)) {
       String apiPackages = "org.apache.hadoop.yarn.service.webapp;" +
           "org.apache.hadoop.yarn.webapp";
-      params.put("com.sun.jersey.config.property.resourceConfigClass",
-          "com.sun.jersey.api.core.PackagesResourceConfig");
-      params.put("com.sun.jersey.config.property.packages", apiPackages);
+      params.put("jersey.config.server.provider.packages", apiPackages);
     }
 
     Builder<ResourceManager> builder =
@@ -1386,7 +1389,12 @@ public class ResourceManager extends CompositeService
         IsResourceManagerActiveServlet.PATH_SPEC,
         IsResourceManagerActiveServlet.class);
 
-    webApp = builder.start(new RMWebApp(this), uiWebAppContext);
+    try {
+      webApp = builder.start(new RMWebApp(this), uiWebAppContext);
+    } catch (WebAppException e) {
+      webApp = e.getWebApp();
+      throw e;
+    }
   }
 
   private String getWebAppsPath(String appName) {

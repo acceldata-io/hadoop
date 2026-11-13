@@ -655,7 +655,15 @@ public class DatanodeManager {
     Consumer<List<DatanodeInfoWithStorage>> secondarySort = null;
     if (readConsiderStorageType) {
       Comparator<DatanodeInfoWithStorage> comp =
-          Comparator.comparing(DatanodeInfoWithStorage::getStorageType);
+          Comparator.comparing(DatanodeInfoWithStorage::getStorageType, (s1, s2) -> {
+            if (s1 == null) {
+              return (s2 == null) ? 0 : -1;
+            } else if (s2 == null) {
+              return 1;
+            } else {
+              return s2.compareTo(s1);
+            }
+          });
       secondarySort = list -> Collections.sort(list, comp);
     }
     if (readConsiderLoad) {
@@ -1318,8 +1326,8 @@ public class DatanodeManager {
     // Update the file names and refresh internal includes and excludes list.
     if (conf == null) {
       conf = new HdfsConfiguration();
-      this.hostConfigManager.setConf(conf);
     }
+    this.hostConfigManager.setConf(conf);
     this.hostConfigManager.refresh();
   }
   
@@ -1411,7 +1419,7 @@ public class DatanodeManager {
   public boolean shouldAvoidStaleDataNodesForWrite() {
     // If # stale exceeds maximum staleness ratio, disable stale
     // datanode avoidance on the write path
-    return avoidStaleDataNodesForWrite &&
+    return avoidStaleDataNodesForWrite && numStaleNodes > 0 &&
         (numStaleNodes <= heartbeatManager.getLiveDatanodeCount()
             * ratioUseStaleDataNodesForWrite);
   }
@@ -1701,9 +1709,11 @@ public class DatanodeManager {
       // Skip stale nodes during recovery
       final List<DatanodeStorageInfo> recoveryLocations =
           new ArrayList<>(storages.length);
-      for (DatanodeStorageInfo storage : storages) {
-        if (!storage.getDatanodeDescriptor().isStale(staleInterval)) {
-          recoveryLocations.add(storage);
+      final List<Integer> storageIdx = new ArrayList<>(storages.length);
+      for (int i = 0; i < storages.length; ++i) {
+        if (!storages[i].getDatanodeDescriptor().isStale(staleInterval)) {
+          recoveryLocations.add(storages[i]);
+          storageIdx.add(i);
         }
       }
       // If we are performing a truncate recovery than set recovery fields
@@ -1736,7 +1746,8 @@ public class DatanodeManager {
         rBlock = new RecoveringBlock(primaryBlock, recoveryInfos,
             uc.getBlockRecoveryId());
         if (b.isStriped()) {
-          rBlock = new RecoveringStripedBlock(rBlock, uc.getBlockIndices(),
+          rBlock = new RecoveringStripedBlock(rBlock,
+              uc.getBlockIndicesForSpecifiedStorages(storageIdx),
               ((BlockInfoStriped) b).getErasureCodingPolicy());
         }
       }
@@ -1775,8 +1786,8 @@ public class DatanodeManager {
   /** Handle heartbeat from datanodes. */
   public DatanodeCommand[] handleHeartbeat(DatanodeRegistration nodeReg,
       StorageReport[] reports, final String blockPoolId,
-      long cacheCapacity, long cacheUsed, int xceiverCount, 
-      int maxTransfers, int failedVolumes,
+      long cacheCapacity, long cacheUsed, int xceiverCount,
+      int xmitsInProgress, int failedVolumes,
       VolumeFailureSummary volumeFailureSummary,
       @Nonnull SlowPeerReports slowPeers,
       @Nonnull SlowDiskReports slowDisks) throws IOException {
@@ -1820,6 +1831,14 @@ public class DatanodeManager {
     int totalECBlocks = nodeinfo.getNumberOfBlocksToBeErasureCoded();
     int totalBlocks = totalReplicateBlocks + totalECBlocks;
     if (totalBlocks > 0) {
+      int maxTransfers;
+      if (nodeinfo.isDecommissionInProgress()) {
+        maxTransfers = blockManager.getReplicationStreamsHardLimit()
+            - xmitsInProgress;
+      } else {
+        maxTransfers = blockManager.getMaxReplicationStreams()
+            - xmitsInProgress;
+      }
       int numReplicationTasks = (int) Math.ceil(
           (double) (totalReplicateBlocks * maxTransfers) / totalBlocks);
       int numECTasks = (int) Math.ceil(
@@ -1997,10 +2016,13 @@ public class DatanodeManager {
     }
   }
   
-  public void markAllDatanodesStale() {
-    LOG.info("Marking all datanodes as stale");
+  public void markAllDatanodesStaleAndSetKeyUpdateIfNeed() {
+    LOG.info("Marking all datanodes as stale and schedule update block token if need.");
     synchronized (this) {
       for (DatanodeDescriptor dn : datanodeMap.values()) {
+        if (blockManager.isBlockTokenEnabled()) {
+          dn.setNeedKeyUpdate(true);
+        }
         for(DatanodeStorageInfo storage : dn.getStorageInfos()) {
           storage.markStaleAfterFailover();
         }
@@ -2229,4 +2251,3 @@ public class DatanodeManager {
     return reports;
   }
 }
-

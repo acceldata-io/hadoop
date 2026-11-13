@@ -103,14 +103,13 @@ set(STORED_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 hadoop_set_find_shared_library_without_version()
 set(OPENSSL_NAME "crypto")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    SET(OPENSSL_NAME "eay32")
+    SET(OPENSSL_NAME "libcrypto")
 endif()
 message("CUSTOM_OPENSSL_PREFIX = ${CUSTOM_OPENSSL_PREFIX}")
 find_library(OPENSSL_LIBRARY
     NAMES ${OPENSSL_NAME}
     PATHS ${CUSTOM_OPENSSL_PREFIX} ${CUSTOM_OPENSSL_PREFIX}/lib
           ${CUSTOM_OPENSSL_PREFIX}/lib64 ${CUSTOM_OPENSSL_LIB} NO_DEFAULT_PATH)
-find_library(OPENSSL_LIBRARY NAMES ${OPENSSL_NAME})
 find_path(OPENSSL_INCLUDE_DIR
     NAMES openssl/evp.h
     PATHS ${CUSTOM_OPENSSL_PREFIX} ${CUSTOM_OPENSSL_PREFIX}/include
@@ -122,7 +121,8 @@ if(OPENSSL_LIBRARY AND OPENSSL_INCLUDE_DIR)
     include(CheckCSourceCompiles)
     set(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
     set(CMAKE_REQUIRED_INCLUDES ${OPENSSL_INCLUDE_DIR})
-    check_c_source_compiles("#include \"${OPENSSL_INCLUDE_DIR}/openssl/evp.h\"\nint main(int argc, char **argv) { return !EVP_aes_256_ctr; }" HAS_NEW_ENOUGH_OPENSSL)
+    set(CMAKE_REQUIRED_LIBRARIES ${OPENSSL_LIBRARY})
+    check_c_source_compiles("#include <openssl/evp.h>\nint main(int argc, char **argv) { return !EVP_aes_256_ctr; }" HAS_NEW_ENOUGH_OPENSSL)
     set(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
     if(NOT HAS_NEW_ENOUGH_OPENSSL)
         message("The OpenSSL library installed at ${OPENSSL_LIBRARY} is too old.  You need a version at least new enough to have EVP_aes_256_ctr.")

@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
 import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslException;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -123,10 +124,26 @@ public class Client implements AutoCloseable {
     Preconditions.checkArgument(cid != RpcConstants.INVALID_CALL_ID);
     Preconditions.checkState(callId.get() == null);
     Preconditions.checkArgument(rc != RpcConstants.INVALID_RETRY_COUNT);
+    setCallIdAndRetryCountUnprotected(cid, rc, externalHandler);
+  }
 
+  public static void setCallIdAndRetryCountUnprotected(Integer cid, int rc,
+      Object externalHandler) {
     callId.set(cid);
     retryCount.set(rc);
     EXTERNAL_CALL_HANDLER.set(externalHandler);
+  }
+
+  public static int getCallId() {
+    return callId.get() != null ? callId.get() : nextCallId();
+  }
+
+  public static int getRetryCount() {
+    return retryCount.get() != null ? retryCount.get() : 0;
+  }
+
+  public static Object getExternalHandler() {
+    return EXTERNAL_CALL_HANDLER.get();
   }
 
   private final ConcurrentMap<ConnectionId, Connection> connections =
@@ -1065,15 +1082,15 @@ public class Client implements AutoCloseable {
 
     @Override
     public void run() {
-      // Don't start the ipc parameter sending thread until we start this
-      // thread, because the shutdown logic only gets triggered if this
-      // thread is started.
-      rpcRequestThread.start();
-      if (LOG.isDebugEnabled())
-        LOG.debug(getName() + ": starting, having connections " 
-            + connections.size());
-
       try {
+        // Don't start the ipc parameter sending thread until we start this
+        // thread, because the shutdown logic only gets triggered if this
+        // thread is started.
+        rpcRequestThread.start();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(getName() + ": starting, having connections " + connections.size());
+        }
+
         while (waitForWork()) {//wait here for work - read or close connection
           receiveRpcResponse();
         }
@@ -1081,15 +1098,17 @@ public class Client implements AutoCloseable {
         // This truly is unexpected, since we catch IOException in receiveResponse
         // -- this is only to be really sure that we don't leave a client hanging
         // forever.
-        LOG.warn("Unexpected error reading responses on connection " + this, t);
-        markClosed(new IOException("Error reading responses", t));
+        String msg = String.format("Unexpected error on connection %s. Closing it.", this);
+        LOG.warn(msg, t);
+        markClosed(new IOException(msg, t));
       }
-      
+
       close();
-      
-      if (LOG.isDebugEnabled())
+
+      if (LOG.isDebugEnabled()) {
         LOG.debug(getName() + ": stopped, remaining connections "
             + connections.size());
+      }
     }
 
     /**
@@ -1198,10 +1217,10 @@ public class Client implements AutoCloseable {
         if (status == RpcStatusProto.SUCCESS) {
           Writable value = packet.newInstance(valueClass, conf);
           final Call call = calls.remove(callId);
-          call.setRpcResponse(value);
           if (call.alignmentContext != null) {
             call.alignmentContext.receiveResponseState(header);
           }
+          call.setRpcResponse(value);
         }
         // verify that packet length was correct
         if (packet.remaining() > 0) {
@@ -1414,7 +1433,6 @@ public class Client implements AutoCloseable {
   private void checkAsyncCall() throws IOException {
     if (isAsynchronousMode()) {
       if (asyncCallCounter.incrementAndGet() > maxAsyncCalls) {
-        asyncCallCounter.decrementAndGet();
         String errMsg = String.format(
             "Exceeded limit of max asynchronous calls: %d, " +
             "please configure %s to adjust it.",
@@ -1470,7 +1488,7 @@ public class Client implements AutoCloseable {
         ioe.initCause(ie);
         throw ioe;
       }
-    } catch(Exception e) {
+    } catch (Exception e) {
       if (isAsynchronousMode()) {
         releaseAsyncCall();
       }
@@ -1563,7 +1581,8 @@ public class Client implements AutoCloseable {
       }
 
       if (call.error != null) {
-        if (call.error instanceof RemoteException) {
+        if (call.error instanceof RemoteException ||
+            call.error instanceof SaslException) {
           call.error.fillInStackTrace();
           throw call.error;
         } else { // local exception

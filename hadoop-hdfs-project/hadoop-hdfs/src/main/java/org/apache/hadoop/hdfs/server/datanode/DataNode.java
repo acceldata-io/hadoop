@@ -2401,7 +2401,7 @@ public class DataNode extends ReconfigurableBase
     if (this.threadGroup != null) {
       int sleepMs = 2;
       while (true) {
-        // When shutting down for restart, wait 2.5 seconds before forcing
+        // When shutting down for restart, wait 1 second before forcing
         // termination of receiver threads.
         if (!this.shutdownForUpgrade ||
             (this.shutdownForUpgrade && (Time.monotonicNow() - timeNotified
@@ -3775,7 +3775,7 @@ public class DataNode extends ReconfigurableBase
       unhealthyVolumes = volumeChecker.checkAllVolumes(data);
       lastDiskErrorCheck = Time.monotonicNow();
     } catch (InterruptedException e) {
-      LOG.error("Interruped while running disk check", e);
+      LOG.error("Interrupted while running disk check", e);
       throw new IOException("Interrupted while running disk check", e);
     }
 
@@ -3840,8 +3840,12 @@ public class DataNode extends ReconfigurableBase
       return;
     }
     if (!fromScanner && blockScanner.isEnabled()) {
-      blockScanner.markSuspectBlock(data.getVolume(block).getStorageID(),
-          block);
+      FsVolumeSpi volume = data.getVolume(block);
+      if (volume == null) {
+        LOG.warn("Cannot find FsVolumeSpi to handle bad block: {}", block);
+        return;
+      }
+      blockScanner.markSuspectBlock(volume.getStorageID(), block);
     } else {
       try {
         reportBadBlocks(block);
@@ -4101,6 +4105,10 @@ public class DataNode extends ReconfigurableBase
 
   @VisibleForTesting
   public BlockPoolManager getBlockPoolManager() {
+    return blockPoolManager;
+  }
+
+  BlockPoolManager getBlockPoolManager() {
     return blockPoolManager;
   }
 }

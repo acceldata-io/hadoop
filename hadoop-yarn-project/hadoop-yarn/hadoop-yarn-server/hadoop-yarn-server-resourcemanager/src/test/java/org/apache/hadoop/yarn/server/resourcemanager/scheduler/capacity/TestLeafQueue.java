@@ -729,6 +729,62 @@ public class TestLeafQueue {
     assertEquals((int)(a.getCapacity() * node_0.getTotalResource().getMemorySize()),
         a.getMetrics().getAvailableMB());
   }
+
+  @Test
+  public void testHeadroomCheckWithDRF() throws Exception {
+    CSAssignment assignment;
+    setUpWithDominantResourceCalculator();
+    // Mock the queue
+    LeafQueue b = stubLeafQueue((LeafQueue) queues.get(B));
+    // Users
+    final String user0 = "user_0";
+
+    // Submit applications
+    final ApplicationAttemptId appAttemptId0 =
+        TestUtils.getMockApplicationAttemptId(0, 0);
+    FiCaSchedulerApp app0 =
+        new FiCaSchedulerApp(appAttemptId0, user0, b,
+            b.getAbstractUsersManager(), spyRMContext);
+    b.submitApplicationAttempt(app0, user0);
+    // Setup some nodes
+    String host0 = "127.0.0.1";
+    FiCaSchedulerNode node0 =
+        TestUtils.getMockNode(host0, DEFAULT_RACK, 0, 100 * GB, 100);
+
+    int numNodes = 1;
+    Resource clusterResource =
+        Resources.createResource(numNodes * (100 * GB), numNodes * 100);
+    when(csContext.getNumClusterNodes()).thenReturn(numNodes);
+    root.updateClusterResource(clusterResource,
+        new ResourceLimits(clusterResource));
+
+    // Increase the user-limit-factor to make user_0 fully use max resources of the queue.
+    // The max resources can be used are 0.99 * [100 * GB, 100]
+    b.setUserLimitFactor(10.0f);
+
+    Map<ApplicationAttemptId, FiCaSchedulerApp> apps =
+        ImmutableMap.of(app0.getApplicationAttemptId(), app0);
+    Map<NodeId, FiCaSchedulerNode> nodes = ImmutableMap.of(node0.getNodeID(), node0);
+
+    Priority priority = TestUtils.createMockPriority(1);
+    app0.updateResourceRequests(Collections.singletonList(TestUtils
+        .createResourceRequest(ResourceRequest.ANY, 90 * GB, 10, 1, true,
+            priority, recordFactory, NO_LABEL)));
+    assignment = b.assignContainers(clusterResource, node0, new ResourceLimits(
+        clusterResource), SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);
+    applyCSAssignment(clusterResource, assignment, b, nodes, apps);
+    verifyContainerAllocated(assignment, NodeType.OFF_SWITCH);
+
+    app0.updateResourceRequests(Collections.singletonList(TestUtils
+        .createResourceRequest(ResourceRequest.ANY, 10 * GB, 10, 1, true,
+            priority, recordFactory, NO_LABEL)));
+    assignment = b.assignContainers(clusterResource, node0, new ResourceLimits(
+        clusterResource), SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);
+    // This assignment should have no containers assigned,
+    // because the used memory (90 + 10)GB will exceed the max 99GB
+    verifyNoContainerAllocated(assignment);
+  }
+
   @Test
   public void testDRFUsageRatioRounding() throws Exception {
     CSAssignment assign;
@@ -1558,17 +1614,25 @@ public class TestLeafQueue {
     LeafQueue a = stubLeafQueue((LeafQueue)queues.get(A));
     // Set minimum-user-limit-percent for queue "a" in the configs.
     csConf.setUserLimit(a.getQueuePath(), 50);
-    // Set weight for "user_0" to be 1.5 for the a queue in the configs.
+    // Set weight for "user_0" to be 1.5f for the a queue in the configs.
     csConf.setFloat("yarn.scheduler.capacity." + a.getQueuePath()
         + ".user-settings.user_0." + CapacitySchedulerConfiguration.USER_WEIGHT,
         1.5f);
+    // Set weight for "firstname.lastname" to be 0.7f for the a queue
+    // in the configs. Notice the user contains a dot. This is to test
+    // that weights are accepted for a username that contains dots.
+    csConf.setFloat("yarn.scheduler.capacity." + a.getQueuePath()
+        + ".user-settings.firstname.lastname."
+        + CapacitySchedulerConfiguration.USER_WEIGHT,
+        0.7f);
 
     when(csContext.getClusterResource())
         .thenReturn(Resources.createResource(16 * GB, 32));
     // Verify that configs were updated and parsed correctly.
     Assert.assertNull(a.getUserWeights().get("user_0"));
     a.reinitialize(a, csContext.getClusterResource());
-    assertEquals(1.5, a.getUserWeights().get("user_0").floatValue(), 0.0);
+    assertEquals(1.5f, a.getUserWeights().get("user_0"), 0.0f);
+    assertEquals(0.7f, a.getUserWeights().get("firstname.lastname"), 0.0f);
 
     // set maxCapacity
     a.setMaxCapacity(1.0f);

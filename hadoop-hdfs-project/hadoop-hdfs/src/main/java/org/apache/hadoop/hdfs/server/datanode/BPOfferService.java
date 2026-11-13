@@ -82,7 +82,7 @@ class BPOfferService {
    * this can be null. If non-null, this must always refer to a member
    * of the {@link #bpServices} list.
    */
-  private BPServiceActor bpServiceToActive = null;
+  private volatile BPServiceActor bpServiceToActive = null;
   
   /**
    * The list of all actors for namenodes in this nameservice, regardless
@@ -428,8 +428,10 @@ class BPOfferService {
       dn.bpRegistrationSucceeded(bpRegistration, getBlockPoolId());
       // Add the initial block token secret keys to the DN's secret manager.
       if (dn.isBlockTokenEnabled) {
+        boolean updateCurrentKey = bpServiceActor.state == null
+            || bpServiceActor.state == HAServiceState.ACTIVE;
         dn.blockPoolTokenSecretManager.addKeys(getBlockPoolId(),
-            reg.getExportedKeys());
+            reg.getExportedKeys(), updateCurrentKey);
       }
     } finally {
       writeUnlock();
@@ -746,7 +748,6 @@ class BPOfferService {
         // Exceptions caught here are not expected to be disk-related.
         throw e;
       }
-      dn.metrics.incrBlocksRemoved(toDelete.length);
       break;
     case DatanodeProtocol.DNA_CACHE:
       LOG.info("DatanodeCommand action: DNA_CACHE for " +
@@ -783,7 +784,7 @@ class BPOfferService {
       if (dn.isBlockTokenEnabled) {
         dn.blockPoolTokenSecretManager.addKeys(
             getBlockPoolId(), 
-            ((KeyUpdateCommand) cmd).getExportedKeys());
+            ((KeyUpdateCommand) cmd).getExportedKeys(), true);
       }
       break;
     case DatanodeProtocol.DNA_BALANCERBANDWIDTHUPDATE:
@@ -824,7 +825,7 @@ class BPOfferService {
       if (dn.isBlockTokenEnabled) {
         dn.blockPoolTokenSecretManager.addKeys(
             getBlockPoolId(), 
-            ((KeyUpdateCommand) cmd).getExportedKeys());
+            ((KeyUpdateCommand) cmd).getExportedKeys(), false);
       }
       break;
     case DatanodeProtocol.DNA_TRANSFER:

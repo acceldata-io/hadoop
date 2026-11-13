@@ -111,7 +111,7 @@ public class DelegationTokenRenewer
      * Set a new time for the renewal.
      * It can only be called when the action is not in the queue or any
      * collection because the hashCode may change
-     * @param newTime the new time
+     * @param delay the renewal time
      */
     private void updateRenewalTime(long delay) {
       renewalTime = Time.now() + delay - delay/10;
@@ -256,9 +256,8 @@ public class DelegationTokenRenewer
       try {
         action.cancel();
       } catch (InterruptedException ie) {
-        LOG.error("Interrupted while canceling token for " + fs.getUri()
-            + "filesystem");
-        LOG.debug("Exception in removeRenewAction: {}", ie);
+        LOG.error("Interrupted while canceling token for {} filesystem.", fs.getUri());
+        LOG.debug("Exception in removeRenewAction.", ie);
       }
     }
   }

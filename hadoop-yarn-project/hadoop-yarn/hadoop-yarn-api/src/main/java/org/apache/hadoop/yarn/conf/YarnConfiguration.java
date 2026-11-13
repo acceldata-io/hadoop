@@ -3882,6 +3882,13 @@ public class YarnConfiguration extends Configuration {
   public static final String DEFAULT_FEDERATION_REGISTRY_BASE_KEY =
       "yarnfederation/";
 
+  public static final String FEDERATION_STATESTORE_HEARTBEAT_INITIAL_DELAY =
+      FEDERATION_PREFIX + "state-store.heartbeat.initial-delay";
+
+  // 30 secs
+  public static final int
+      DEFAULT_FEDERATION_STATESTORE_HEARTBEAT_INITIAL_DELAY = 30;
+
   public static final String FEDERATION_STATESTORE_HEARTBEAT_INTERVAL_SECS =
       FEDERATION_PREFIX + "state-store.heartbeat-interval-secs";
 
@@ -4192,6 +4199,11 @@ public class YarnConfiguration extends Configuration {
   public static final String FS_NODE_LABELS_STORE_ROOT_DIR = NODE_LABELS_PREFIX
       + "fs-store.root-dir";
 
+  /** FS store file replication. */
+  public static final String FS_STORE_FILE_REPLICATION = YARN_PREFIX
+      + "fs-store.file.replication";
+  public static final int DEFAULT_FS_STORE_FILE_REPLICATION = 0;
+
   /**
    * Node-attribute configurations.
    */
@@ -4358,6 +4370,12 @@ public class YarnConfiguration extends Configuration {
   //once in 30 mins
   public static final long DEFAULT_RM_NODE_LABELS_PROVIDER_FETCH_INTERVAL_MS =
       30 * 60 * 1000;
+
+  public static final String RM_NODE_LABELS_PROVIDER_UPDATE_NEWLY_REGISTERED_INTERVAL_MS =
+      RM_NODE_LABELS_PROVIDER_PREFIX + "update-newly-registered-nodes-interval-ms";
+
+  public static final long DEFAULT_RM_NODE_LABELS_PROVIDER_UPDATE_NEWLY_REGISTERED_INTERVAL_MS =
+      30 * 1000;
 
   @Private
   /**

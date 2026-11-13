@@ -792,7 +792,8 @@
   <description>The size of buffer for use in sequence files.
   The size of this buffer should probably be a multiple of hardware
   page size (4096 on Intel x86), and it determines how much data is
-  buffered during read and write operations.</description>
+  buffered during read and write operations. Must be greater than zero.
+  </description>
 </property>
 
 <property>
@@ -3890,4 +3891,18 @@ The switch to turn S3A auditing on or off.
       ThreadGroup approach is preferred for better performance.
     </description>
   </property>
+
+  <property>
+    <name>fs.AbstractFileSystem.ofs.impl</name>
+    <value>org.apache.hadoop.fs.ozone.RootedOzFs</value>
+    <description>The AbstractFileSystem for Rooted Ozone
+      FileSystem ofs uri</description>
+  </property>
+
+  <property>
+    <name>fs.AbstractFileSystem.o3fs.impl</name>
+    <value>org.apache.hadoop.fs.ozone.OzFs</value>
+    <description>The AbstractFileSystem for Ozone FileSystem o3fs uri</description>
+  </property>
+
 </configuration>

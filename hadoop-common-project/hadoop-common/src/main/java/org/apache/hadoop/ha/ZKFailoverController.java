@@ -260,8 +260,11 @@ public abstract class ZKFailoverController {
       rpcServer.stopAndJoin();
       
       elector.quitElection(true);
-      healthMonitor.shutdown();
-      healthMonitor.join();
+
+      if (healthMonitor != null) {
+        healthMonitor.shutdown();
+        healthMonitor.join();
+      }
     }
     return 0;
   }
@@ -656,6 +659,7 @@ public abstract class ZKFailoverController {
   private void doGracefulFailover()
       throws ServiceFailedException, IOException, InterruptedException {
     int timeout = FailoverController.getGracefulFenceTimeout(conf) * 2;
+    Preconditions.checkArgument(timeout >= 0, "timeout should be non-negative.");
     
     // Phase 1: pre-flight checks
     checkEligibleForFailover();

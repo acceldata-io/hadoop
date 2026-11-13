@@ -864,7 +864,7 @@ public class DFSAdmin extends FsShell {
                 + proxy.getAddress());
           }
         }catch (IOException ioe){
-          System.out.println("Save namespace failed for " +
+          System.err.println("Save namespace failed for " +
               proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -921,7 +921,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("restoreFailedStorage is set to " + res + " for "
               + proxy.getAddress());
         } catch (IOException ioe){
-          System.out.println("restoreFailedStorage failed for "
+          System.err.println("restoreFailedStorage failed for "
               + proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -964,7 +964,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Refresh nodes successful for " +
               proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Refresh nodes failed for " +
+          System.err.println("Refresh nodes failed for " +
               proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -1020,7 +1020,7 @@ public class DFSAdmin extends FsShell {
       openFilesRemoteIterator = dfs.listOpenFiles(openFilesTypes, path);
       printOpenFiles(openFilesRemoteIterator);
     } catch (IOException ioe){
-      System.out.println("List open files failed.");
+      System.err.println("List open files failed.");
       throw ioe;
     }
     return 0;
@@ -1446,7 +1446,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Finalize upgrade successful for " +
               proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Finalize upgrade failed for " +
+          System.err.println("Finalize upgrade failed for " +
               proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -1575,7 +1575,7 @@ public class DFSAdmin extends FsShell {
             throw re;
           }
         } catch (IOException ioe) {
-          System.out.println("Created metasave file " + pathname
+          System.err.println("Created metasave file " + pathname
               + " in the log directory of namenode " + proxy.getAddress()
               + " failed");
           exceptions.add(ioe);
@@ -1679,7 +1679,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Refresh service acl successful for "
               + proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Refresh service acl failed for "
+          System.err.println("Refresh service acl failed for "
               + proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -1732,7 +1732,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Refresh user to groups mapping successful for "
               + proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Refresh user to groups mapping failed for "
+          System.err.println("Refresh user to groups mapping failed for "
               + proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -1787,7 +1787,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Refresh super user groups configuration " +
               "successful for " + proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Refresh super user groups configuration " +
+          System.err.println("Refresh super user groups configuration " +
               "failed for " + proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -1836,7 +1836,7 @@ public class DFSAdmin extends FsShell {
           System.out.println("Refresh call queue successful for "
               + proxy.getAddress());
         }catch (IOException ioe){
-          System.out.println("Refresh call queue failed for "
+          System.err.println("Refresh call queue failed for "
               + proxy.getAddress());
           exceptions.add(ioe);
         }
@@ -2029,22 +2029,20 @@ public class DFSAdmin extends FsShell {
     if (errMsg != null) {
       err.println(errMsg);
       return 1;
-    } else {
-      out.print(outMsg);
     }
 
     if (status != null) {
       if (!status.hasTask()) {
-        out.println("no task was found.");
+        out.println(outMsg + "no task was found.");
         return 0;
       }
-      out.print("started at " + new Date(status.getStartTime()));
+      String startMsg = outMsg + "started at " + new Date(status.getStartTime());
       if (!status.stopped()) {
-        out.println(" and is still running.");
+        out.println(startMsg + " and is still running.");
         return 0;
       }
 
-      out.println(" and finished at "
+      out.println(startMsg + " and finished at "
           + new Date(status.getEndTime()).toString() + ".");
       if (status.getStatus() == null) {
         // Nothing to report.
@@ -2067,6 +2065,7 @@ public class DFSAdmin extends FsShell {
         }
       }
     } else {
+      out.println(outMsg);
       return 1;
     }
 

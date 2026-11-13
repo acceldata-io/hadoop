@@ -1320,6 +1320,17 @@
 </property>
 
 <property>
+  <name>dfs.namenode.checkpoint.parallel.upload.enabled</name>
+  <value>false</value>
+  <description>
+  If true, the CheckpointNode will upload the checkpoint image to multiple other
+  NameNodes in parallel, in the cluster with observer namenodes. You should
+  make sure the network bandwidth is sufficient.
+  If false, the fsimage will be uploaded serially to multiple namenodes.
+  </description>
+</property>
+
+<property>
   <name>dfs.namenode.checkpoint.check.quiet-multiplier</name>
   <value>1.5</value>
   <description>
@@ -2656,6 +2667,17 @@
 </property>
 
 <property>
+  <name>dfs.datanode.round-robin-volume-choosing-policy.additional-available-space</name>
+  <value>1073741824</value> <!-- 1 GB -->
+  <description>
+    Only used when the dfs.datanode.fsdataset.volume.choosing.policy is set to
+    org.apache.hadoop.hdfs.server.datanode.fsdataset.RoundRobinVolumeChoosingPolicy.
+    This setting controls how much additional available space (unit is byte) is needed
+    when choosing a volume.
+  </description>
+</property>
+
+<property>
   <name>dfs.namenode.edits.noeditlogchannelflush</name>
   <value>false</value>
   <description>
@@ -2730,6 +2752,15 @@
     By default this parameter is set to 1 hour.
     Support multiple time unit suffix(case insensitive), as described
     in dfs.heartbeat.interval.
+  </description>
+</property>
+
+<property>
+  <name>dfs.namenode.observer.enabled</name>
+  <value>false</value>
+  <description>
+    This causes NameNode on startup to become an observer node if
+    set to true, otherwise startup is no different.
   </description>
 </property>
 
@@ -3366,6 +3397,15 @@
   <description>When a read lock is held on the namenode for a long time,
     this will be logged as the lock is released. This sets how long the
     lock must be held for logging to occur.
+  </description>
+</property>
+
+<property>
+  <name>dfs.namenode.access-control-enforcer-reporting-threshold-ms</name>
+  <value>1000</value>
+  <description>
+    If an external AccessControlEnforcer runs for a long time to check permission with the FSnamesystem lock,
+    print a WARN log message. This sets how long must be run for logging to occur.
   </description>
 </property>
 
@@ -4884,13 +4924,29 @@
 
 <property>
   <name>dfs.journalnode.edit-cache-size.bytes</name>
-  <value>1048576</value>
+  <value></value>
   <description>
     The size, in bytes, of the in-memory cache of edits to keep on the
     JournalNode. This cache is used to serve edits for tailing via the RPC-based
     mechanism, and is only enabled when dfs.ha.tail-edits.in-progress is true.
     Transactions range in size but are around 200 bytes on average, so the
     default of 1MB can store around 5000 transactions.
+  </description>
+</property>
+
+<property>
+  <name>dfs.journalnode.edit-cache-size.fraction</name>
+  <value>0.5f</value>
+  <description>
+    This ratio refers to the proportion of the maximum memory of the JVM.
+    Used to calculate the size of the edits cache that is kept in the JournalNode's memory.
+    This config is an alternative to the dfs.journalnode.edit-cache-size.bytes.
+    And it is used to serve edits for tailing via the RPC-based mechanism, and is only
+    enabled when dfs.ha.tail-edits.in-progress is true. Transactions range in size but
+    are around 200 bytes on average, so the default of 1MB can store around 5000 transactions.
+    So we can configure a reasonable value based on the maximum memory. The recommended value
+    is less than 0.9. If we set dfs.journalnode.edit-cache-size.bytes, this parameter will
+    not take effect.
   </description>
 </property>
 

@@ -378,7 +378,12 @@ public class LeafQueue extends AbstractCSQueue {
   public List<CSQueue> getChildQueues() {
     return null;
   }
-  
+
+  @Override
+  public List<CSQueue> getChildQueuesByTryLock() {
+    return null;
+  }
+
   /**
    * Set user limit - used only for testing.
    * @param userLimit new user limit
@@ -518,6 +523,11 @@ public class LeafQueue extends AbstractCSQueue {
   @VisibleForTesting
   public User getUser(String userName) {
     return usersManager.getUser(userName);
+  }
+
+  @VisibleForTesting
+  public User getOrCreateUser(String userName) {
+    return usersManager.getUserAndAddIfAbsent(userName);
   }
 
   @Private
@@ -858,7 +868,7 @@ public class LeafQueue extends AbstractCSQueue {
         }
 
         // Check user am resource limit
-        User user = getUser(application.getUser());
+        User user = usersManager.getUserAndAddIfAbsent(application.getUser());
         Resource userAMLimit = userAmPartitionLimit.get(partitionName);
 
         // Verify whether we already calculated user-am-limit for this label.
@@ -1960,7 +1970,12 @@ public class LeafQueue extends AbstractCSQueue {
 
   public void incAMUsedResource(String nodeLabel, Resource resourceToInc,
       SchedulerApplicationAttempt application) {
-    getUser(application.getUser()).getResourceUsage().incAMUsed(nodeLabel,
+    User user = getUser(application.getUser());
+    if (user == null) {
+      return;
+    }
+
+    user.getResourceUsage().incAMUsed(nodeLabel,
         resourceToInc);
     // ResourceUsage has its own lock, no addition lock needs here.
     queueUsage.incAMUsed(nodeLabel, resourceToInc);
@@ -1968,7 +1983,12 @@ public class LeafQueue extends AbstractCSQueue {
 
   public void decAMUsedResource(String nodeLabel, Resource resourceToDec,
       SchedulerApplicationAttempt application) {
-    getUser(application.getUser()).getResourceUsage().decAMUsed(nodeLabel,
+    User user = getUser(application.getUser());
+    if (user == null) {
+      return;
+    }
+
+    user.getResourceUsage().decAMUsed(nodeLabel,
         resourceToDec);
     // ResourceUsage has its own lock, no addition lock needs here.
     queueUsage.decAMUsed(nodeLabel, resourceToDec);
@@ -2056,7 +2076,7 @@ public class LeafQueue extends AbstractCSQueue {
       for (FiCaSchedulerApp app : getApplications()) {
         String userName = app.getUser();
         if (!userNameToHeadroom.containsKey(userName)) {
-          User user = getUser(userName);
+          User user = getUsersManager().getUserAndAddIfAbsent(userName);
           Resource headroom = Resources.subtract(
               getResourceLimitForActiveUsers(app.getUser(), clusterResources,
                   partition, SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY),

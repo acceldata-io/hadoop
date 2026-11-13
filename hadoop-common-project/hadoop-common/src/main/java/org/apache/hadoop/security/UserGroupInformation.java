@@ -530,6 +530,18 @@ public class UserGroupInformation {
     user.setLogin(login);
   }
 
+  /** This method checks for a successful Kerberos login
+    * and returns true by default if it is not using Kerberos.
+    *
+    * @return true on successful login
+   */
+  public boolean isLoginSuccess() {
+    LoginContext login = user.getLogin();
+    return (login instanceof HadoopLoginContext)
+        ? ((HadoopLoginContext) login).isLoginSuccess()
+        : true;
+  }
+
   /**
    * Set the last login time for logged in user
    * @param loginTime the number of milliseconds since the beginning of time
@@ -1278,6 +1290,23 @@ public class UserGroupInformation {
   }
 
   /**
+   * Force re-Login a user in from the ticket cache irrespective of the last
+   * login time. This method assumes that login had happened already. The
+   * Subject field of this UserGroupInformation object is updated to have the
+   * new credentials.
+   *
+   * @throws IOException
+   *           raised on errors performing I/O.
+   * @throws KerberosAuthException
+   *           on a failure
+   */
+  @InterfaceAudience.Public
+  @InterfaceStability.Evolving
+  public void forceReloginFromTicketCache() throws IOException {
+    reloginFromTicketCache(true);
+  }
+
+  /**
    * Re-Login a user in from the ticket cache.  This
    * method assumes that login had happened already.
    * The Subject field of this UserGroupInformation object is updated to have
@@ -1288,6 +1317,11 @@ public class UserGroupInformation {
   @InterfaceAudience.Public
   @InterfaceStability.Evolving
   public void reloginFromTicketCache() throws IOException {
+    reloginFromTicketCache(false);
+  }
+
+  private void reloginFromTicketCache(boolean ignoreLastLoginTime)
+      throws IOException {
     if (!shouldRelogin() || !isFromTicket()) {
       return;
     }
@@ -1295,7 +1329,7 @@ public class UserGroupInformation {
     if (login == null) {
       throw new KerberosAuthException(MUST_FIRST_LOGIN);
     }
-    relogin(login, false);
+    relogin(login, ignoreLastLoginTime);
   }
 
   private void relogin(HadoopLoginContext login, boolean ignoreLastLoginTime)
@@ -1679,7 +1713,18 @@ public class UserGroupInformation {
       return true;
     }
   }
-  
+
+  /**
+   * Remove a named token from this UGI.
+   *
+   * @param alias Name of the token
+   */
+  public void removeToken(Text alias) {
+    synchronized (subject) {
+      getCredentialsInternal().removeToken(alias);
+    }
+  }
+
   /**
    * Obtain the collection of tokens associated with this user.
    * 
@@ -1928,11 +1973,12 @@ public class UserGroupInformation {
   @InterfaceAudience.LimitedPrivate({"HDFS", "KMS"})
   @InterfaceStability.Unstable
   public static void logUserInfo(Logger log, String caption,
-      UserGroupInformation ugi) throws IOException {
+      UserGroupInformation ugi) {
     if (log.isDebugEnabled()) {
       log.debug(caption + " UGI: " + ugi);
-      for (Token<?> token : ugi.getTokens()) {
-        log.debug("+token:" + token);
+      for (Map.Entry<Text, Token<? extends TokenIdentifier>> kv :
+          ugi.getCredentials().getTokenMap().entrySet()) {
+        log.debug("+token: {} -> {}", kv.getKey(), kv.getValue());
       }
     }
   }
@@ -2063,6 +2109,11 @@ public class UserGroupInformation {
       super(appName, subject, null, conf);
       this.appName = appName;
       this.conf = conf;
+    }
+
+    /** Get the login status. */
+    public boolean isLoginSuccess() {
+      return isLoggedIn.get();
     }
 
     String getAppName() {

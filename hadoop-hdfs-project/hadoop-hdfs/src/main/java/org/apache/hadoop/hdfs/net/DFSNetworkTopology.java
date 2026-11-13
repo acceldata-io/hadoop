@@ -173,6 +173,7 @@ public class DFSNetworkTopology extends NetworkTopology {
    * @param scope the scope where we look for node.
    * @param excludedScope the scope where the node must NOT be from.
    * @param excludedNodes the returned node must not be in this set
+   * @param type the storage type we search for
    * @return a node with required storage type
    */
   @VisibleForTesting
@@ -218,7 +219,8 @@ public class DFSNetworkTopology extends NetworkTopology {
     }
     if (excludedNodes != null) {
       for (Node excludedNode : excludedNodes) {
-        if (excludeRoot != null && isNodeInScope(excludedNode, excludedScope)) {
+        if ((excludeRoot != null && isNodeInScope(excludedNode, excludedScope)) ||
+            !isNodeInScope(excludedNode, scope)) {
           continue;
         }
         if (excludedNode instanceof DatanodeDescriptor) {

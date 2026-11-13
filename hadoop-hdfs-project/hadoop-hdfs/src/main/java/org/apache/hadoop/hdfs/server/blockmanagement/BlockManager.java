@@ -726,7 +726,7 @@ public class BlockManager implements BlockStatsMXBean {
     checkNSRunning = false;
   }
 
-  private boolean isBlockTokenEnabled() {
+  protected boolean isBlockTokenEnabled() {
     return blockTokenSecretManager != null;
   }
 
@@ -1625,7 +1625,7 @@ public class BlockManager implements BlockStatsMXBean {
   public boolean isSufficientlyReplicated(BlockInfo b) {
     // Compare against the lesser of the minReplication and number of live DNs.
     final int liveReplicas = countNodes(b).liveReplicas();
-    if (liveReplicas >= minReplication) {
+    if (hasMinStorage(b, liveReplicas)) {
       return true;
     }
     // getNumLiveDataNodes() is very expensive and we minimize its use by
@@ -2273,7 +2273,9 @@ public class BlockManager implements BlockStatsMXBean {
     }
 
     // Add block to the datanode's task list
-    rw.addTaskToDatanode(numReplicas);
+    if (!rw.addTaskToDatanode(numReplicas)) {
+      return false;
+    }
     DatanodeStorageInfo.incrementBlocksScheduled(targets);
 
     // Move the block-replication into a "pending" state.
@@ -2690,7 +2692,7 @@ public class BlockManager implements BlockStatsMXBean {
   void updateHeartbeat(DatanodeDescriptor node, StorageReport[] reports,
       long cacheCapacity, long cacheUsed, int xceiverCount, int failedVolumes,
       VolumeFailureSummary volumeFailureSummary) {
-
+    BlockManagerFaultInjector.getInstance().mockAnException();
     for (StorageReport report: reports) {
       providedStorageMap.updateStorage(node, report.getStorage());
     }
@@ -2702,6 +2704,7 @@ public class BlockManager implements BlockStatsMXBean {
       StorageReport[] reports, long cacheCapacity, long cacheUsed,
       int xceiverCount, int failedVolumes,
       VolumeFailureSummary volumeFailureSummary) {
+    BlockManagerFaultInjector.getInstance().mockAnException();
     for (StorageReport report: reports) {
       providedStorageMap.updateStorage(node, report.getStorage());
     }
@@ -2801,7 +2804,7 @@ public class BlockManager implements BlockStatsMXBean {
             + "discarded non-initial block report from {}"
             + " because namenode still in startup phase",
             strBlockReportId, fullBrLeaseId, nodeID);
-        blockReportLeaseManager.removeLease(node);
+        removeDNLeaseIfNeeded(node);
         return !node.hasStaleStorages();
       }
 
@@ -2847,6 +2850,23 @@ public class BlockManager implements BlockStatsMXBean {
         node.hasStaleStorages(), (endTime - startTime),
         invalidatedBlocks.size());
     return !node.hasStaleStorages();
+  }
+
+  /**
+   * Remove the DN lease only when we have received block reports,
+   * for all storages for a particular DN.
+   */
+  void removeDNLeaseIfNeeded(DatanodeDescriptor node) {
+    boolean needRemoveLease = true;
+    for (DatanodeStorageInfo sInfo : node.getStorageInfos()) {
+      if (sInfo.getBlockReportCount() == 0) {
+        needRemoveLease = false;
+        break;
+      }
+    }
+    if (needRemoveLease) {
+      blockReportLeaseManager.removeLease(node);
+    }
   }
 
   public void removeBRLeaseIfNeeded(final DatanodeID nodeID,

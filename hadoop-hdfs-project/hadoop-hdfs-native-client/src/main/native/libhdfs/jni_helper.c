@@ -422,9 +422,9 @@ static ssize_t wildcard_expandPath(const char* path, char* expanded)
 
                 if (expanded != NULL) {
                     // pathLength includes an extra '.'
-                    strncpy(dest, path, pathLength-1);
+                    memcpy(dest, path, pathLength - 1);
                     dest += pathLength - 1;
-                    strncpy(dest, filename, filenameLength);
+                    memcpy(dest, filename, filenameLength);
                     dest += filenameLength;
                     *dest = PATH_SEPARATOR;
                     dest++;
@@ -536,7 +536,7 @@ static ssize_t getClassPath_helper(const char *classpath, char* expandedClasspat
             // +1 for path separator or null terminator
             length += tokenlen + 1;
             if (expandedCP_curr != NULL) {
-                strncpy(expandedCP_curr, cp_token, tokenlen);
+                memcpy(expandedCP_curr, cp_token, tokenlen);
                 expandedCP_curr += tokenlen;
                 *expandedCP_curr = PATH_SEPARATOR;
                 expandedCP_curr++;
@@ -817,26 +817,31 @@ JNIEnv* getJNIEnv(void)
       fprintf(stderr, "getJNIEnv: Unable to create ThreadLocalState\n");
       return NULL;
     }
-    if (threadLocalStorageSet(state)) {
-      mutexUnlock(&jvmMutex);
-      goto fail;
-    }
-    THREAD_LOCAL_STORAGE_SET_QUICK(state);
 
     state->env = getGlobalJNIEnv();
-    mutexUnlock(&jvmMutex);
-
     if (!state->env) {
+        mutexUnlock(&jvmMutex);
         goto fail;
     }
 
     jthrowable jthr = NULL;
     jthr = initCachedClasses(state->env);
     if (jthr) {
+      mutexUnlock(&jvmMutex);
       printExceptionAndFree(state->env, jthr, PRINT_EXC_ALL,
                             "initCachedClasses failed");
       goto fail;
     }
+
+    if (threadLocalStorageSet(state)) {
+      mutexUnlock(&jvmMutex);
+      goto fail;
+    }
+
+    // set the TLS var only when the state passes all the checks
+    THREAD_LOCAL_STORAGE_SET_QUICK(state);
+    mutexUnlock(&jvmMutex);
+
     return state->env;
 
 fail:

@@ -386,9 +386,9 @@ public class CapacityScheduler extends
       }
 
       LOG.info("Initialized CapacityScheduler with " + "calculator="
-          + getResourceCalculator().getClass() + ", " + "minimumAllocation=<"
-          + getMinimumResourceCapability() + ">, " + "maximumAllocation=<"
-          + getMaximumResourceCapability() + ">, " + "asynchronousScheduling="
+          + getResourceCalculator().getClass() + ", " + "minimumAllocation="
+          + getMinimumResourceCapability() + ", " + "maximumAllocation="
+          + getMaximumResourceCapability() + ", " + "asynchronousScheduling="
           + scheduleAsynchronously + ", " + "asyncScheduleInterval="
           + asyncScheduleInterval + "ms" + ",multiNodePlacementEnabled="
           + multiNodePlacementEnabled + ", " + "assignMultipleEnabled="
@@ -1629,6 +1629,10 @@ public class CapacityScheduler extends
 
   private void allocateFromReservedContainer(FiCaSchedulerNode node,
       boolean withNodeHeartbeat, RMContainer reservedContainer) {
+    if(reservedContainer == null){
+      LOG.warn("reservedContainer is null, that may be unreserved by the proposal judgment thread");
+      return;
+    }
     FiCaSchedulerApp reservedApplication = getCurrentAttemptForContainer(
         reservedContainer.getContainerId());
     if (reservedApplication == null) {
@@ -3343,6 +3347,11 @@ public class CapacityScheduler extends
   @Override
   public boolean placementConstraintEnabled() {
     return true;
+  }
+
+  @VisibleForTesting
+  public void setQueueManager(CapacitySchedulerQueueManager qm) {
+    this.queueManager = qm;
   }
 
   @VisibleForTesting

@@ -3353,9 +3353,4 @@ public class CapacityScheduler extends
   public void setQueueManager(CapacitySchedulerQueueManager qm) {
     this.queueManager = qm;
   }
-
-  @VisibleForTesting
-  public void setQueueManager(CapacitySchedulerQueueManager qm) {
-    this.queueManager = qm;
-  }
 }

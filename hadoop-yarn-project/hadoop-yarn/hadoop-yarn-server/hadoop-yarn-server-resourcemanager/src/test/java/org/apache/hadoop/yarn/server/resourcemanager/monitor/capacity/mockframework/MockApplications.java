@@ -165,7 +165,6 @@ class MockApplications {
         user.setResourceUsage(userResourceUsage.get(userName));
       }
       when(queue.getUser(eq(userName))).thenReturn(user);
-      when(queue.getOrCreateUser(eq(userName))).thenReturn(user);
       when(queue.getResourceLimitForAllUsers(eq(userName),
           any(Resource.class), anyString(), any(SchedulingMode.class)))
           .thenReturn(userLimit);

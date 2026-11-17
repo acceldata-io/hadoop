@@ -805,7 +805,6 @@ public class UsersManager implements AbstractUsersManager {
             lQueue.getMinimumAllocation());
 
     if (LOG.isDebugEnabled()) {
-      float weight = lQueue.getUserWeights().getByUser(userName);
       LOG.debug("User limit computation for " + userName
           + ",  in queue: " + lQueue.getQueuePath()
           + ",  userLimitPercent=" + lQueue.getUserLimit()
@@ -823,7 +822,7 @@ public class UsersManager implements AbstractUsersManager {
           + ",  Partition=" + nodePartition
           + ",  resourceUsed=" + resourceUsed
           + ",  maxUserLimit=" + maxUserLimit
-          + ",  userWeight=" + weight
+          + ",  userWeight=" + getUser(userName).getWeight()
       );
     }
     return userLimitResource;

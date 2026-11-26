@@ -791,8 +791,10 @@ public class TestDFSStripedInputStream {
         }
 
         // Compare the read data with the original writeBuf.
-        assertEquals(writeBufSize, totalReadBytes, "Total bytes read should match writeBuf size");
-        assertArrayEquals(writeBuf, totalReadBuf, "Read data should match original write data");
+        assertEquals("Total bytes read should match writeBuf size", writeBufSize,
+            totalReadBytes);
+        assertArrayEquals("Read data should match original write data", writeBuf,
+            totalReadBuf);
       }
       assertTrue(dfs.delete(new Path(testBaseDir + Path.SEPARATOR + testfileName), true));
     } finally {
